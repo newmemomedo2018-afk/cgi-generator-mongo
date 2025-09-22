@@ -109,6 +109,21 @@ export const insertUserSchema = z.object({
   stripeSubscriptionId: z.string().optional(),
 });
 
+// Client-side project creation schema (excludes server-managed fields)
+export const createProjectInputSchema = z.object({
+  title: z.string().min(1).max(255),
+  description: z.string().optional(),
+  productImageUrl: z.string(),
+  sceneImageUrl: z.string().optional(),
+  sceneVideoUrl: z.string().optional(),
+  contentType: z.enum(['image', 'video']),
+  videoDurationSeconds: z.number().min(5).max(10).default(5),
+  resolution: z.string().default('1024x1024'),
+  quality: z.string().default('standard'),
+  includeAudio: z.boolean().default(false),
+});
+
+// Full insert schema for database operations
 export const insertProjectSchema = z.object({
   userId: z.number(),
   title: z.string().min(1).max(255),
@@ -143,6 +158,16 @@ export const insertTransactionSchema = z.object({
   processedAt: z.date().optional(),
 });
 
+// Client-side job creation schema (minimal fields)
+export const createJobInputSchema = z.object({
+  type: z.string().min(1),
+  projectId: z.number(),
+  userId: z.number(),
+  priority: z.number().min(0).default(0),
+  data: z.string().optional(), // JSON string
+});
+
+// Full insert schema for database operations
 export const insertJobSchema = z.object({
   type: z.string().min(1),
   projectId: z.number(),
@@ -165,9 +190,11 @@ export type NewUser = z.infer<typeof insertUserSchema>;
 
 export type Project = typeof projects.$inferSelect;
 export type NewProject = z.infer<typeof insertProjectSchema>;
+export type CreateProjectInput = z.infer<typeof createProjectInputSchema>;
 
 export type Transaction = typeof transactions.$inferSelect;
 export type NewTransaction = z.infer<typeof insertTransactionSchema>;
 
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = z.infer<typeof insertJobSchema>;
+export type CreateJobInput = z.infer<typeof createJobInputSchema>;

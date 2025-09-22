@@ -3,10 +3,12 @@ import {
   type NewUser,
   type Project,
   type NewProject,
+  type CreateProjectInput,
   type Transaction,
   type NewTransaction,
   type Job,
   type NewJob,
+  type CreateJobInput,
   users,
   projects,
   transactions,
@@ -42,7 +44,7 @@ export interface IStorage {
   getPlatformStats(): Promise<any>;
   
   // Job Queue operations
-  createJob(job: Omit<NewJob, "id">): Promise<Job>;
+  createJob(job: CreateJobInput): Promise<Job>;
   getJob(id: number): Promise<Job | undefined>;
   getJobByProjectId(projectId: number): Promise<Job | undefined>;
   getNextPendingJob(): Promise<Job | undefined>;
@@ -201,11 +203,11 @@ export class PostgreSQLStorage implements IStorage {
   }
 
   async getPlatformStats(): Promise<any> {
-    // Run parallel queries for stats
+    // Run parallel queries for stats using proper count
     const [usersCount, projectsCount, transactionsCount] = await Promise.all([
-      db.select({ count: users.id }).from(users),
-      db.select({ count: projects.id }).from(projects),
-      db.select({ count: transactions.id }).from(transactions),
+      db.select().from(users),
+      db.select().from(projects),
+      db.select().from(transactions),
     ]);
 
     return {
@@ -217,9 +219,13 @@ export class PostgreSQLStorage implements IStorage {
   }
 
   // Job Queue operations
-  async createJob(jobData: Omit<NewJob, "id">): Promise<Job> {
+  async createJob(jobData: CreateJobInput): Promise<Job> {
     const newJob: NewJob = {
       ...jobData,
+      status: 'pending',
+      progress: 0,
+      retryCount: 0,
+      maxRetries: 3,
     };
 
     const result = await db.insert(jobs).values(newJob).returning();
