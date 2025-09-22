@@ -1,26 +1,62 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
-import * as schema from "@shared/schema";
+import { MongoClient, Db } from 'mongodb';
 
-// Configure Neon with better WebSocket handling
-neonConfig.webSocketConstructor = ws;
-neonConfig.poolQueryViaFetch = true;
-
-
-if (!process.env.DATABASE_URL) {
+// MongoDB connection setup
+if (!process.env.MONGODB_URI) {
   throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
+    "MONGODB_URI must be set. Did you forget to set up MongoDB connection?",
   );
 }
 
-// Create pool with improved configuration
-export const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL,
-  max: 5, // Reduce max connections to avoid limits
-  idleTimeoutMillis: 30000, // 30 seconds idle timeout
-  connectionTimeoutMillis: 10000, // 10 seconds connection timeout
-  allowExitOnIdle: true, // Allow pool to exit when idle
+let client: MongoClient;
+let database: Db;
+
+// Create MongoDB client with improved configuration
+export async function connectToDatabase(): Promise<Db> {
+  if (database) {
+    return database;
+  }
+
+  try {
+    client = new MongoClient(process.env.MONGODB_URI!, {
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      bufferMaxEntries: 0, // Disable mongoose buffering
+      bufferCommands: false, // Disable mongoose buffering
+    });
+
+    await client.connect();
+    database = client.db(); // Use default database from connection string
+    
+    console.log('Connected to MongoDB successfully');
+    return database;
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    throw error;
+  }
+}
+
+// Export database instance getter
+export const getDatabase = async (): Promise<Db> => {
+  if (!database) {
+    return await connectToDatabase();
+  }
+  return database;
+};
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  if (client) {
+    await client.close();
+    console.log('MongoDB connection closed.');
+  }
+  process.exit(0);
 });
 
-export const db = drizzle({ client: pool, schema });
+process.on('SIGTERM', async () => {
+  if (client) {
+    await client.close();
+    console.log('MongoDB connection closed.');
+  }
+  process.exit(0);
+});
