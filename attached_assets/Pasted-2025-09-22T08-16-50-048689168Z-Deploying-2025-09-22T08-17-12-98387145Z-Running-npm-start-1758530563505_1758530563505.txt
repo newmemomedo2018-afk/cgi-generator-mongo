@@ -1,0 +1,50 @@
+2025-09-22T08:16:50.048689168Z ==> Deploying...
+2025-09-22T08:17:12.98387145Z ==> Running 'npm start'
+2025-09-22T08:17:14.185408119Z 
+2025-09-22T08:17:14.185431259Z > rest-express@1.0.0 start
+2025-09-22T08:17:14.18543596Z > NODE_ENV=production node dist/index.js
+2025-09-22T08:17:14.18543868Z 
+2025-09-22T08:17:23.681280441Z file:///opt/render/project/src/dist/index.js:1293
+2025-09-22T08:17:23.681318432Z   throw new Error(
+2025-09-22T08:17:23.681325452Z         ^
+2025-09-22T08:17:23.681329262Z 
+2025-09-22T08:17:23.681334743Z Error: DATABASE_URL must be set. Did you forget to provision a database?
+2025-09-22T08:17:23.681339043Z     at file:///opt/render/project/src/dist/index.js:1293:9
+2025-09-22T08:17:23.681343283Z     at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+2025-09-22T08:17:23.681348043Z     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+2025-09-22T08:17:23.681352083Z     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-09-22T08:17:23.681355903Z 
+2025-09-22T08:17:23.681360013Z Node.js v22.16.0
+2025-09-22T08:17:25.599441534Z ==> Exited with status 1
+2025-09-22T08:17:25.617379823Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-09-22T08:17:30.76825438Z ==> Running 'npm start'
+2025-09-22T08:17:31.75657339Z 
+2025-09-22T08:17:31.756589701Z > rest-express@1.0.0 start
+2025-09-22T08:17:31.756592741Z > NODE_ENV=production node dist/index.js
+2025-09-22T08:17:31.756594571Z 
+2025-09-22T08:17:40.96991907Z file:///opt/render/project/src/dist/index.js:1293
+2025-09-22T08:17:40.970093465Z   throw new Error(
+2025-09-22T08:17:40.970162116Z         ^
+2025-09-22T08:17:40.970165136Z 
+2025-09-22T08:17:40.970168447Z Error: DATABASE_URL must be set. Did you forget to provision a database?
+2025-09-22T08:17:40.970171077Z     at file:///opt/render/project/src/dist/index.js:1293:9
+2025-09-22T08:17:40.970174017Z     at ModuleJob.run (node:internal/modules/esm/module_job:274:25)
+2025-09-22T08:17:40.970177287Z     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:644:26)
+2025-09-22T08:17:40.970180247Z     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+2025-09-22T08:17:40.970182717Z 
+2025-09-22T08:17:40.970184987Z Node.js v22.16.0
+2025-09-22T08:33:19.946068685Z ==> Deploying...
+2025-09-22T08:33:41.611573417Z ==> Running 'npm start'
+2025-09-22T08:33:42.708922787Z 
+2025-09-22T08:33:42.708949587Z > rest-express@1.0.0 start
+2025-09-22T08:33:42.708954478Z > NODE_ENV=production node dist/index.js
+2025-09-22T08:33:42.708957088Z 
+2025-09-22T08:33:48.610105969Z [dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+2025-09-22T08:33:57.583975056Z ==> Application exited early
+2025-09-22T08:33:57.609350384Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-09-22T08:34:03.374240306Z ==> Running 'npm start'
+2025-09-22T08:34:04.597430295Z 
+2025-09-22T08:34:04.597454135Z > rest-express@1.0.0 start
+2025-09-22T08:34:04.597459405Z > NODE_ENV=production node dist/index.js
+2025-09-22T08:34:04.597461605Z 
+2025-09-22T08:34:11.485978559Z [dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
