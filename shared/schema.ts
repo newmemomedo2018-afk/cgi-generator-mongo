@@ -1,171 +1,155 @@
 import { z } from "zod";
-import { ObjectId } from "mongodb";
+import { sql } from "drizzle-orm";
+import { pgTable, serial, varchar, text, integer, timestamp, boolean, decimal, pgEnum } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
-// MongoDB ObjectId validation schema
-export const objectIdSchema = z.string().refine((val) => ObjectId.isValid(val), {
-  message: "Invalid ObjectId format"
+// Enum definitions for PostgreSQL
+export const projectStatusEnum = pgEnum('project_status', [
+  'pending', 
+  'processing', 
+  'enhancing_prompt', 
+  'generating_image', 
+  'generating_video', 
+  'completed', 
+  'failed'
+]);
+
+export const contentTypeEnum = pgEnum('content_type', ['image', 'video']);
+export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed']);
+export const jobStatusEnum = pgEnum('job_status', ['pending', 'processing', 'completed', 'failed']);
+
+// Users table (PostgreSQL)
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  password: varchar('password', { length: 255 }).notNull(),
+  firstName: varchar('first_name', { length: 100 }),
+  lastName: varchar('last_name', { length: 100 }),
+  profileImageUrl: text('profile_image_url'),
+  credits: integer('credits').default(5).notNull(),
+  isAdmin: boolean('is_admin').default(false).notNull(),
+  stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
+  stripeSubscriptionId: varchar('stripe_subscription_id', { length: 255 }),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-// Base timestamp fields for all documents
-const timestampFields = {
-  createdAt: z.date().default(() => new Date()),
-  updatedAt: z.date().default(() => new Date()),
-};
-
-// Session schema for MongoDB (used by Replit Auth)
-export const sessionSchema = z.object({
-  _id: z.string(), // MongoDB ObjectId as string (session ID)
-  sess: z.any(), // Session data (stored as JSON)
-  expire: z.date(),
+// Projects table (PostgreSQL)  
+export const projects = pgTable('projects', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  productImageUrl: text('product_image_url').notNull(),
+  sceneImageUrl: text('scene_image_url'),
+  sceneVideoUrl: text('scene_video_url'),
+  contentType: contentTypeEnum('content_type').notNull(),
+  videoDurationSeconds: integer('video_duration_seconds').default(5).notNull(),
+  status: projectStatusEnum('status').default('pending').notNull(),
+  progress: integer('progress').default(0).notNull(),
+  enhancedPrompt: text('enhanced_prompt'),
+  outputImageUrl: text('output_image_url'),
+  outputVideoUrl: text('output_video_url'),
+  creditsUsed: integer('credits_used').notNull(),
+  actualCost: integer('actual_cost').default(0).notNull(), // in millicents
+  resolution: varchar('resolution', { length: 50 }).default('1024x1024').notNull(),
+  quality: varchar('quality', { length: 50 }).default('standard').notNull(),
+  errorMessage: text('error_message'),
+  // Kling AI task tracking
+  klingVideoTaskId: varchar('kling_video_task_id', { length: 255 }),
+  klingSoundTaskId: varchar('kling_sound_task_id', { length: 255 }),
+  includeAudio: boolean('include_audio').default(false).notNull(),
+  fullTaskDetails: text('full_task_details'), // JSON string
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-// User schema for MongoDB
-export const userSchema = z.object({
-  _id: objectIdSchema.optional(), // MongoDB ObjectId
+// Transactions table (PostgreSQL)
+export const transactions = pgTable('transactions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  amount: decimal('amount', { precision: 10, scale: 2 }).notNull(), // in USD
+  credits: integer('credits').notNull(),
+  stripePaymentIntentId: varchar('stripe_payment_intent_id', { length: 255 }),
+  status: transactionStatusEnum('status').default('pending').notNull(),
+  processedAt: timestamp('processed_at'),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Jobs table for background processing (PostgreSQL)
+export const jobs = pgTable('jobs', {
+  id: serial('id').primaryKey(),
+  type: varchar('type', { length: 100 }).notNull(), // 'image_generation', 'video_generation', etc.
+  projectId: integer('project_id').references(() => projects.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
+  status: jobStatusEnum('status').default('pending').notNull(),
+  priority: integer('priority').default(0).notNull(),
+  progress: integer('progress').default(0).notNull(),
+  data: text('data'), // JSON string with job parameters
+  result: text('result'), // JSON string with job results
+  errorMessage: text('error_message'),
+  retryCount: integer('retry_count').default(0).notNull(),
+  maxRetries: integer('max_retries').default(3).notNull(),
+  processingStartedAt: timestamp('processing_started_at'),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Create Zod schemas from Drizzle tables
+export const insertUserSchema = createInsertSchema(users, {
   email: z.string().email(),
-  password: z.string(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  profileImageUrl: z.string().optional(),
-  credits: z.number().default(5),
-  isAdmin: z.boolean().default(false),
-  stripeCustomerId: z.string().optional(),
-  stripeSubscriptionId: z.string().optional(),
-  ...timestampFields,
+  password: z.string().min(8),
+  credits: z.number().min(0),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
-// Project schema for MongoDB
-export const projectSchema = z.object({
-  _id: objectIdSchema.optional(), // MongoDB ObjectId
-  userId: objectIdSchema, // Reference to user
-  title: z.string(),
-  description: z.string().optional(),
-  productImageUrl: z.string(),
-  sceneImageUrl: z.string().optional(), // Made nullable to support sceneVideoUrl
-  sceneVideoUrl: z.string().optional(), // New: support video scene input
-  contentType: z.enum(["image", "video"]),
-  videoDurationSeconds: z.number().default(5), // New: 5 or 10 seconds
-  status: z.enum([
-    "pending", 
-    "processing", 
-    "enhancing_prompt", 
-    "generating_image", 
-    "generating_video", 
-    "completed", 
-    "failed"
-  ]).default("pending"),
-  progress: z.number().default(0),
-  enhancedPrompt: z.string().optional(),
-  outputImageUrl: z.string().optional(),
-  outputVideoUrl: z.string().optional(),
-  creditsUsed: z.number(),
-  actualCost: z.number().default(0), // in millicents (1/1000 USD)
-  resolution: z.string().default("1024x1024"),
-  quality: z.string().default("standard"),
-  errorMessage: z.string().optional(),
-  // Kling AI task tracking for recovery
-  klingVideoTaskId: z.string().optional(), // For video generation task
-  klingSoundTaskId: z.string().optional(), // For audio enhancement task
-  includeAudio: z.boolean().default(false), // Whether to add audio to video
-  // Full task details from Kling AI for UI display (6-minute wait strategy)
-  fullTaskDetails: z.any().optional(), // Complete Kling AI task response JSON
-  ...timestampFields,
+export const insertProjectSchema = createInsertSchema(projects, {
+  title: z.string().min(1).max(255),
+  creditsUsed: z.number().min(0),
+  actualCost: z.number().min(0),
+  progress: z.number().min(0).max(100),
+  videoDurationSeconds: z.number().min(5).max(10),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
-// Transaction schema for MongoDB
-export const transactionSchema = z.object({
-  _id: objectIdSchema.optional(), // MongoDB ObjectId
-  userId: objectIdSchema, // Reference to user
-  amount: z.number(), // in cents
-  credits: z.number(),
-  stripePaymentIntentId: z.string().optional(),
-  status: z.enum(["pending", "completed", "failed"]).default("pending"),
-  processedAt: z.date().optional(), // When webhook was processed
-  ...timestampFields,
+export const insertTransactionSchema = createInsertSchema(transactions, {
+  amount: z.string().regex(/^\d+\.\d{2}$/), // decimal string format
+  credits: z.number().min(1),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
-// Job queue schema for MongoDB (for async processing)
-export const jobQueueSchema = z.object({
-  _id: objectIdSchema.optional(), // MongoDB ObjectId
-  type: z.string(), // 'cgi_generation'
-  status: z.enum(["pending", "processing", "completed", "failed"]).default("pending"),
-  projectId: objectIdSchema, // Reference to project
-  userId: objectIdSchema, // Reference to user
-  priority: z.number().default(0), // Higher = more priority
-  attempts: z.number().default(0),
-  maxAttempts: z.number().default(3),
-  progress: z.number().default(0), // 0-100
-  statusMessage: z.string().optional(),
-  errorMessage: z.string().optional(),
-  data: z.any().optional(), // Job-specific data like contentType, paths, etc
-  result: z.any().optional(), // Final result data
-  scheduledFor: z.date().default(() => new Date()),
-  startedAt: z.date().optional(),
-  completedAt: z.date().optional(),
-  ...timestampFields,
+export const insertJobSchema = createInsertSchema(jobs, {
+  type: z.string().min(1),
+  priority: z.number().min(0),
+  progress: z.number().min(0).max(100),
+  retryCount: z.number().min(0),
+  maxRetries: z.number().min(1),
+}).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
-// Insert schemas (for creating new documents)
-export const insertUserSchema = userSchema.omit({ _id: true, createdAt: true, updatedAt: true });
-export const insertProjectSchema = projectSchema.omit({ _id: true, createdAt: true, updatedAt: true })
-  .pick({
-    title: true,
-    description: true,
-    productImageUrl: true,
-    sceneImageUrl: true,
-    sceneVideoUrl: true,
-    contentType: true,
-    videoDurationSeconds: true,
-    resolution: true,
-    quality: true,
-    userId: true,
-    creditsUsed: true,
-  })
-  .refine((data) => {
-    // Ensure either sceneImageUrl OR sceneVideoUrl is provided, but not both
-    const hasImage = !!data.sceneImageUrl;
-    const hasVideo = !!data.sceneVideoUrl;
-    return hasImage !== hasVideo; // XOR: exactly one must be true
-  }, {
-    message: "Provide either scene image or scene video, not both",
-  });
+// Type exports
+export type User = typeof users.$inferSelect;
+export type NewUser = z.infer<typeof insertUserSchema>;
 
-export const insertTransactionSchema = transactionSchema.omit({ _id: true, createdAt: true, updatedAt: true })
-  .pick({
-    userId: true,
-    amount: true,
-    credits: true,
-    stripePaymentIntentId: true,
-    status: true,
-    processedAt: true,
-  });
+export type Project = typeof projects.$inferSelect;
+export type NewProject = z.infer<typeof insertProjectSchema>;
 
-export const insertJobSchema = jobQueueSchema.omit({ _id: true, createdAt: true, updatedAt: true })
-  .pick({
-    type: true,
-    projectId: true,
-    userId: true,
-    data: true,
-    priority: true,
-  });
+export type Transaction = typeof transactions.$inferSelect;
+export type NewTransaction = z.infer<typeof insertTransactionSchema>;
 
-// TypeScript types from Zod schemas
-export type User = z.infer<typeof userSchema>;
-export type Project = z.infer<typeof projectSchema>;
-export type Transaction = z.infer<typeof transactionSchema>;
-export type Job = z.infer<typeof jobQueueSchema>;
-export type Session = z.infer<typeof sessionSchema>;
-
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type InsertProject = z.infer<typeof insertProjectSchema>;
-export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
-export type InsertJob = z.infer<typeof insertJobSchema>;
-
-// Collection names (for consistency across the app)
-export const COLLECTIONS = {
-  USERS: 'users',
-  PROJECTS: 'projects',
-  TRANSACTIONS: 'transactions',
-  JOBS: 'job_queue',
-  SESSIONS: 'sessions',
-} as const;
+export type Job = typeof jobs.$inferSelect;
+export type NewJob = z.infer<typeof insertJobSchema>;
