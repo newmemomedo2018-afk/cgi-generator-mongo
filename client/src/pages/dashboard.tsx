@@ -328,6 +328,9 @@ export default function Dashboard() {
   };
 
   const handleCreateProject = () => {
+    // Debug: Log current project data before validation
+    console.log("🔍 Frontend projectData before submission:", JSON.stringify(projectData, null, 2));
+    
     if (!projectData.title.trim()) {
       toast({
         title: "عنوان مطلوب",
@@ -521,7 +524,10 @@ export default function Dashboard() {
                             className={`cursor-pointer transition-all hover:bg-white/10 ${
                               projectData.contentType === "video" ? "ring-2 ring-primary" : ""
                             }`}
-                            onClick={() => setProjectData(prev => ({ ...prev, contentType: "video" }))}
+                            onClick={() => {
+                              console.log("🎬 User clicked video card, changing contentType to video");
+                              setProjectData(prev => ({ ...prev, contentType: "video" }));
+                            }}
                             data-testid="video-type-card"
                           >
                             <CardContent className="p-6 text-center">
