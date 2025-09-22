@@ -1,0 +1,87 @@
+2025-09-22T09:42:44.087049449Z       ^
+2025-09-22T09:42:44.08705382Z 
+2025-09-22T09:42:44.08705786Z Error: Connection terminated unexpectedly
+2025-09-22T09:42:44.0870621Z     at Connection.<anonymous> (/opt/render/project/src/node_modules/pg/lib/client.js:136:73)
+2025-09-22T09:42:44.08706736Z     at Object.onceWrapper (node:events:632:28)
+2025-09-22T09:42:44.08707106Z     at Connection.emit (node:events:518:28)
+2025-09-22T09:42:44.0870748Z     at Socket.<anonymous> (/opt/render/project/src/node_modules/pg/lib/connection.js:62:12)
+2025-09-22T09:42:44.08707841Z     at Socket.emit (node:events:530:35)
+2025-09-22T09:42:44.08708189Z     at TCP.<anonymous> (node:net:351:12)
+2025-09-22T09:42:44.0870855Z Emitted 'error' event on Client instance at:
+2025-09-22T09:42:44.08708919Z     at Client._handleErrorEvent (/opt/render/project/src/node_modules/pg/lib/client.js:350:10)
+2025-09-22T09:42:44.087126201Z     at Connection.<anonymous> (/opt/render/project/src/node_modules/pg/lib/client.js:154:16)
+2025-09-22T09:42:44.087130571Z     at Object.onceWrapper (node:events:632:28)
+2025-09-22T09:42:44.087134651Z     [... lines matching original stack trace ...]
+2025-09-22T09:42:44.087138251Z     at TCP.<anonymous> (node:net:351:12)
+2025-09-22T09:42:44.087141842Z 
+2025-09-22T09:42:44.087145731Z Node.js v22.16.0
+2025-09-22T09:43:18.787080621Z ==> Running 'npm start'
+2025-09-22T09:43:19.879636115Z 
+2025-09-22T09:43:19.879666386Z > rest-express@1.0.0 start
+2025-09-22T09:43:19.879671976Z > NODE_ENV=production node dist/index.js
+2025-09-22T09:43:19.879674847Z 
+2025-09-22T09:43:29.884317728Z [dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+2025-09-22T09:43:30.079024797Z 9:43:29 AM [express] serving on port 10000
+2025-09-22T09:43:31.152370993Z Connected to Neon PostgreSQL successfully
+2025-09-22T10:56:10.530079518Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-22T10:56:10.530082998Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-22T10:56:10.530086658Z       at async PostgreSQLStorage.getUserByEmail (file:///opt/render/project/src/dist/index.js:1352:20)
+2025-09-22T10:56:10.530090448Z       at async file:///opt/render/project/src/dist/index.js:1606:20 {
+2025-09-22T10:56:10.530094118Z     length: 110,
+2025-09-22T10:56:10.530098309Z     severity: 'ERROR',
+2025-09-22T10:56:10.530102419Z     code: '42703',
+2025-09-22T10:56:10.530106419Z     detail: undefined,
+2025-09-22T10:56:10.530109979Z     hint: undefined,
+2025-09-22T10:56:10.530113679Z     position: '35',
+2025-09-22T10:56:10.530117629Z     internalPosition: undefined,
+2025-09-22T10:56:10.530121179Z     internalQuery: undefined,
+2025-09-22T10:56:10.530124819Z     where: undefined,
+2025-09-22T10:56:10.530128449Z     schema: undefined,
+2025-09-22T10:56:10.530131889Z     table: undefined,
+2025-09-22T10:56:10.53013531Z     column: undefined,
+2025-09-22T10:56:10.530138899Z     dataType: undefined,
+2025-09-22T10:56:10.53014255Z     constraint: undefined,
+2025-09-22T10:56:10.53014617Z     file: 'parse_relation.c',
+2025-09-22T10:56:10.53014974Z     line: '3716',
+2025-09-22T10:56:10.53016923Z     routine: 'errorMissingColumn'
+2025-09-22T10:56:10.53017194Z   }
+2025-09-22T10:56:10.530174391Z }
+2025-09-22T10:56:10.530510189Z 10:56:10 AM [express] POST /api/auth/login 500 in 173ms :: {"message":"Login failed"}
+2025-09-22T10:56:15.592730618Z 10:56:15 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"No token provided"}
+2025-09-22T10:56:50.407894659Z Login error: DrizzleQueryError: Failed query: select "id", "email", "password", "first_name", "last_name", "profile_image_url", "credits", "is_admin", "stripe_customer_id", "stripe_subscription_id", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2
+2025-09-22T10:56:50.40792197Z params: admin@cgi-generator.com,1
+2025-09-22T10:56:50.407943331Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-22T10:56:50.407950901Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-22T10:56:50.407956101Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-22T10:56:50.407961221Z     at async PostgreSQLStorage.getUserByEmail (file:///opt/render/project/src/dist/index.js:1352:20)
+2025-09-22T10:56:50.407966571Z     at async file:///opt/render/project/src/dist/index.js:1606:20 {
+2025-09-22T10:56:50.407971251Z   query: 'select "id", "email", "password", "first_name", "last_name", "profile_image_url", "credits", "is_admin", "stripe_customer_id", "stripe_subscription_id", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2',
+2025-09-22T10:56:50.407975461Z   params: [ 'admin@cgi-generator.com', 1 ],
+2025-09-22T10:56:50.407980312Z   cause: error: column "first_name" does not exist
+2025-09-22T10:56:50.407984652Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-22T10:56:50.407989142Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-22T10:56:50.407993522Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-22T10:56:50.407998212Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-22T10:56:50.408002192Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-22T10:56:50.408006262Z       at async PostgreSQLStorage.getUserByEmail (file:///opt/render/project/src/dist/index.js:1352:20)
+2025-09-22T10:56:50.408010312Z       at async file:///opt/render/project/src/dist/index.js:1606:20 {
+2025-09-22T10:56:50.408014362Z     length: 110,
+2025-09-22T10:56:50.408019213Z     severity: 'ERROR',
+2025-09-22T10:56:50.408023683Z     code: '42703',
+2025-09-22T10:56:50.408027573Z     detail: undefined,
+2025-09-22T10:56:50.408031813Z     hint: undefined,
+2025-09-22T10:56:50.408036203Z     position: '35',
+2025-09-22T10:56:50.408040783Z     internalPosition: undefined,
+2025-09-22T10:56:50.408044803Z     internalQuery: undefined,
+2025-09-22T10:56:50.408049043Z     where: undefined,
+2025-09-22T10:56:50.408053853Z     schema: undefined,
+2025-09-22T10:56:50.408058154Z     table: undefined,
+2025-09-22T10:56:50.408062214Z     column: undefined,
+2025-09-22T10:56:50.408066204Z     dataType: undefined,
+2025-09-22T10:56:50.408070294Z     constraint: undefined,
+2025-09-22T10:56:50.408074354Z     file: 'parse_relation.c',
+2025-09-22T10:56:50.408078614Z     line: '3716',
+2025-09-22T10:56:50.408082884Z     routine: 'errorMissingColumn'
+2025-09-22T10:56:50.408086814Z   }
+2025-09-22T10:56:50.408090844Z }
+2025-09-22T10:56:50.409580652Z 10:56:50 AM [express] POST /api/auth/login 500 in 69ms :: {"message":"Login failed"}

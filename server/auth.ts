@@ -97,7 +97,7 @@ export async function setupAuth(app: Express) {
       });
 
       // Generate token
-      const token = generateToken(user.id, user.email);
+      const token = generateToken(user.id.toString(), user.email);
 
       res.json({
         user: {
@@ -136,7 +136,7 @@ export async function setupAuth(app: Express) {
       }
 
       // Generate token
-      const token = generateToken(user.id, user.email);
+      const token = generateToken(user.id.toString(), user.email);
 
       res.json({
         user: {
@@ -156,7 +156,7 @@ export async function setupAuth(app: Express) {
 
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.id);
+      const user = await storage.getUser(Number(req.user.id));
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
