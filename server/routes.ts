@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Rehydrate URLs to use current request host
       const currentHost = `${req.protocol}://${req.get('host')}`;
       const rehydratedProjects = projects.map(project => {
-        const rehydrateUrl = (url: string | null) => {
+        const rehydrateUrl = (url: string | null | undefined) => {
           if (!url) return url;
           if (url.includes('/public-objects/')) {
             // Extract the relative path after /public-objects/
@@ -219,9 +219,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         return {
           ...project,
-          productImageUrl: rehydrateUrl(project.productImageUrl),
-          sceneImageUrl: rehydrateUrl(project.sceneImageUrl),
-          outputImageUrl: rehydrateUrl(project.outputImageUrl),
+          productImageUrl: rehydrateUrl(project.productImageUrl) ?? null,
+          sceneImageUrl: rehydrateUrl(project.sceneImageUrl) ?? null,
+          outputImageUrl: rehydrateUrl(project.outputImageUrl) ?? null,
           outputVideoUrl: rehydrateUrl(project.outputVideoUrl)
         };
       });
@@ -267,7 +267,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create job for async processing (Vercel compatible)
       const job = await storage.createJob({
         type: 'cgi_generation',
-        projectId: project.id,
+        projectId: project._id!,
         userId: userId,
         data: {
           contentType: projectData.contentType,
@@ -280,11 +280,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         priority: projectData.contentType === 'video' ? 2 : 1 // Videos have higher priority
       });
 
-      console.log(`🎯 Job created for project ${project.id}: ${job.id}`);
+      console.log(`🎯 Job created for project ${project._id}: ${job._id}`);
 
       res.json({
         ...project,
-        jobId: job.id
+        jobId: job._id
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -305,12 +305,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Also get job status for this project
-      const job = await storage.getJobByProjectId(project.id);
+      const job = await storage.getJobByProjectId(project._id!);
 
       res.json({
         ...project,
         job: job ? {
-          id: job.id,
+          id: job._id,
           status: job.status,
           progress: job.progress,
           statusMessage: job.statusMessage,
@@ -368,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         clientSecret: paymentIntent.client_secret,
-        transactionId: transaction.id,
+        transactionId: transaction._id,
         paymentIntentId: paymentIntent.id
       });
     } catch (error) {
@@ -387,27 +387,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Atomically claim the job
-      const claimed = await storage.claimJob(job.id);
+      const claimed = await storage.claimJob(job._id!);
       if (!claimed) {
         return res.json({ message: "Job was already claimed by another worker" });
       }
       
       // Update attempts
-      await storage.updateJob(job.id, {
+      await storage.updateJob(job._id!, {
         attempts: job.attempts + 1
       });
 
-      console.log(`🚀 Processing job ${job.id} for project ${job.projectId}`);
+      console.log(`🚀 Processing job ${job._id} for project ${job.projectId}`);
       
       // Process the job asynchronously
-      processJobAsync(job.id).catch(async (error) => {
-        console.error(`❌ Job ${job.id} failed:`, error);
-        await storage.markJobFailed(job.id, error.message);
+      processJobAsync(job._id!).catch(async (error) => {
+        console.error(`❌ Job ${job._id} failed:`, error);
+        await storage.markJobFailed(job._id!, error.message);
       });
 
       res.json({ 
         message: "Job processing started",
-        jobId: job.id,
+        jobId: job._id,
         projectId: job.projectId
       });
     } catch (error) {
@@ -431,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json({
-        id: job.id,
+        id: job._id,
         status: job.status,
         progress: job.progress,
         statusMessage: job.statusMessage,
@@ -456,11 +456,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Project not found" });
       }
 
-      const job = await storage.getJobByProjectId(project.id);
+      const job = await storage.getJobByProjectId(project._id!);
 
       res.json({
         project: {
-          id: project.id,
+          id: project._id,
           status: project.status,
           progress: project.progress,
           outputImageUrl: project.outputImageUrl,
@@ -468,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errorMessage: project.errorMessage
         },
         job: job ? {
-          id: job.id,
+          id: job._id,
           status: job.status,
           progress: job.progress,
           statusMessage: job.statusMessage,
@@ -543,7 +543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Mark transaction as completed to prevent duplicate processing
         if (existingTransaction) {
-          await storage.updateTransaction(existingTransaction.id, { 
+          await storage.updateTransaction(existingTransaction._id!, { 
             status: 'completed',
             processedAt: new Date()
           });
@@ -625,7 +625,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileExt = detectedExt.replace('.', '') || 'png';
           }
           
-          const fileName = `${project.title}_${project.id}.${fileExt}`;
+          const fileName = `${project.title}_${project._id}.${fileExt}`;
           
           res.setHeader('Content-Type', mimeType);
           res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -708,7 +708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (project.contentType === 'video') videoProjects++;
         
         return {
-          id: project.id,
+          id: project._id,
           title: project.title,
           contentType: project.contentType,
           status: project.status,
@@ -774,7 +774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("🔍 RECOVERY: Found projects for potential recovery:", {
         total: userProjects.length,
         recoverable: recoverableProjects.length,
-        recoverableIds: recoverableProjects.map(p => p.id)
+        recoverableIds: recoverableProjects.map(p => p._id)
       });
 
       if (recoverableProjects.length === 0) {
@@ -796,7 +796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check each recoverable project
       for (const project of recoverableProjects) {
         console.log("🔎 RECOVERY: Checking project:", {
-          projectId: project.id,
+          projectId: project._id!,
           title: project.title,
           status: project.status,
           hasVideoTaskId: !!project.klingVideoTaskId,
@@ -861,29 +861,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Update project if we found completed content
           if (recovered && videoUrl) {
-            await storage.updateProject(project.id, {
+            await storage.updateProject(project._id!, {
               status: "completed",
               outputVideoUrl: videoUrl,
               progress: 100,
-              errorMessage: null // Clear error message
+              errorMessage: undefined // Clear error message
             });
             
             recoveredCount++;
             recoveryResults.push({
-              projectId: project.id,
+              projectId: project._id,
               title: project.title,
               status: "recovered",
               videoUrl: videoUrl
             });
             
             console.log("🎉 RECOVERY SUCCESS:", {
-              projectId: project.id,
+              projectId: project._id,
               title: project.title,
               videoUrl: videoUrl.substring(0, 50) + "..."
             });
           } else {
             recoveryResults.push({
-              projectId: project.id,
+              projectId: project._id,
               title: project.title,
               status: "still_processing_or_failed",
               reason: !videoUrl ? "No completed video found" : "Unknown issue"
@@ -892,12 +892,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
         } catch (recoveryError) {
           console.error("❌ RECOVERY ERROR for project:", {
-            projectId: project.id,
+            projectId: project._id,
             error: recoveryError instanceof Error ? recoveryError.message : "Unknown error"
           });
           
           recoveryResults.push({
-            projectId: project.id,
+            projectId: project._id,
             title: project.title,
             status: "recovery_failed",
             error: recoveryError instanceof Error ? recoveryError.message : "Unknown error"
@@ -980,7 +980,7 @@ async function processProjectFromJob(job: any) {
       progress: 10 
     });
     
-    await storage.updateJob(job.id, {
+    await storage.updateJob(job._id, {
       progress: 10,
       statusMessage: "Starting CGI processing..."
     });
@@ -991,7 +991,7 @@ async function processProjectFromJob(job: any) {
       progress: 25 
     });
     
-    await storage.updateJob(job.id, {
+    await storage.updateJob(job._id, {
       progress: 25,
       statusMessage: "Enhancing prompt with AI..."
     });
@@ -1137,7 +1137,7 @@ async function processProjectFromJob(job: any) {
     
     const cloudinaryUrl = await uploadToCloudinary(imageBuffer, filename);
     
-    const imageResult = { url: (cloudinaryResult as any).secure_url };
+    const imageResult = { url: cloudinaryUrl };
 
     await storage.updateProject(projectId, { 
       outputImageUrl: imageResult.url,
@@ -1280,7 +1280,7 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
           // Update video URL and full task details if generation succeeded
           await storage.updateProject(projectId, { 
             outputVideoUrl: videoResult.url,
-            fullTaskDetails: videoResult.fullTaskDetails || null, // NEW: Save complete task details for UI display
+            fullTaskDetails: videoResult.fullTaskDetails ?? undefined, // NEW: Save complete task details for UI display
             progress: 95 
           });
           
@@ -1327,7 +1327,7 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
     });
 
     // Mark job as completed with results
-    await storage.markJobCompleted(job.id, {
+    await storage.markJobCompleted(job._id, {
       outputImageUrl: finalImageUrl,
       outputVideoUrl: finalVideoUrl,
       totalCost: totalCostMillicents,
@@ -1347,6 +1347,6 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
     });
     
     // Mark job as failed
-    await storage.markJobFailed(job.id, error instanceof Error ? error.message : "Unknown error");
+    await storage.markJobFailed(job._id, error instanceof Error ? error.message : "Unknown error");
   }
 }
