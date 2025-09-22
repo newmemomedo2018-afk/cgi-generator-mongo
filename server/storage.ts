@@ -21,7 +21,7 @@ export interface IStorage {
   // User operations (for JWT Auth)
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: { email: string; password: string; firstName?: string; lastName?: string; credits?: number }): Promise<User>;
+  createUser(user: { email: string; password: string; firstName?: string; lastName?: string; credits?: number; isAdmin?: boolean }): Promise<User>;
   upsertUser(user: NewUser & { id?: number }): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<void>;
   updateUserCredits(id: number, credits: number): Promise<void>;
@@ -71,13 +71,14 @@ export class PostgreSQLStorage implements IStorage {
     return result[0];
   }
 
-  async createUser(userData: { email: string; password: string; firstName?: string; lastName?: string; credits?: number }): Promise<User> {
+  async createUser(userData: { email: string; password: string; firstName?: string; lastName?: string; credits?: number; isAdmin?: boolean }): Promise<User> {
     const newUser: NewUser = {
       email: userData.email,
       password: userData.password,
       firstName: userData.firstName,
       lastName: userData.lastName,
       credits: userData.credits ?? 5,
+      isAdmin: userData.isAdmin ?? false,
     };
 
     const result = await db.insert(users).values(newUser).returning();
