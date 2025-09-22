@@ -33,7 +33,8 @@ export default function Dashboard() {
     contentType: "image" as "image" | "video",
     videoDurationSeconds: 5,
     resolution: "1024x1024",
-    quality: "standard"
+    quality: "standard",
+    includeAudio: false
   });
   
   // Track upload status separately for validation
@@ -204,7 +205,8 @@ export default function Dashboard() {
         contentType: "image",
         videoDurationSeconds: 5,
         resolution: "1024x1024",
-        quality: "standard"
+        quality: "standard",
+        includeAudio: false
       });
       setIsProductImageUploaded(false);
       setIsSceneImageUploaded(false);
