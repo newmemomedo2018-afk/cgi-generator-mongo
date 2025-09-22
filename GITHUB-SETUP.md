@@ -45,11 +45,10 @@ Go to Project Settings → Environment Variables and add:
 #### Required for Production:
 ```bash
 # Database
-DATABASE_URL=postgresql://username:password@hostname:port/database
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
 
 # AI Services
 GEMINI_API_KEY=your_gemini_api_key
-FAL_API_KEY=your_fal_api_key
 
 # File Storage
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
@@ -110,23 +109,19 @@ JWT_SECRET=your_secure_jwt_secret_minimum_32_chars
 - Test card: `4242 4242 4242 4242`
 - Verify credit fulfillment works
 
-## Step 5: Database Migration
+## Step 5: MongoDB Database Setup
 
 ### 5.1 Production Database Setup
-1. Create production PostgreSQL database (Neon/Supabase)
-2. Update `DATABASE_URL` in Vercel environment variables
-3. Run database migration:
-   ```bash
-   # Connect to production database
-   npm run db:push --force
-   ```
+1. Create production MongoDB database on MongoDB Atlas
+2. Update `MONGODB_URI` in Vercel environment variables
+3. Database collections will be created automatically on first use
 
-### 5.2 Verify Database Schema
-Ensure these tables exist:
+### 5.2 Verify Database Collections
+Ensure these collections are created:
 - `users` (authentication & credits)
 - `projects` (CGI generation history)
 - `transactions` (payment history)
-- `job_queue` (async processing)
+- `jobs` (async processing queue)
 
 ## Step 6: Post-Deployment Testing
 

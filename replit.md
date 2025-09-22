@@ -1,6 +1,6 @@
 # Overview
 
-CGI Generator is a SaaS platform that allows users to create professional CGI images and videos using AI technology. Users upload a product image and scene image, and the system uses multiple AI services (Gemini AI and Fal.ai) to generate integrated CGI content. The platform operates on a credit-based system where users receive 5 free credits upon registration, with image generation costing 1 credit and video generation costing 5 credits.
+CGI Generator is a SaaS platform that allows users to create professional CGI images and videos using AI technology. Users upload a product image and scene image, and the system uses Gemini AI to generate integrated CGI content. The platform operates on a credit-based system where users receive 5 free credits upon registration, with image generation costing 1 credit and video generation costing 5 credits.
 
 # User Preferences
 
@@ -22,7 +22,7 @@ The frontend is organized into pages (landing, dashboard, pricing), reusable com
 ## Backend Architecture
 The backend follows a REST API architecture built with Node.js and Express. Key architectural decisions include:
 
-- **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
+- **Database**: MongoDB with native driver for flexible document storage
 - **Authentication**: JWT-based authentication with bcrypt for password hashing
 - **File Upload**: Multer for handling multipart/form-data uploads
 - **API Structure**: RESTful endpoints organized by feature (auth, projects, uploads)
@@ -32,14 +32,14 @@ The backend follows a REST API architecture built with Node.js and Express. Key 
 The server implements a modular structure with separate files for authentication, database operations, routes, and external service integrations.
 
 ## Data Storage Solutions
-The system uses PostgreSQL as the primary database with the following schema design:
+The system uses MongoDB as the primary database with the following document collections:
 
-- **Users Table**: Stores user credentials, profile information, credit balance, and Stripe integration fields
-- **Projects Table**: Tracks CGI generation projects with status, content type, and result URLs
-- **Transactions Table**: Records credit purchases and usage for billing purposes
-- **Sessions Table**: Manages user sessions for authentication
+- **Users Collection**: Stores user credentials, profile information, credit balance, and Stripe integration fields
+- **Projects Collection**: Tracks CGI generation projects with status, content type, and result URLs
+- **Transactions Collection**: Records credit purchases and usage for billing purposes
+- **Jobs Collection**: Manages background processing tasks for image/video generation
 
-The database uses Drizzle ORM for type-safe queries and schema management, with migrations handled through drizzle-kit.
+The database uses MongoDB native driver for flexible document operations and automatic _id field management.
 
 ## Authentication and Authorization
 The system implements JWT-based authentication with the following flow:
@@ -54,12 +54,11 @@ The authentication system includes password hashing with bcrypt and supports bot
 ## External Dependencies
 
 ### AI Services
-- **Gemini AI**: Google's generative AI for prompt enhancement and optimization ($0.001-$0.003 per request)
-- **Fal.ai**: AI image and video generation service ($0.05 for images, $0.50 for videos)
+- **Gemini AI**: Google's generative AI for prompt enhancement and image generation ($0.001-$0.003 per request)
 
 ### Cloud Services  
 - **Cloudinary**: Image and video storage and optimization service
-- **Neon Database**: Serverless PostgreSQL database hosting
+- **MongoDB Atlas**: Cloud MongoDB database hosting
 
 ### Payment Processing
 - **Stripe**: Payment processing for credit purchases (configured but not fully implemented)

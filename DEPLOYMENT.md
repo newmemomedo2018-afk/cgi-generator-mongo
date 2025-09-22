@@ -4,7 +4,7 @@
 
 ### 1. متطلبات النشر
 - حساب Vercel
-- قاعدة بيانات PostgreSQL (يفضل Neon أو Supabase)
+- قاعدة بيانات MongoDB (MongoDB Atlas)
 - مفاتيح API للخدمات المطلوبة
 
 ### 2. متغيرات البيئة المطلوبة في Vercel
@@ -13,12 +13,7 @@
 
 #### قاعدة البيانات
 ```
-DATABASE_URL=postgresql://username:password@host:5432/database
-PGHOST=your-db-host
-PGPORT=5432
-PGDATABASE=your-database-name
-PGUSER=your-username
-PGPASSWORD=your-password
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/database
 ```
 
 #### المصادقة والجلسة
@@ -36,7 +31,6 @@ CLOUDINARY_API_SECRET=your-cloudinary-api-secret
 
 #### خدمات الذكاء الاصطناعي
 ```
-FAL_API_KEY=your-fal-api-key
 GEMINI_API_KEY=your-gemini-api-key
 PIAPI_API_KEY=your-piapi-api-key
 ```
@@ -58,8 +52,8 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
    ```
 
 2. **إعداد قاعدة البيانات**
-   - أنشئ قاعدة بيانات PostgreSQL جديدة
-   - نفّذ الاستعلام لإنشاء الجداول (راجع shared/schema.ts)
+   - أنشئ قاعدة بيانات MongoDB جديدة في MongoDB Atlas
+   - سيتم إنشاء Collections تلقائياً عند أول استخدام
 
 3. **اختبار النشر**
    - تحقق من أن جميع المتغيرات مضبوطة
@@ -82,7 +76,7 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 ## مشاكل شائعة وحلولها
 
 ### مشكلة: "Database connection failed"
-- تحقق من صحة DATABASE_URL
+- تحقق من صحة MONGODB_URI
 - تأكد أن قاعدة البيانات تسمح بالاتصالات الخارجية
 
 ### مشكلة: "File upload fails" 
