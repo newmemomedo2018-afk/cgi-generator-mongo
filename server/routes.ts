@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertProjectSchema, insertTransactionSchema } from "@shared/schema";
+import { insertProjectSchema, insertTransactionSchema, createProjectInputSchema, createJobInputSchema } from "@shared/schema";
 import { z } from "zod";
 import { promises as fs, createReadStream, existsSync, mkdirSync } from 'fs';
 import Stripe from 'stripe';
@@ -236,7 +236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/projects', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const projectData = insertProjectSchema.parse(req.body);
+      const clientProjectData = createProjectInputSchema.parse(req.body);
       
       // Check user credits
       const user = await storage.getUser(userId);
@@ -244,41 +244,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      const creditsNeeded = projectData.contentType === "image" ? 2 : 10; // New credit system: 2 for image, 10 for video
+      // Calculate credits needed based on content type and audio inclusion
+      let creditsNeeded = clientProjectData.contentType === "image" ? 2 : 10; // Base: 2 for image, 10 for video
+      if (clientProjectData.contentType === "video" && clientProjectData.includeAudio) {
+        creditsNeeded += 5; // Additional 5 credits for audio
+      }
+      
       const isAdmin = user.email === 'admin@test.com';
       
       if (!isAdmin && user.credits < creditsNeeded) {
         return res.status(400).json({ message: "Insufficient credits" });
       }
 
-      // Create project
-      const project = await storage.createProject({
-        ...projectData,
+      // Inject server-managed fields and create project
+      const projectData = {
+        ...clientProjectData,
         userId,
         creditsUsed: creditsNeeded,
-        status: "pending"
-      });
+        status: "pending" as const
+      };
+      
+      const project = await storage.createProject(projectData);
 
       // Deduct credits from user account (except for admin)
       if (!isAdmin) {
         await storage.updateUserCredits(userId, user.credits - creditsNeeded);
       }
 
-      // Create job for async processing (Vercel compatible)
-      const job = await storage.createJob({
+      // Validate and create job for async processing (Vercel compatible)
+      const jobInput = createJobInputSchema.parse({
         type: 'cgi_generation',
         projectId: project.id!,
         userId: userId,
+        priority: clientProjectData.contentType === 'video' ? 2 : 1, // Videos have higher priority
         data: JSON.stringify({
-          contentType: projectData.contentType,
-          videoDurationSeconds: projectData.videoDurationSeconds,
-          productImageUrl: projectData.productImageUrl,
-          sceneImageUrl: projectData.sceneImageUrl,
-          sceneVideoUrl: projectData.sceneVideoUrl,
-          description: projectData.description
-        }),
-        priority: projectData.contentType === 'video' ? 2 : 1 // Videos have higher priority
+          contentType: clientProjectData.contentType,
+          videoDurationSeconds: clientProjectData.videoDurationSeconds,
+          productImageUrl: clientProjectData.productImageUrl,
+          sceneImageUrl: clientProjectData.sceneImageUrl,
+          sceneVideoUrl: clientProjectData.sceneVideoUrl,
+          description: clientProjectData.description,
+          includeAudio: clientProjectData.includeAudio
+        })
       });
+      
+      const job = await storage.createJob(jobInput);
 
       console.log(`🎯 Job created for project ${project.id}: ${job.id}`);
 
