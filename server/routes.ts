@@ -236,6 +236,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/projects', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      
+      // Log the incoming request body for debugging
+      console.log("🔍 Project creation request body:", JSON.stringify(req.body, null, 2));
+      
       const clientProjectData = createProjectInputSchema.parse(req.body);
       
       // Check user credits
@@ -261,7 +265,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...clientProjectData,
         userId,
         creditsUsed: creditsNeeded,
-        status: "pending" as const
+        status: "pending" as const,
+        progress: 0,
+        actualCost: 0
       };
       
       const project = await storage.createProject(projectData);
