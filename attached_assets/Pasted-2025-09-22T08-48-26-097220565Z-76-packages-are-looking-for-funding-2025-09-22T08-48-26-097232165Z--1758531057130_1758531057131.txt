@@ -1,0 +1,50 @@
+2025-09-22T08:48:26.097220565Z 76 packages are looking for funding
+2025-09-22T08:48:26.097232165Z   run `npm fund` for details
+2025-09-22T08:48:26.106158834Z 
+2025-09-22T08:48:26.106172965Z 7 vulnerabilities (3 low, 4 moderate)
+2025-09-22T08:48:26.106176815Z 
+2025-09-22T08:48:26.106180835Z To address all issues, run:
+2025-09-22T08:48:26.106184355Z   npm audit fix
+2025-09-22T08:48:26.106187645Z 
+2025-09-22T08:48:26.106191475Z Run `npm audit` for details.
+2025-09-22T08:48:26.444039923Z 
+2025-09-22T08:48:26.444057903Z > rest-express@1.0.0 build
+2025-09-22T08:48:26.444063824Z > vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+2025-09-22T08:48:26.444072253Z 
+2025-09-22T08:48:26.676008214Z vite v5.4.19 building for production...
+2025-09-22T08:48:26.724656266Z transforming...
+2025-09-22T08:48:27.164164011Z Browserslist: browsers data (caniuse-lite) is 11 months old. Please run:
+2025-09-22T08:48:27.164178762Z   npx update-browserslist-db@latest
+2025-09-22T08:48:27.164182622Z   Why you should do it regularly: https://github.com/browserslist/update-db#readme
+2025-09-22T08:48:30.711913597Z ✓ 1734 modules transformed.
+2025-09-22T08:48:30.945496164Z rendering chunks...
+2025-09-22T08:48:30.955728571Z computing gzip size...
+2025-09-22T08:48:30.968579514Z ../dist/public/index.html                                                        1.95 kB │ gzip:   0.74 kB
+2025-09-22T08:48:30.968669706Z ../dist/public/assets/Modern_smartphone_product_photo_8515c516-CZcy4XOW.png    481.85 kB
+2025-09-22T08:48:30.968690497Z ../dist/public/assets/Modern_living_room_scene_8d384239-CSvMf7zk.png         1,392.27 kB
+2025-09-22T08:48:30.96883084Z ../dist/public/assets/CGI_smartphone_composite_result_bc061ac4-Y-KPBHYW.png  1,413.66 kB
+2025-09-22T08:48:30.968941122Z ../dist/public/assets/index-zECSGvMO.css                                        68.38 kB │ gzip:  12.03 kB
+2025-09-22T08:48:30.968953612Z ../dist/public/assets/index-BtWoAyzX.js                                        406.70 kB │ gzip: 124.53 kB
+2025-09-22T08:48:30.969263249Z ✓ built in 4.27s
+2025-09-22T08:48:31.030202482Z 
+2025-09-22T08:48:31.030242763Z   dist/index.js  129.3kb
+2025-09-22T08:48:31.030247933Z 
+2025-09-22T08:48:31.030252243Z ⚡ Done in 8ms
+2025-09-22T08:48:32.901470262Z ==> Uploading build...
+2025-09-22T08:48:46.370509677Z ==> Uploaded in 8.2s. Compression took 5.3s
+2025-09-22T08:48:46.431070624Z ==> Build successful 🎉
+2025-09-22T08:48:58.558453351Z ==> Deploying...
+2025-09-22T08:49:20.643044033Z ==> Running 'npm start'
+2025-09-22T08:49:21.746413298Z 
+2025-09-22T08:49:21.74644526Z > rest-express@1.0.0 start
+2025-09-22T08:49:21.74645077Z > NODE_ENV=production node dist/index.js
+2025-09-22T08:49:21.74645358Z 
+2025-09-22T08:49:27.943013315Z [dotenv@17.2.2] injecting env (0) from .env -- tip: 📡 version env with Radar: https://dotenvx.com/radar
+2025-09-22T08:49:32.418791217Z ==> Application exited early
+2025-09-22T08:49:32.436524985Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+2025-09-22T08:49:37.191334114Z ==> Running 'npm start'
+2025-09-22T08:49:38.289160024Z 
+2025-09-22T08:49:38.289178875Z > rest-express@1.0.0 start
+2025-09-22T08:49:38.289182365Z > NODE_ENV=production node dist/index.js
+2025-09-22T08:49:38.289184036Z 
+2025-09-22T08:49:44.198786626Z [dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
