@@ -111,32 +111,33 @@ export class MongoStorage implements IStorage {
 
     if (userData._id) {
       // Update existing user
-      const updateDoc = {
-        ...userData,
+      const { _id, ...updateDoc } = userData;
+      const finalUpdateDoc = {
+        ...updateDoc,
         updatedAt: now,
       };
-      delete updateDoc._id; // Remove _id from update
       
       await db.collection(COLLECTIONS.USERS).updateOne(
-        { _id: new ObjectId(userData._id) },
-        { $set: updateDoc },
+        { _id: new ObjectId(_id) },
+        { $set: finalUpdateDoc },
         { upsert: true }
       );
       
-      return this.getUser(userData._id) as Promise<User>;
+      return this.getUser(_id) as Promise<User>;
     } else {
       // Create new user
-      const userDoc = {
-        ...userData,
+      const { _id, ...userDoc } = userData;
+      const finalUserDoc = {
+        ...userDoc,
         createdAt: now,
         updatedAt: now,
       };
 
-      const result = await db.collection(COLLECTIONS.USERS).insertOne(userDoc);
+      const result = await db.collection(COLLECTIONS.USERS).insertOne(finalUserDoc);
       
       return {
         _id: result.insertedId.toString(),
-        ...userDoc,
+        ...finalUserDoc,
       };
     }
   }
