@@ -267,24 +267,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create job for async processing (Vercel compatible)
       const job = await storage.createJob({
         type: 'cgi_generation',
-        projectId: project._id!,
+        projectId: project.id!,
         userId: userId,
-        data: {
+        data: JSON.stringify({
           contentType: projectData.contentType,
           videoDurationSeconds: projectData.videoDurationSeconds,
           productImageUrl: projectData.productImageUrl,
           sceneImageUrl: projectData.sceneImageUrl,
           sceneVideoUrl: projectData.sceneVideoUrl,
           description: projectData.description
-        },
+        }),
         priority: projectData.contentType === 'video' ? 2 : 1 // Videos have higher priority
       });
 
-      console.log(`🎯 Job created for project ${project._id}: ${job._id}`);
+      console.log(`🎯 Job created for project ${project.id}: ${job.id}`);
 
       res.json({
         ...project,
-        jobId: job._id
+        jobId: job.id
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -298,22 +298,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/projects/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const project = await storage.getProject(req.params.id);
+      const project = await storage.getProject(parseInt(req.params.id));
       
       if (!project || project.userId !== userId) {
         return res.status(404).json({ message: "Project not found" });
       }
 
       // Also get job status for this project
-      const job = await storage.getJobByProjectId(project._id!);
+      const job = await storage.getJobByProjectId(project.id!);
 
       res.json({
         ...project,
         job: job ? {
-          id: job._id,
+          id: job.id,
           status: job.status,
           progress: job.progress,
-          statusMessage: job.statusMessage,
+          statusMessage: "Processing...",
           errorMessage: job.errorMessage
         } : null
       });
@@ -360,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create transaction record with payment intent ID (amount in cents)
       const transaction = await storage.createTransaction({
         userId,
-        amount: Math.round(amount * 100), // Convert to cents
+        amount: (Math.round(amount * 100) / 100).toFixed(2), // Convert to decimal string
         credits,
         stripePaymentIntentId: paymentIntent.id,
         status: 'pending'
@@ -368,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({
         clientSecret: paymentIntent.client_secret,
-        transactionId: transaction._id,
+        transactionId: transaction.id,
         paymentIntentId: paymentIntent.id
       });
     } catch (error) {
@@ -387,27 +387,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Atomically claim the job
-      const claimed = await storage.claimJob(job._id!);
+      const claimed = await storage.claimJob(job.id!);
       if (!claimed) {
         return res.json({ message: "Job was already claimed by another worker" });
       }
       
-      // Update attempts
-      await storage.updateJob(job._id!, {
-        attempts: job.attempts + 1
+      // Update retry count  
+      await storage.updateJob(job.id!, {
+        retryCount: job.retryCount + 1
       });
 
-      console.log(`🚀 Processing job ${job._id} for project ${job.projectId}`);
+      console.log(`🚀 Processing job ${job.id} for project ${job.projectId}`);
       
       // Process the job asynchronously
-      processJobAsync(job._id!).catch(async (error) => {
-        console.error(`❌ Job ${job._id} failed:`, error);
-        await storage.markJobFailed(job._id!, error.message);
+      processJobAsync(job.id!).catch(async (error) => {
+        console.error(`❌ Job ${job.id} failed:`, error);
+        await storage.markJobFailed(job.id!, error.message);
       });
 
       res.json({ 
         message: "Job processing started",
-        jobId: job._id,
+        jobId: job.id,
         projectId: job.projectId
       });
     } catch (error) {
@@ -419,7 +419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Job Status Polling
   app.get('/api/jobs/:id/status', isAuthenticated, async (req: any, res) => {
     try {
-      const job = await storage.getJob(req.params.id);
+      const job = await storage.getJob(parseInt(req.params.id));
       
       if (!job) {
         return res.status(404).json({ error: "Job not found" });
@@ -431,10 +431,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       res.json({
-        id: job._id,
+        id: job.id,
         status: job.status,
         progress: job.progress,
-        statusMessage: job.statusMessage,
+        statusMessage: "Processing...",
         errorMessage: job.errorMessage,
         result: job.result,
         createdAt: job.createdAt,
@@ -450,17 +450,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/projects/:id/status', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const project = await storage.getProject(req.params.id);
+      const project = await storage.getProject(parseInt(req.params.id));
       
       if (!project || project.userId !== userId) {
         return res.status(404).json({ error: "Project not found" });
       }
 
-      const job = await storage.getJobByProjectId(project._id!);
+      const job = await storage.getJobByProjectId(project.id!);
 
       res.json({
         project: {
-          id: project._id,
+          id: project.id,
           status: project.status,
           progress: project.progress,
           outputImageUrl: project.outputImageUrl,
@@ -468,10 +468,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           errorMessage: project.errorMessage
         },
         job: job ? {
-          id: job._id,
+          id: job.id,
           status: job.status,
           progress: job.progress,
-          statusMessage: job.statusMessage,
+          statusMessage: "Processing...",
           errorMessage: job.errorMessage
         } : null
       });
@@ -535,15 +535,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Update user credits (except for admin) - IDEMPOTENT
-        const user = await storage.getUser(userId);
+        const user = await storage.getUser(parseInt(userId));
         if (user && user.email !== 'admin@test.com') {
-          await storage.updateUserCredits(userId, user.credits + parseInt(credits));
+          await storage.updateUserCredits(parseInt(userId), user.credits + parseInt(credits));
           console.log(`✅ Credits updated: User ${userId} now has ${user.credits + parseInt(credits)} credits`);
         }
         
         // Mark transaction as completed to prevent duplicate processing
         if (existingTransaction) {
-          await storage.updateTransaction(existingTransaction._id!, { 
+          await storage.updateTransaction(existingTransaction.id!, { 
             status: 'completed',
             processedAt: new Date()
           });
@@ -551,8 +551,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Create transaction record if not found (shouldn't happen but safety net)
           console.log(`⚠️ Creating transaction record for payment intent ${paymentIntent.id}`);
           await storage.createTransaction({
-            userId,
-            amount: paymentIntent.amount,
+            userId: parseInt(userId),
+            amount: (paymentIntent.amount / 100).toFixed(2),
             credits: parseInt(credits),
             stripePaymentIntentId: paymentIntent.id,
             status: 'completed',
@@ -573,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Download endpoint for completed projects
   app.get('/api/projects/:id/download', isAuthenticated, async (req: any, res) => {
     try {
-      const projectId = req.params.id;
+      const projectId = parseInt(req.params.id);
       const userId = req.user.id;
       
       const project = await storage.getProject(projectId);
@@ -625,7 +625,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileExt = detectedExt.replace('.', '') || 'png';
           }
           
-          const fileName = `${project.title}_${project._id}.${fileExt}`;
+          const fileName = `${project.title}_${project.id}.${fileExt}`;
           
           res.setHeader('Content-Type', mimeType);
           res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
@@ -708,7 +708,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (project.contentType === 'video') videoProjects++;
         
         return {
-          id: project._id,
+          id: project.id,
           title: project.title,
           contentType: project.contentType,
           status: project.status,
@@ -774,7 +774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("🔍 RECOVERY: Found projects for potential recovery:", {
         total: userProjects.length,
         recoverable: recoverableProjects.length,
-        recoverableIds: recoverableProjects.map(p => p._id)
+        recoverableIds: recoverableProjects.map(p => p.id)
       });
 
       if (recoverableProjects.length === 0) {
@@ -796,7 +796,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check each recoverable project
       for (const project of recoverableProjects) {
         console.log("🔎 RECOVERY: Checking project:", {
-          projectId: project._id!,
+          projectId: project.id!,
           title: project.title,
           status: project.status,
           hasVideoTaskId: !!project.klingVideoTaskId,
@@ -861,7 +861,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Update project if we found completed content
           if (recovered && videoUrl) {
-            await storage.updateProject(project._id!, {
+            await storage.updateProject(project.id!, {
               status: "completed",
               outputVideoUrl: videoUrl,
               progress: 100,
@@ -870,20 +870,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             recoveredCount++;
             recoveryResults.push({
-              projectId: project._id,
+              projectId: project.id,
               title: project.title,
               status: "recovered",
               videoUrl: videoUrl
             });
             
             console.log("🎉 RECOVERY SUCCESS:", {
-              projectId: project._id,
+              projectId: project.id,
               title: project.title,
               videoUrl: videoUrl.substring(0, 50) + "..."
             });
           } else {
             recoveryResults.push({
-              projectId: project._id,
+              projectId: project.id,
               title: project.title,
               status: "still_processing_or_failed",
               reason: !videoUrl ? "No completed video found" : "Unknown issue"
@@ -892,12 +892,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
         } catch (recoveryError) {
           console.error("❌ RECOVERY ERROR for project:", {
-            projectId: project._id,
+            projectId: project.id,
             error: recoveryError instanceof Error ? recoveryError.message : "Unknown error"
           });
           
           recoveryResults.push({
-            projectId: project._id,
+            projectId: project.id,
             title: project.title,
             status: "recovery_failed",
             error: recoveryError instanceof Error ? recoveryError.message : "Unknown error"
@@ -933,7 +933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 }
 
 // NEW: Job-based async processor for Vercel compatibility
-async function processJobAsync(jobId: string) {
+async function processJobAsync(jobId: number) {
   try {
     const job = await storage.getJob(jobId);
     if (!job) {
@@ -980,9 +980,8 @@ async function processProjectFromJob(job: any) {
       progress: 10 
     });
     
-    await storage.updateJob(job._id, {
-      progress: 10,
-      statusMessage: "Starting CGI processing..."
+    await storage.updateJob(job.id, {
+      progress: 10
     });
 
     // Step 1: Enhance prompt with Gemini AI
@@ -991,9 +990,8 @@ async function processProjectFromJob(job: any) {
       progress: 25 
     });
     
-    await storage.updateJob(job._id, {
-      progress: 25,
-      statusMessage: "Enhancing prompt with AI..."
+    await storage.updateJob(job.id, {
+      progress: 25
     });
 
     // Helper function to extract relative path from full URL
@@ -1327,7 +1325,7 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
     });
 
     // Mark job as completed with results
-    await storage.markJobCompleted(job._id, {
+    await storage.markJobCompleted(job.id, {
       outputImageUrl: finalImageUrl,
       outputVideoUrl: finalVideoUrl,
       totalCost: totalCostMillicents,
@@ -1347,6 +1345,6 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
     });
     
     // Mark job as failed
-    await storage.markJobFailed(job._id, error instanceof Error ? error.message : "Unknown error");
+    await storage.markJobFailed(job.id, error instanceof Error ? error.message : "Unknown error");
   }
 }

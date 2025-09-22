@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { sql } from "drizzle-orm";
 import { pgTable, serial, varchar, text, integer, timestamp, boolean, decimal, pgEnum } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 // Enum definitions for PostgreSQL
 export const projectStatusEnum = pgEnum('project_status', [
@@ -97,48 +96,67 @@ export const jobs = pgTable('jobs', {
   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-// Create Zod schemas from Drizzle tables
-export const insertUserSchema = createInsertSchema(users, {
+// Manual Zod schemas (compatible with Drizzle)
+export const insertUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  credits: z.number().min(0),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  profileImageUrl: z.string().optional(),
+  credits: z.number().min(0).default(5),
+  isAdmin: z.boolean().default(false),
+  stripeCustomerId: z.string().optional(),
+  stripeSubscriptionId: z.string().optional(),
 });
 
-export const insertProjectSchema = createInsertSchema(projects, {
+export const insertProjectSchema = z.object({
+  userId: z.number(),
   title: z.string().min(1).max(255),
+  description: z.string().optional(),
+  productImageUrl: z.string(),
+  sceneImageUrl: z.string().optional(),
+  sceneVideoUrl: z.string().optional(),
+  contentType: z.enum(['image', 'video']),
+  videoDurationSeconds: z.number().min(5).max(10).default(5),
+  status: z.enum(['pending', 'processing', 'enhancing_prompt', 'generating_image', 'generating_video', 'completed', 'failed']).default('pending'),
+  progress: z.number().min(0).max(100).default(0),
+  enhancedPrompt: z.string().optional(),
+  outputImageUrl: z.string().optional(),
+  outputVideoUrl: z.string().optional(),
   creditsUsed: z.number().min(0),
-  actualCost: z.number().min(0),
-  progress: z.number().min(0).max(100),
-  videoDurationSeconds: z.number().min(5).max(10),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+  actualCost: z.number().min(0).default(0),
+  resolution: z.string().default('1024x1024'),
+  quality: z.string().default('standard'),
+  errorMessage: z.string().optional(),
+  klingVideoTaskId: z.string().optional(),
+  klingSoundTaskId: z.string().optional(),
+  includeAudio: z.boolean().default(false),
+  fullTaskDetails: z.string().optional(), // JSON string
 });
 
-export const insertTransactionSchema = createInsertSchema(transactions, {
+export const insertTransactionSchema = z.object({
+  userId: z.number(),
   amount: z.string().regex(/^\d+\.\d{2}$/), // decimal string format
   credits: z.number().min(1),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+  stripePaymentIntentId: z.string().optional(),
+  status: z.enum(['pending', 'completed', 'failed']).default('pending'),
+  processedAt: z.date().optional(),
 });
 
-export const insertJobSchema = createInsertSchema(jobs, {
+export const insertJobSchema = z.object({
   type: z.string().min(1),
-  priority: z.number().min(0),
-  progress: z.number().min(0).max(100),
-  retryCount: z.number().min(0),
-  maxRetries: z.number().min(1),
-}).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+  projectId: z.number(),
+  userId: z.number(),
+  status: z.enum(['pending', 'processing', 'completed', 'failed']).default('pending'),
+  priority: z.number().min(0).default(0),
+  progress: z.number().min(0).max(100).default(0),
+  data: z.string().optional(), // JSON string
+  result: z.string().optional(), // JSON string
+  errorMessage: z.string().optional(),
+  retryCount: z.number().min(0).default(0),
+  maxRetries: z.number().min(1).default(3),
+  processingStartedAt: z.date().optional(),
+  completedAt: z.date().optional(),
 });
 
 // Type exports

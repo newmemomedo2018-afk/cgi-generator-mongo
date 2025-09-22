@@ -1,41 +1,40 @@
 import {
   type User,
-  type InsertUser,
+  type NewUser,
   type Project,
-  type InsertProject,
+  type NewProject,
   type Transaction,
-  type InsertTransaction,
+  type NewTransaction,
   type Job,
-  type InsertJob,
-  userSchema,
-  projectSchema,
-  transactionSchema,
-  jobQueueSchema,
-  COLLECTIONS,
+  type NewJob,
+  users,
+  projects,
+  transactions,
+  jobs,
 } from "@shared/schema";
-import { getDatabase } from "./db";
-import { ObjectId, type Db } from "mongodb";
+import { db, connectToDatabase } from "./db";
+import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (for JWT Auth)
-  getUser(id: string): Promise<User | undefined>;
+  getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: { email: string; password: string; firstName?: string; lastName?: string; credits?: number }): Promise<User>;
-  upsertUser(user: InsertUser & { _id?: string }): Promise<User>;
-  updateUser(id: string, updates: Partial<User>): Promise<void>;
-  updateUserCredits(id: string, credits: number): Promise<void>;
+  upsertUser(user: NewUser & { id?: number }): Promise<User>;
+  updateUser(id: number, updates: Partial<User>): Promise<void>;
+  updateUserCredits(id: number, credits: number): Promise<void>;
   
   // Project operations
-  createProject(project: Omit<InsertProject, "_id"> & { userId: string; creditsUsed: number; status?: string }): Promise<Project>;
-  getProject(id: string): Promise<Project | undefined>;
-  getUserProjects(userId: string): Promise<Project[]>;
-  updateProject(id: string, updates: Partial<Project>): Promise<void>;
+  createProject(project: Omit<NewProject, "id"> & { userId: number; creditsUsed: number; status?: string }): Promise<Project>;
+  getProject(id: number): Promise<Project | undefined>;
+  getUserProjects(userId: number): Promise<Project[]>;
+  updateProject(id: number, updates: Partial<Project>): Promise<void>;
   
   // Transaction operations
-  createTransaction(transaction: Omit<InsertTransaction, "_id"> & { userId: string }): Promise<Transaction>;
-  getUserTransactions(userId: string): Promise<Transaction[]>;
+  createTransaction(transaction: Omit<NewTransaction, "id"> & { userId: number }): Promise<Transaction>;
+  getUserTransactions(userId: number): Promise<Transaction[]>;
   getTransactionByPaymentIntent(paymentIntentId: string): Promise<Transaction | undefined>;
-  updateTransaction(id: string, updates: Partial<Transaction>): Promise<void>;
+  updateTransaction(id: number, updates: Partial<Transaction>): Promise<void>;
   
   // Admin operations
   getAllUsers(): Promise<User[]>;
@@ -43,439 +42,262 @@ export interface IStorage {
   getPlatformStats(): Promise<any>;
   
   // Job Queue operations
-  createJob(job: Omit<InsertJob, "_id">): Promise<Job>;
-  getJob(id: string): Promise<Job | undefined>;
-  getJobByProjectId(projectId: string): Promise<Job | undefined>;
+  createJob(job: Omit<NewJob, "id">): Promise<Job>;
+  getJob(id: number): Promise<Job | undefined>;
+  getJobByProjectId(projectId: number): Promise<Job | undefined>;
   getNextPendingJob(): Promise<Job | undefined>;
-  claimJob(id: string): Promise<boolean>;
-  updateJob(id: string, updates: Partial<Job>): Promise<void>;
-  markJobCompleted(id: string, result: any): Promise<void>;
-  markJobFailed(id: string, errorMessage: string): Promise<void>;
+  claimJob(id: number): Promise<boolean>;
+  updateJob(id: number, updates: Partial<Job>): Promise<void>;
+  markJobCompleted(id: number, result: any): Promise<void>;
+  markJobFailed(id: number, errorMessage: string): Promise<void>;
 }
 
-export class MongoStorage implements IStorage {
-  private async getDb(): Promise<Db> {
-    return await getDatabase();
+export class PostgreSQLStorage implements IStorage {
+  constructor() {
+    // Ensure database connection is established
+    connectToDatabase();
   }
 
   // User operations
-  async getUser(id: string): Promise<User | undefined> {
-    const db = await this.getDb();
-    const result = await db.collection(COLLECTIONS.USERS).findOne({ _id: new ObjectId(id) });
-    if (!result) return undefined;
-    
-    // Convert MongoDB ObjectId to string for consistency
-    return {
-      ...result,
-      _id: result._id.toString(),
-    } as User;
+  async getUser(id: number): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const db = await this.getDb();
-    const result = await db.collection(COLLECTIONS.USERS).findOne({ email });
-    if (!result) return undefined;
-    
-    return {
-      ...result,
-      _id: result._id.toString(),
-    } as User;
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0];
   }
 
   async createUser(userData: { email: string; password: string; firstName?: string; lastName?: string; credits?: number }): Promise<User> {
-    const db = await this.getDb();
-    const now = new Date();
-    
-    const userDoc = {
+    const newUser: NewUser = {
       email: userData.email,
       password: userData.password,
       firstName: userData.firstName,
       lastName: userData.lastName,
-      credits: userData.credits || 5,
-      isAdmin: false,
-      createdAt: now,
-      updatedAt: now,
+      credits: userData.credits ?? 5,
     };
 
-    const result = await db.collection(COLLECTIONS.USERS).insertOne(userDoc);
-    
-    return {
-      _id: result.insertedId.toString(),
-      ...userDoc,
-    };
+    const result = await db.insert(users).values(newUser).returning();
+    return result[0];
   }
 
-  async upsertUser(userData: InsertUser & { _id?: string }): Promise<User> {
-    const db = await this.getDb();
-    const now = new Date();
-
-    if (userData._id) {
+  async upsertUser(userData: NewUser & { id?: number }): Promise<User> {
+    if (userData.id) {
       // Update existing user
-      const { _id, ...updateDoc } = userData;
-      const finalUpdateDoc = {
-        ...updateDoc,
-        updatedAt: now,
-      };
-      
-      await db.collection(COLLECTIONS.USERS).updateOne(
-        { _id: new ObjectId(_id) },
-        { $set: finalUpdateDoc },
-        { upsert: true }
-      );
-      
-      return this.getUser(_id) as Promise<User>;
+      await this.updateUser(userData.id, userData);
+      return (await this.getUser(userData.id))!;
     } else {
       // Create new user
-      const { _id, ...userDoc } = userData;
-      const finalUserDoc = {
-        ...userDoc,
-        createdAt: now,
-        updatedAt: now,
-      };
-
-      const result = await db.collection(COLLECTIONS.USERS).insertOne(finalUserDoc);
-      
-      return {
-        _id: result.insertedId.toString(),
-        ...finalUserDoc,
-      };
+      return await this.createUser(userData);
     }
   }
 
-  async updateUser(id: string, updates: Partial<User>): Promise<void> {
-    const db = await this.getDb();
-    const updateDoc = { ...updates, updatedAt: new Date() };
-    delete updateDoc._id; // Remove _id from update
+  async updateUser(id: number, updates: Partial<User>): Promise<void> {
+    const updateData = { ...updates };
+    delete (updateData as any).id; // Remove id from updates
+    delete (updateData as any).createdAt; // Remove createdAt from updates
     
-    await db.collection(COLLECTIONS.USERS).updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateDoc }
-    );
+    // Update timestamp
+    (updateData as any).updatedAt = new Date();
+
+    await db.update(users).set(updateData).where(eq(users.id, id));
   }
 
-  async updateUserCredits(id: string, credits: number): Promise<void> {
-    const db = await this.getDb();
-    
-    // Get user info to check if admin
-    const user = await this.getUser(id);
-    const finalCredits = (user && user.email === 'admin@test.com') ? 1000 : credits;
-    
-    await db.collection(COLLECTIONS.USERS).updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { credits: finalCredits, updatedAt: new Date() } }
-    );
+  async updateUserCredits(id: number, credits: number): Promise<void> {
+    await db.update(users)
+      .set({ 
+        credits,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id));
   }
 
   // Project operations
-  async createProject(projectData: Omit<InsertProject, "_id"> & { userId: string; creditsUsed: number; status?: string }): Promise<Project> {
-    const db = await this.getDb();
-    const now = new Date();
-    
-    const projectDoc = {
+  async createProject(projectData: Omit<NewProject, "id"> & { userId: number; creditsUsed: number; status?: string }): Promise<Project> {
+    const newProject: NewProject = {
       ...projectData,
-      userId: new ObjectId(projectData.userId), // Convert to ObjectId for MongoDB
-      createdAt: now,
-      updatedAt: now,
+      status: (projectData.status as any) || 'pending',
     };
 
-    const result = await db.collection(COLLECTIONS.PROJECTS).insertOne(projectDoc);
-    
-    return {
-      _id: result.insertedId.toString(),
-      ...projectDoc,
-      userId: projectData.userId, // Keep as string for response
-    } as Project;
+    const result = await db.insert(projects).values(newProject).returning();
+    return result[0];
   }
 
-  async getProject(id: string): Promise<Project | undefined> {
-    const db = await this.getDb();
-    const result = await db.collection(COLLECTIONS.PROJECTS).findOne({ _id: new ObjectId(id) });
-    if (!result) return undefined;
-    
-    return {
-      ...result,
-      _id: result._id.toString(),
-      userId: result.userId.toString(),
-    } as Project;
+  async getProject(id: number): Promise<Project | undefined> {
+    const result = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+    return result[0];
   }
 
-  async getUserProjects(userId: string): Promise<Project[]> {
-    const db = await this.getDb();
-    const results = await db.collection(COLLECTIONS.PROJECTS)
-      .find({ userId: new ObjectId(userId) })
-      .sort({ createdAt: -1 })
-      .toArray();
-    
-    return results.map(project => ({
-      ...project,
-      _id: project._id.toString(),
-      userId: project.userId.toString(),
-    })) as Project[];
+  async getUserProjects(userId: number): Promise<Project[]> {
+    const result = await db.select()
+      .from(projects)
+      .where(eq(projects.userId, userId))
+      .orderBy(desc(projects.createdAt));
+    return result;
   }
 
-  async updateProject(id: string, updates: Partial<Project>): Promise<void> {
-    const db = await this.getDb();
-    const updateDoc = { ...updates, updatedAt: new Date() };
-    delete updateDoc._id; // Remove _id from update
+  async updateProject(id: number, updates: Partial<Project>): Promise<void> {
+    const updateData = { ...updates };
+    delete (updateData as any).id; // Remove id from updates
+    delete (updateData as any).createdAt; // Remove createdAt from updates
     
-    if (updateDoc.userId) {
-      updateDoc.userId = new ObjectId(updateDoc.userId as string) as any;
-    }
-    
-    await db.collection(COLLECTIONS.PROJECTS).updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateDoc }
-    );
+    // Update timestamp
+    (updateData as any).updatedAt = new Date();
+
+    await db.update(projects).set(updateData).where(eq(projects.id, id));
   }
 
   // Transaction operations
-  async createTransaction(transactionData: Omit<InsertTransaction, "_id"> & { userId: string }): Promise<Transaction> {
-    const db = await this.getDb();
-    const now = new Date();
-    
-    const transactionDoc = {
+  async createTransaction(transactionData: Omit<NewTransaction, "id"> & { userId: number }): Promise<Transaction> {
+    const newTransaction: NewTransaction = {
       ...transactionData,
-      userId: new ObjectId(transactionData.userId), // Convert to ObjectId for MongoDB
-      createdAt: now,
-      updatedAt: now,
     };
 
-    const result = await db.collection(COLLECTIONS.TRANSACTIONS).insertOne(transactionDoc);
-    
-    return {
-      _id: result.insertedId.toString(),
-      ...transactionDoc,
-      userId: transactionData.userId, // Keep as string for response
-    } as Transaction;
+    const result = await db.insert(transactions).values(newTransaction).returning();
+    return result[0];
   }
 
-  async getUserTransactions(userId: string): Promise<Transaction[]> {
-    const db = await this.getDb();
-    const results = await db.collection(COLLECTIONS.TRANSACTIONS)
-      .find({ userId: new ObjectId(userId) })
-      .sort({ createdAt: -1 })
-      .toArray();
-    
-    return results.map(transaction => ({
-      ...transaction,
-      _id: transaction._id.toString(),
-      userId: transaction.userId.toString(),
-    })) as Transaction[];
+  async getUserTransactions(userId: number): Promise<Transaction[]> {
+    const result = await db.select()
+      .from(transactions)
+      .where(eq(transactions.userId, userId))
+      .orderBy(desc(transactions.createdAt));
+    return result;
   }
 
   async getTransactionByPaymentIntent(paymentIntentId: string): Promise<Transaction | undefined> {
-    const db = await this.getDb();
-    const result = await db.collection(COLLECTIONS.TRANSACTIONS).findOne({ stripePaymentIntentId: paymentIntentId });
-    if (!result) return undefined;
-    
-    return {
-      ...result,
-      _id: result._id.toString(),
-      userId: result.userId.toString(),
-    } as Transaction;
+    const result = await db.select()
+      .from(transactions)
+      .where(eq(transactions.stripePaymentIntentId, paymentIntentId))
+      .limit(1);
+    return result[0];
   }
 
-  async updateTransaction(id: string, updates: Partial<Transaction>): Promise<void> {
-    const db = await this.getDb();
-    const updateDoc = { ...updates, updatedAt: new Date() };
-    delete updateDoc._id; // Remove _id from update
+  async updateTransaction(id: number, updates: Partial<Transaction>): Promise<void> {
+    const updateData = { ...updates };
+    delete (updateData as any).id; // Remove id from updates
+    delete (updateData as any).createdAt; // Remove createdAt from updates
     
-    if (updateDoc.userId) {
-      updateDoc.userId = new ObjectId(updateDoc.userId as string) as any;
-    }
-    
-    await db.collection(COLLECTIONS.TRANSACTIONS).updateOne(
-      { _id: new ObjectId(id) },
-      { $set: updateDoc }
-    );
+    // Update timestamp
+    (updateData as any).updatedAt = new Date();
+
+    await db.update(transactions).set(updateData).where(eq(transactions.id, id));
   }
 
   // Admin operations
   async getAllUsers(): Promise<User[]> {
-    const db = await this.getDb();
-    const results = await db.collection(COLLECTIONS.USERS)
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray();
-    
-    return results.map(user => ({
-      ...user,
-      _id: user._id.toString(),
-    })) as User[];
+    const result = await db.select()
+      .from(users)
+      .orderBy(desc(users.createdAt));
+    return result;
   }
 
   async getAllProjects(): Promise<Project[]> {
-    const db = await this.getDb();
-    const results = await db.collection(COLLECTIONS.PROJECTS)
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray();
-    
-    return results.map(project => ({
-      ...project,
-      _id: project._id.toString(),
-      userId: project.userId.toString(),
-    })) as Project[];
+    const result = await db.select()
+      .from(projects)
+      .orderBy(desc(projects.createdAt));
+    return result;
   }
 
   async getPlatformStats(): Promise<any> {
-    const db = await this.getDb();
-    
-    const [userCount, projectCount, transactionCount, completedProjects] = await Promise.all([
-      db.collection(COLLECTIONS.USERS).countDocuments(),
-      db.collection(COLLECTIONS.PROJECTS).countDocuments(),
-      db.collection(COLLECTIONS.TRANSACTIONS).countDocuments(),
-      db.collection(COLLECTIONS.PROJECTS).countDocuments({ status: 'completed' }),
+    // Run parallel queries for stats
+    const [usersCount, projectsCount, transactionsCount] = await Promise.all([
+      db.select({ count: users.id }).from(users),
+      db.select({ count: projects.id }).from(projects),
+      db.select({ count: transactions.id }).from(transactions),
     ]);
-    
+
     return {
-      totalUsers: userCount,
-      totalProjects: projectCount,
-      completedProjects: completedProjects,
-      totalTransactions: transactionCount,
+      totalUsers: usersCount.length,
+      totalProjects: projectsCount.length,
+      totalTransactions: transactionsCount.length,
+      generatedAt: new Date(),
     };
   }
 
   // Job Queue operations
-  async createJob(jobData: Omit<InsertJob, "_id">): Promise<Job> {
-    const db = await this.getDb();
-    const now = new Date();
-    
-    const jobDoc = {
+  async createJob(jobData: Omit<NewJob, "id">): Promise<Job> {
+    const newJob: NewJob = {
       ...jobData,
-      projectId: new ObjectId(jobData.projectId), // Convert to ObjectId for MongoDB
-      userId: new ObjectId(jobData.userId), // Convert to ObjectId for MongoDB
-      createdAt: now,
-      updatedAt: now,
     };
 
-    const result = await db.collection(COLLECTIONS.JOBS).insertOne(jobDoc);
-    
-    return {
-      _id: result.insertedId.toString(),
-      ...jobDoc,
-      projectId: jobData.projectId, // Keep as string for response
-      userId: jobData.userId, // Keep as string for response
-    } as Job;
+    const result = await db.insert(jobs).values(newJob).returning();
+    return result[0];
   }
 
-  async getJob(jobId: string): Promise<Job | undefined> {
-    const db = await this.getDb();
-    const result = await db.collection(COLLECTIONS.JOBS).findOne({ _id: new ObjectId(jobId) });
-    if (!result) return undefined;
-    
-    return {
-      ...result,
-      _id: result._id.toString(),
-      projectId: result.projectId.toString(),
-      userId: result.userId.toString(),
-    } as Job;
+  async getJob(id: number): Promise<Job | undefined> {
+    const result = await db.select().from(jobs).where(eq(jobs.id, id)).limit(1);
+    return result[0];
   }
 
-  async getJobByProjectId(projectId: string): Promise<Job | undefined> {
-    const db = await this.getDb();
-    const result = await db.collection(COLLECTIONS.JOBS)
-      .findOne(
-        { projectId: new ObjectId(projectId) },
-        { sort: { createdAt: -1 } }
-      );
-    if (!result) return undefined;
-    
-    return {
-      ...result,
-      _id: result._id.toString(),
-      projectId: result.projectId.toString(),
-      userId: result.userId.toString(),
-    } as Job;
+  async getJobByProjectId(projectId: number): Promise<Job | undefined> {
+    const result = await db.select()
+      .from(jobs)
+      .where(eq(jobs.projectId, projectId))
+      .orderBy(desc(jobs.createdAt))
+      .limit(1);
+    return result[0];
   }
 
   async getNextPendingJob(): Promise<Job | undefined> {
-    const db = await this.getDb();
-    const result = await db.collection(COLLECTIONS.JOBS)
-      .findOne(
-        { status: 'pending' },
-        { sort: { priority: -1, createdAt: 1 } }
-      );
-    if (!result) return undefined;
-    
-    return {
-      ...result,
-      _id: result._id.toString(),
-      projectId: result.projectId.toString(),
-      userId: result.userId.toString(),
-    } as Job;
+    const result = await db.select()
+      .from(jobs)
+      .where(eq(jobs.status, 'pending'))
+      .orderBy(desc(jobs.priority), jobs.createdAt)
+      .limit(1);
+    return result[0];
   }
 
-  async claimJob(jobId: string): Promise<boolean> {
-    const db = await this.getDb();
-    
-    // Atomically claim a job if it's still pending
-    const result = await db.collection(COLLECTIONS.JOBS).updateOne(
-      { 
-        _id: new ObjectId(jobId),
-        status: 'pending'
-      },
-      { 
-        $set: { 
+  async claimJob(id: number): Promise<boolean> {
+    try {
+      await db.update(jobs)
+        .set({ 
           status: 'processing',
-          startedAt: new Date(),
+          processingStartedAt: new Date(),
           updatedAt: new Date()
-        }
-      }
-    );
-    
-    return result.modifiedCount > 0;
-  }
-
-  async updateJob(jobId: string, updates: Partial<Job>): Promise<void> {
-    const db = await this.getDb();
-    const updateDoc = { ...updates, updatedAt: new Date() };
-    delete updateDoc._id; // Remove _id from update
-    
-    if (updateDoc.projectId) {
-      updateDoc.projectId = new ObjectId(updateDoc.projectId as string) as any;
+        })
+        .where(and(eq(jobs.id, id), eq(jobs.status, 'pending')));
+      return true;
+    } catch (error) {
+      console.error('Failed to claim job:', error);
+      return false;
     }
-    if (updateDoc.userId) {
-      updateDoc.userId = new ObjectId(updateDoc.userId as string) as any;
-    }
-    
-    await db.collection(COLLECTIONS.JOBS).updateOne(
-      { _id: new ObjectId(jobId) },
-      { $set: updateDoc }
-    );
   }
 
-  async markJobCompleted(jobId: string, result: any): Promise<void> {
-    const db = await this.getDb();
+  async updateJob(id: number, updates: Partial<Job>): Promise<void> {
+    const updateData = { ...updates };
+    delete (updateData as any).id; // Remove id from updates
+    delete (updateData as any).createdAt; // Remove createdAt from updates
     
-    await db.collection(COLLECTIONS.JOBS).updateOne(
-      { _id: new ObjectId(jobId) },
-      { 
-        $set: {
-          status: 'completed',
-          result: result,
-          completedAt: new Date(),
-          updatedAt: new Date()
-        }
-      }
-    );
+    // Update timestamp
+    (updateData as any).updatedAt = new Date();
+
+    await db.update(jobs).set(updateData).where(eq(jobs.id, id));
   }
 
-  async markJobFailed(jobId: string, errorMessage: string): Promise<void> {
-    const db = await this.getDb();
-    
-    await db.collection(COLLECTIONS.JOBS).updateOne(
-      { _id: new ObjectId(jobId) },
-      { 
-        $set: {
-          status: 'failed',
-          errorMessage: errorMessage,
-          completedAt: new Date(),
-          updatedAt: new Date()
-        }
-      }
-    );
+  async markJobCompleted(id: number, result: any): Promise<void> {
+    await db.update(jobs)
+      .set({
+        status: 'completed',
+        result: JSON.stringify(result),
+        completedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(jobs.id, id));
+  }
+
+  async markJobFailed(id: number, errorMessage: string): Promise<void> {
+    await db.update(jobs)
+      .set({
+        status: 'failed',
+        errorMessage,
+        completedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(jobs.id, id));
   }
 }
 
-export const storage = new MongoStorage();
+// Create storage instance
+export const storage = new PostgreSQLStorage();
