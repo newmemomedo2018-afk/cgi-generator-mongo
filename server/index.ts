@@ -87,8 +87,9 @@ async function initializeApp() {
     serveStatic(app);
   }
 
-  // For local development, start the server
-  if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+  // For local development and production (Render), start the server
+  // Only skip for Vercel serverless deployment
+  if (!process.env.VERCEL) {
     const port = parseInt(process.env.PORT || '5000', 10);
     server.listen({
       port,
