@@ -54,58 +54,98 @@ export default function UploadZone({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(true);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     setIsDragOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragOver(false);
+    e.stopPropagation();
+    
+    // Only set dragOver to false if we're leaving the main container
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const { clientX, clientY } = e;
+    
+    if (
+      clientX <= rect.left ||
+      clientX >= rect.right ||
+      clientY <= rect.top ||
+      clientY >= rect.bottom
+    ) {
+      setIsDragOver(false);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsDragOver(false);
     
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFileSelect(files[0]);
+    try {
+      const files = e.dataTransfer?.files;
+      if (files && files.length > 0) {
+        handleFileSelect(files[0]);
+      }
+    } catch (error) {
+      console.error('Error handling file drop:', error);
     }
   };
 
-  const handleFileSelect = (file: File) => {
-    // Validate file type based on acceptedTypes
-    const isValidType = (() => {
-      switch (acceptedTypes) {
-        case 'image':
-          return file.type.startsWith('image/');
-        case 'video':
-          return file.type.startsWith('video/');
-        case 'both':
-          return file.type.startsWith('image/') || file.type.startsWith('video/');
-        default:
-          return file.type.startsWith('image/');
+  const handleFileSelect = async (file: File) => {
+    try {
+      // Validate file type based on acceptedTypes
+      const isValidType = (() => {
+        switch (acceptedTypes) {
+          case 'image':
+            return file.type.startsWith('image/');
+          case 'video':
+            return file.type.startsWith('video/');
+          case 'both':
+            return file.type.startsWith('image/') || file.type.startsWith('video/');
+          default:
+            return file.type.startsWith('image/');
+        }
+      })();
+
+      if (!isValidType) {
+        console.warn('Invalid file type:', file.type);
+        return;
       }
-    })();
 
-    if (!isValidType) {
-      return;
+      // Validate file size (50MB limit for videos, 10MB for images)
+      const sizeLimit = file.type.startsWith('video/') ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+      if (file.size > sizeLimit) {
+        console.warn('File too large:', file.size);
+        return;
+      }
+
+      // Clean up previous preview
+      if (localPreview) {
+        URL.revokeObjectURL(localPreview);
+        setLocalPreview(null);
+      }
+
+      // Create local preview with error handling
+      try {
+        const newPreview = URL.createObjectURL(file);
+        setLocalPreview(newPreview);
+        setSelectedFileType(file.type);
+      } catch (error) {
+        console.error('Error creating preview:', error);
+      }
+
+      // Process file upload asynchronously
+      await new Promise(resolve => setTimeout(resolve, 0)); // Allow UI to update
+      onFileUpload(file);
+    } catch (error) {
+      console.error('Error in handleFileSelect:', error);
     }
-
-    // Validate file size (50MB limit for videos, 10MB for images)
-    const sizeLimit = file.type.startsWith('video/') ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > sizeLimit) {
-      return;
-    }
-
-    // Create local preview
-    if (localPreview) {
-      URL.revokeObjectURL(localPreview);
-    }
-    const newPreview = URL.createObjectURL(file);
-    setLocalPreview(newPreview);
-    setSelectedFileType(file.type);
-
-    onFileUpload(file);
   };
 
   const handleClick = () => {
@@ -113,9 +153,13 @@ export default function UploadZone({
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      handleFileSelect(files[0]);
+    try {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleFileSelect(files[0]);
+      }
+    } catch (error) {
+      console.error('Error handling file change:', error);
     }
   };
 
@@ -124,6 +168,7 @@ export default function UploadZone({
       <Card 
         className={`upload-zone cursor-pointer transition-all ${isDragOver ? "drag-over" : ""}`}
         onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClick}
