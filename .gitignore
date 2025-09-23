@@ -10,3 +10,45 @@ vite.config.ts.*
 .env.local
 .env.production
 .env.development
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Uploads and temp files
+uploads/
+temp/
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Deployment
+.vercel

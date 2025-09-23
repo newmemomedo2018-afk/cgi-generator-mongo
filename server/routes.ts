@@ -16,6 +16,9 @@ import { COSTS, CREDIT_PACKAGES } from '@shared/constants';
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup health check routes first
+  setupHealthCheckRoutes(app);
+  
   // Auth middleware
   await setupAuth(app);
 
@@ -1434,4 +1437,47 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
     // Mark job as failed
     await storage.markJobFailed(job.id, error instanceof Error ? error.message : "Unknown error");
   }
+}
+
+// Health check endpoints for deployment platforms
+function setupHealthCheckRoutes(app: Express) {
+  // Root health check
+  app.get('/', (req, res) => {
+    res.json({ 
+      message: 'CGI Generator API is running!',
+      timestamp: new Date().toISOString(),
+      status: 'healthy',
+      version: '1.0.0'
+    });
+  });
+
+  // Detailed health check endpoint for monitoring
+  app.get('/api/health', async (req, res) => {
+    try {
+      // Simple database connectivity check
+      const dbHealthy = await storage.checkHealth();
+      
+      res.json({ 
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development',
+        database: dbHealthy ? 'connected' : 'disconnected',
+        services: {
+          gemini: !!process.env.GEMINI_API_KEY,
+          piapi: !!process.env.PIAPI_API_KEY,
+          fal: !!process.env.FAL_API_KEY,
+          cloudinary: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY),
+          stripe: !!process.env.STRIPE_SECRET_KEY
+        }
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: 'Database connection failed'
+      });
+    }
+  });
 }

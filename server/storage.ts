@@ -15,7 +15,7 @@ import {
   jobs,
 } from "@shared/schema";
 import { db, connectToDatabase } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (for JWT Auth)
@@ -53,6 +53,9 @@ export interface IStorage {
   updateJob(id: number, updates: Partial<Job>): Promise<void>;
   markJobCompleted(id: number, result: any): Promise<void>;
   markJobFailed(id: number, errorMessage: string): Promise<void>;
+  
+  // Health check
+  checkHealth(): Promise<boolean>;
 }
 
 export class PostgreSQLStorage implements IStorage {
@@ -308,6 +311,17 @@ export class PostgreSQLStorage implements IStorage {
         updatedAt: new Date()
       })
       .where(eq(jobs.id, id));
+  }
+
+  async checkHealth(): Promise<boolean> {
+    try {
+      // Schema-agnostic health check: simple ping without table dependency
+      await db.execute(sql`SELECT 1`);
+      return true;
+    } catch (error) {
+      console.error('Database health check failed:', error);
+      return false;
+    }
   }
 }
 
