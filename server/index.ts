@@ -6,6 +6,7 @@ config();
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { runMigrations } from "./migrations";
 import serverless from "serverless-http";
 
 const app = express();
@@ -67,6 +68,16 @@ app.use((req, res, next) => {
 
 async function initializeApp() {
   if (isAppInitialized) return;
+  
+  // Run database migrations first (only in production)
+  if (process.env.NODE_ENV === "production") {
+    try {
+      await runMigrations();
+    } catch (error) {
+      console.error("❌ Failed to run database migrations:", error);
+      throw error;
+    }
+  }
   
   const server = await registerRoutes(app);
 

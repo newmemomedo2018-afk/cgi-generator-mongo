@@ -1,0 +1,50 @@
+2025-09-23T06:12:49.856868116Z     file: 'parse_relation.c',
+2025-09-23T06:12:49.856870406Z     line: '3716',
+2025-09-23T06:12:49.856873136Z     routine: 'errorMissingColumn'
+2025-09-23T06:12:49.856875496Z   }
+2025-09-23T06:12:49.856877826Z }
+2025-09-23T06:12:49.857496839Z 6:12:49 AM [express] GET /api/actual-costs 500 in 68ms :: {"message":"Failed to get actual costs"}
+2025-09-23T06:12:50.233546986Z Error fetching projects: DrizzleQueryError: Failed query: select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc
+2025-09-23T06:12:50.233571406Z params: 1
+2025-09-23T06:12:50.233575436Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T06:12:50.233579616Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T06:12:50.233583076Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T06:12:50.233585556Z     at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T06:12:50.233588616Z     at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T06:12:50.233593357Z   query: 'select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc',
+2025-09-23T06:12:50.233596397Z   params: [ 1 ],
+2025-09-23T06:12:50.233599717Z   cause: error: column "scene_video_url" does not exist
+2025-09-23T06:12:50.233602617Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T06:12:50.233605477Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T06:12:50.233607997Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T06:12:50.233611117Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T06:12:50.233625827Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T06:12:50.233628647Z       at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T06:12:50.233631207Z       at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T06:12:50.233633777Z     length: 115,
+2025-09-23T06:12:50.233636868Z     severity: 'ERROR',
+2025-09-23T06:12:50.233639497Z     code: '42703',
+2025-09-23T06:12:50.233642208Z     detail: undefined,
+2025-09-23T06:12:50.233644718Z     hint: undefined,
+2025-09-23T06:12:50.233647198Z     position: '89',
+2025-09-23T06:12:50.233650828Z     internalPosition: undefined,
+2025-09-23T06:12:50.233705239Z     internalQuery: undefined,
+2025-09-23T06:12:50.233708159Z     where: undefined,
+2025-09-23T06:12:50.233710589Z     schema: undefined,
+2025-09-23T06:12:50.233713459Z     table: undefined,
+2025-09-23T06:12:50.233716139Z     column: undefined,
+2025-09-23T06:12:50.233718839Z     dataType: undefined,
+2025-09-23T06:12:50.233721539Z     constraint: undefined,
+2025-09-23T06:12:50.233724049Z     file: 'parse_relation.c',
+2025-09-23T06:12:50.233726699Z     line: '3716',
+2025-09-23T06:12:50.233730239Z     routine: 'errorMissingColumn'
+2025-09-23T06:12:50.233732959Z   }
+2025-09-23T06:12:50.23373555Z }
+2025-09-23T06:12:50.234476005Z 6:12:50 AM [express] GET /api/projects 500 in 433ms :: {"message":"Failed to fetch projects"}
+2025-09-23T06:12:54.433461793Z Uploading to Cloudinary: { originalName: '1.jpg', fileSize: 31615 }
+2025-09-23T06:12:55.251992892Z 6:12:55 AM [express] POST /api/upload-product-image 200 in 821ms :: {"url":"https://res.cloudinary.c…
+2025-09-23T06:12:59.4626272Z Uploading to Cloudinary: {
+2025-09-23T06:12:59.462672201Z   originalName: '720da7cec4daa5bf30c98deb175e6219 (1).jpg',
+2025-09-23T06:12:59.462678411Z   fileSize: 309240
+2025-09-23T06:12:59.462680891Z }
+2025-09-23T06:13:00.600073593Z 6:13:00 AM [express] POST /api/upload-product-image 200 in 1311ms :: {"url":"https://res.cloudinary.…
