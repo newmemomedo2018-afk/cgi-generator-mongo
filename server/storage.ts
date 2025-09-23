@@ -266,23 +266,60 @@ export class PostgreSQLStorage implements IStorage {
   }
 
   async updateUserCredits(id: number, credits: number): Promise<void> {
-    await db.update(users)
-      .set({ 
-        credits,
-        updatedAt: new Date()
-      })
-      .where(eq(users.id, id));
+    try {
+      // Production-compatible update - handles both old and new schema
+      await db.execute(sql`
+        UPDATE users 
+        SET credits = ${credits}, 
+            updated_at = CURRENT_TIMESTAMP 
+        WHERE id = ${id}
+      `);
+    } catch (error) {
+      console.error('Failed to update user credits:', error);
+      throw error;
+    }
   }
 
   // Project operations
   async createProject(projectData: Omit<NewProject, "id"> & { userId: number; creditsUsed: number; status?: string }): Promise<Project> {
-    const newProject: NewProject = {
-      ...projectData,
-      status: (projectData.status as any) || 'pending',
-    };
+    try {
+      // Production-compatible insert - uses raw SQL to handle both old and new schema
+      const status = projectData.status || 'pending';
+      
+      // Insert project using raw SQL to avoid schema compatibility issues
+      const result = await db.execute(sql`
+        INSERT INTO projects (
+          user_id, title, description, product_image_url, scene_image_url, 
+          scene_video_url, content_type, video_duration_seconds, status, 
+          progress, enhanced_prompt, output_image_url, output_video_url, 
+          credits_used, actual_cost, resolution, quality, error_message,
+          kling_video_task_id, kling_sound_task_id, include_audio, 
+          full_task_details, created_at, updated_at
+        ) VALUES (
+          ${projectData.userId}, ${projectData.title}, ${projectData.description}, 
+          ${projectData.productImageUrl}, ${projectData.sceneImageUrl || null}, 
+          ${projectData.sceneVideoUrl || null}, ${projectData.contentType}, 
+          ${projectData.videoDurationSeconds || 5}, ${status}, 
+          ${projectData.progress || 0}, ${projectData.enhancedPrompt || null}, 
+          ${projectData.outputImageUrl || null}, ${projectData.outputVideoUrl || null}, 
+          ${projectData.creditsUsed}, ${projectData.actualCost || 0}, 
+          ${projectData.resolution || '1024x1024'}, ${projectData.quality || 'standard'}, 
+          ${projectData.errorMessage || null}, ${projectData.klingVideoTaskId || null}, 
+          ${projectData.klingSoundTaskId || null}, ${projectData.includeAudio || false}, 
+          ${projectData.fullTaskDetails || null}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+        RETURNING *
+      `);
 
-    const result = await db.insert(projects).values(newProject).returning();
-    return result[0];
+      if (!result.rows || result.rows.length === 0) {
+        throw new Error('Failed to create project - no data returned');
+      }
+
+      return result.rows[0] as Project;
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      throw error;
+    }
   }
 
   async getProject(id: number): Promise<Project | undefined> {
@@ -383,16 +420,29 @@ export class PostgreSQLStorage implements IStorage {
 
   // Job Queue operations
   async createJob(jobData: CreateJobInput): Promise<Job> {
-    const newJob: NewJob = {
-      ...jobData,
-      status: 'pending',
-      progress: 0,
-      retryCount: 0,
-      maxRetries: 3,
-    };
+    try {
+      // Production-compatible insert - uses raw SQL to handle both old and new schema
+      const result = await db.execute(sql`
+        INSERT INTO jobs (
+          type, project_id, user_id, priority, data, status, 
+          progress, retry_count, max_retries, created_at, updated_at
+        ) VALUES (
+          ${jobData.type}, ${jobData.projectId}, ${jobData.userId}, 
+          ${jobData.priority || 1}, ${jobData.data}, 'pending', 
+          0, 0, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+        )
+        RETURNING *
+      `);
 
-    const result = await db.insert(jobs).values(newJob).returning();
-    return result[0];
+      if (!result.rows || result.rows.length === 0) {
+        throw new Error('Failed to create job - no data returned');
+      }
+
+      return result.rows[0] as Job;
+    } catch (error) {
+      console.error('Failed to create job:', error);
+      throw error;
+    }
   }
 
   async getJob(id: number): Promise<Job | undefined> {
