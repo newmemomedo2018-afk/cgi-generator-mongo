@@ -71,8 +71,29 @@ export class PostgreSQLStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-    return result[0];
+    try {
+      // Try to get all columns including firstName/lastName (production database)
+      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      return result[0];
+    } catch (error) {
+      // Fallback: If production database doesn't have firstName/lastName columns
+      console.log('Falling back to basic column selection:', error);
+      const result = await db.select({
+        id: users.id,
+        email: users.email,
+        password: users.password,
+        firstName: sql<string | null>`NULL`.as('firstName'),
+        lastName: sql<string | null>`NULL`.as('lastName'),
+        profileImageUrl: users.profileImageUrl,
+        credits: users.credits,
+        isAdmin: users.isAdmin,
+        stripeCustomerId: users.stripeCustomerId,
+        stripeSubscriptionId: users.stripeSubscriptionId,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      }).from(users).where(eq(users.email, email)).limit(1);
+      return result[0];
+    }
   }
 
   async createUser(userData: { email: string; password: string; firstName?: string; lastName?: string; credits?: number; isAdmin?: boolean }): Promise<User> {
