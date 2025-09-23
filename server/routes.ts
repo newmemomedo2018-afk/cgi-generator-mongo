@@ -733,12 +733,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin endpoint to make yourself admin (for development/testing)
+  // Admin endpoint to make yourself admin (DEVELOPMENT ONLY - DISABLED IN PRODUCTION)
   app.post('/api/admin/make-admin', isAuthenticated, async (req: any, res) => {
+    // Security: NEVER allow this in production
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(403).json({ error: 'Admin elevation disabled in production for security' });
+    }
+    
     try {
       const userId = req.user.id;
       
-      // Update user to be admin
+      // Update user to be admin (development only)
       await storage.updateUser(userId, { isAdmin: true });
       
       res.json({ message: "Admin privileges granted", isAdmin: true });
@@ -1480,8 +1485,13 @@ function setupHealthCheckRoutes(app: Express) {
     }
   });
 
-  // Production setup endpoint - run once to initialize admin user
+  // Production setup endpoint - run once to initialize admin user (PROTECTED)
   app.post('/api/setup-production', async (req, res) => {
+    // Security: Only allow in production environment
+    if (process.env.NODE_ENV !== 'production') {
+      return res.status(403).json({ error: 'Setup only allowed in production' });
+    }
+    
     try {
       // Check if admin user already exists
       const existingAdmin = await storage.getUserByEmail('admin@cgi-generator.com');
