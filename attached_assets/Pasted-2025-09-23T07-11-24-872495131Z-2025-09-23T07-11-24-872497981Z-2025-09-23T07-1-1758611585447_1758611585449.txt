@@ -1,0 +1,917 @@
+2025-09-23T07:11:24.872495131Z     'لاىرلاى',
+2025-09-23T07:11:24.872497981Z     '',
+2025-09-23T07:11:24.872500981Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611475/cgi-generator/1758611474789-1.jpg.jpg',
+2025-09-23T07:11:24.872503651Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611480/cgi-generator/1758611480012-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T07:11:24.872506331Z     null,
+2025-09-23T07:11:24.872508671Z     'image',
+2025-09-23T07:11:24.872510921Z     5,
+2025-09-23T07:11:24.872513481Z     'pending',
+2025-09-23T07:11:24.872516201Z     0,
+2025-09-23T07:11:24.872531592Z     null,
+2025-09-23T07:11:24.872534472Z     null,
+2025-09-23T07:11:24.872536862Z     null,
+2025-09-23T07:11:24.872539522Z     2,
+2025-09-23T07:11:24.872542022Z     0,
+2025-09-23T07:11:24.872544482Z     '1024x1024',
+2025-09-23T07:11:24.872547102Z     'standard',
+2025-09-23T07:11:24.872549572Z     null,
+2025-09-23T07:11:24.872551982Z     null,
+2025-09-23T07:11:24.872554102Z     null,
+2025-09-23T07:11:24.872556113Z     false,
+2025-09-23T07:11:24.872558233Z     null
+2025-09-23T07:11:24.872560422Z   ],
+2025-09-23T07:11:24.872562902Z   cause: error: column "credits_used" of relation "projects" does not exist
+2025-09-23T07:11:24.872565343Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T07:11:24.872568163Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:11:24.872571033Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:11:24.872573653Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:11:24.872576103Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T07:11:24.872578623Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T07:11:24.872581063Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T07:11:24.872583593Z     length: 134,
+2025-09-23T07:11:24.872586093Z     severity: 'ERROR',
+2025-09-23T07:11:24.872588523Z     code: '42703',
+2025-09-23T07:11:24.872590923Z     detail: undefined,
+2025-09-23T07:11:24.872593373Z     hint: undefined,
+2025-09-23T07:11:24.872595963Z     position: '277',
+2025-09-23T07:11:24.872598653Z     internalPosition: undefined,
+2025-09-23T07:11:24.872615194Z     internalQuery: undefined,
+2025-09-23T07:11:24.872618294Z     where: undefined,
+2025-09-23T07:11:24.872620984Z     schema: undefined,
+2025-09-23T07:11:24.872623664Z     table: undefined,
+2025-09-23T07:11:24.872626404Z     column: undefined,
+2025-09-23T07:11:24.872628974Z     dataType: undefined,
+2025-09-23T07:11:24.872631614Z     constraint: undefined,
+2025-09-23T07:11:24.872634424Z     file: 'parse_target.c',
+2025-09-23T07:11:24.872637144Z     line: '1065',
+2025-09-23T07:11:24.872639644Z     routine: 'checkInsertTargets'
+2025-09-23T07:11:24.872642235Z   }
+2025-09-23T07:11:24.872644695Z }
+2025-09-23T07:11:24.873224348Z 7:11:24 AM [express] POST /api/projects 500 in 1178ms :: {"message":"Failed to create project"}
+2025-09-23T07:12:26.490592459Z Smart schema query failed, trying minimal fallback: DrizzleQueryError: Failed query: 
+2025-09-23T07:12:26.490616359Z         SELECT id, email, password, credits, is_admin, created_at, updated_at,
+2025-09-23T07:12:26.490623279Z                CASE 
+2025-09-23T07:12:26.490628139Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') 
+2025-09-23T07:12:26.49063447Z                  THEN first_name 
+2025-09-23T07:12:26.49063905Z                  ELSE NULL 
+2025-09-23T07:12:26.49064281Z                END as first_name,
+2025-09-23T07:12:26.49064669Z                CASE 
+2025-09-23T07:12:26.49065067Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') 
+2025-09-23T07:12:26.49065499Z                  THEN last_name 
+2025-09-23T07:12:26.49065902Z                  ELSE NULL 
+2025-09-23T07:12:26.490673831Z                END as last_name,
+2025-09-23T07:12:26.49067664Z                CASE 
+2025-09-23T07:12:26.490679391Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') 
+2025-09-23T07:12:26.490682251Z                  THEN profile_image_url 
+2025-09-23T07:12:26.490684921Z                  ELSE NULL 
+2025-09-23T07:12:26.490687701Z                END as profile_image_url,
+2025-09-23T07:12:26.490690301Z                CASE 
+2025-09-23T07:12:26.490693091Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') 
+2025-09-23T07:12:26.490695801Z                  THEN stripe_customer_id 
+2025-09-23T07:12:26.490699511Z                  ELSE NULL 
+2025-09-23T07:12:26.490702351Z                END as stripe_customer_id,
+2025-09-23T07:12:26.490704961Z                CASE 
+2025-09-23T07:12:26.490707741Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') 
+2025-09-23T07:12:26.490710511Z                  THEN stripe_subscription_id 
+2025-09-23T07:12:26.490713012Z                  ELSE NULL 
+2025-09-23T07:12:26.490717321Z                END as stripe_subscription_id
+2025-09-23T07:12:26.490719972Z         FROM users 
+2025-09-23T07:12:26.490722442Z         WHERE id = $1 
+2025-09-23T07:12:26.490725322Z         LIMIT 1
+2025-09-23T07:12:26.490727882Z       
+2025-09-23T07:12:26.490730422Z params: 1
+2025-09-23T07:12:26.490733732Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:26.490736322Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:26.490739452Z     at async PostgreSQLStorage.getUser (file:///opt/render/project/src/dist/index.js:1393:22)
+2025-09-23T07:12:26.490741992Z     at async file:///opt/render/project/src/dist/index.js:1963:20 {
+2025-09-23T07:12:26.490744322Z   query: '\n' +
+2025-09-23T07:12:26.490746822Z     '        SELECT id, email, password, credits, is_admin, created_at, updated_at,\n' +
+2025-09-23T07:12:26.490749412Z     '               CASE \n' +
+2025-09-23T07:12:26.490752232Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') \n" +
+2025-09-23T07:12:26.490776293Z     '                 THEN first_name \n' +
+2025-09-23T07:12:26.490786463Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:26.490789313Z     '               END as first_name,\n' +
+2025-09-23T07:12:26.490792153Z     '               CASE \n' +
+2025-09-23T07:12:26.490795053Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') \n" +
+2025-09-23T07:12:26.490797663Z     '                 THEN last_name \n' +
+2025-09-23T07:12:26.490800443Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:26.490803434Z     '               END as last_name,\n' +
+2025-09-23T07:12:26.490805954Z     '               CASE \n' +
+2025-09-23T07:12:26.490809504Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') \n" +
+2025-09-23T07:12:26.490813434Z     '                 THEN profile_image_url \n' +
+2025-09-23T07:12:26.490816114Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:26.490819014Z     '               END as profile_image_url,\n' +
+2025-09-23T07:12:26.490821944Z     '               CASE \n' +
+2025-09-23T07:12:26.490824744Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') \n" +
+2025-09-23T07:12:26.490835164Z     '                 THEN stripe_customer_id \n' +
+2025-09-23T07:12:26.490838124Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:26.490840814Z     '               END as stripe_customer_id,\n' +
+2025-09-23T07:12:26.490843395Z     '               CASE \n' +
+2025-09-23T07:12:26.490846224Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') \n" +
+2025-09-23T07:12:26.490848835Z     '                 THEN stripe_subscription_id \n' +
+2025-09-23T07:12:26.490851675Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:26.490854545Z     '               END as stripe_subscription_id\n' +
+2025-09-23T07:12:26.490857265Z     '        FROM users \n' +
+2025-09-23T07:12:26.490859705Z     '        WHERE id = $1 \n' +
+2025-09-23T07:12:26.490862285Z     '        LIMIT 1\n' +
+2025-09-23T07:12:26.490864975Z     '      ',
+2025-09-23T07:12:26.490867645Z   params: [ 1 ],
+2025-09-23T07:12:26.490870235Z   cause: error: column "first_name" does not exist
+2025-09-23T07:12:26.490873065Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:26.490876035Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:26.490881025Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:12:26.490893526Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:26.490896366Z       at async PostgreSQLStorage.getUser (file:///opt/render/project/src/dist/index.js:1393:22)
+2025-09-23T07:12:26.490898916Z       at async file:///opt/render/project/src/dist/index.js:1963:20 {
+2025-09-23T07:12:26.490901286Z     length: 111,
+2025-09-23T07:12:26.490903816Z     severity: 'ERROR',
+2025-09-23T07:12:26.490906286Z     code: '42703',
+2025-09-23T07:12:26.490908696Z     detail: undefined,
+2025-09-23T07:12:26.490910996Z     hint: undefined,
+2025-09-23T07:12:26.490913446Z     position: '255',
+2025-09-23T07:12:26.490915756Z     internalPosition: undefined,
+2025-09-23T07:12:26.490917946Z     internalQuery: undefined,
+2025-09-23T07:12:26.490920156Z     where: undefined,
+2025-09-23T07:12:26.490922586Z     schema: undefined,
+2025-09-23T07:12:26.490925146Z     table: undefined,
+2025-09-23T07:12:26.490927406Z     column: undefined,
+2025-09-23T07:12:26.490929617Z     dataType: undefined,
+2025-09-23T07:12:26.490932317Z     constraint: undefined,
+2025-09-23T07:12:26.490934706Z     file: 'parse_relation.c',
+2025-09-23T07:12:26.490936977Z     line: '3716',
+2025-09-23T07:12:26.490939617Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:26.490942047Z   }
+2025-09-23T07:12:26.490944377Z }
+2025-09-23T07:12:26.94465217Z 7:12:26 AM [express] GET /api/auth/user 304 in 922ms :: {"id":1,"email":"admin@cgi-generator.com","f…
+2025-09-23T07:12:27.33175109Z Error fetching projects: DrizzleQueryError: Failed query: select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc
+2025-09-23T07:12:27.331794651Z params: 1
+2025-09-23T07:12:27.331810772Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:27.331814582Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:27.331817552Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:27.331819792Z     at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:27.331822252Z     at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T07:12:27.331825282Z   query: 'select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc',
+2025-09-23T07:12:27.331827512Z   params: [ 1 ],
+2025-09-23T07:12:27.331830102Z   cause: error: column "credits_used" does not exist
+2025-09-23T07:12:27.331832462Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:27.331835922Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:27.331838302Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T07:12:27.331840852Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:27.331842882Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:27.331845043Z       at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:27.331847152Z       at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T07:12:27.331849372Z     length: 113,
+2025-09-23T07:12:27.331852212Z     severity: 'ERROR',
+2025-09-23T07:12:27.331854323Z     code: '42703',
+2025-09-23T07:12:27.331856383Z     detail: undefined,
+2025-09-23T07:12:27.331858343Z     hint: undefined,
+2025-09-23T07:12:27.331860653Z     position: '231',
+2025-09-23T07:12:27.331863313Z     internalPosition: undefined,
+2025-09-23T07:12:27.331865373Z     internalQuery: undefined,
+2025-09-23T07:12:27.331867463Z     where: undefined,
+2025-09-23T07:12:27.331869483Z     schema: undefined,
+2025-09-23T07:12:27.331871493Z     table: undefined,
+2025-09-23T07:12:27.331873533Z     column: undefined,
+2025-09-23T07:12:27.331875543Z     dataType: undefined,
+2025-09-23T07:12:27.331877563Z     constraint: undefined,
+2025-09-23T07:12:27.331879863Z     file: 'parse_relation.c',
+2025-09-23T07:12:27.331881863Z     line: '3716',
+2025-09-23T07:12:27.331884443Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:27.331886453Z   }
+2025-09-23T07:12:27.331888533Z }
+2025-09-23T07:12:27.332646091Z 7:12:27 AM [express] GET /api/projects 500 in 67ms :: {"message":"Failed to fetch projects"}
+2025-09-23T07:12:27.714907479Z Error getting actual costs: DrizzleQueryError: Failed query: select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc
+2025-09-23T07:12:27.71493614Z params: 1
+2025-09-23T07:12:27.71494061Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:27.71494394Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:27.71494937Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:27.71495213Z     at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:27.71495534Z     at async file:///opt/render/project/src/dist/index.js:2629:25 {
+2025-09-23T07:12:27.71495979Z   query: 'select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc',
+2025-09-23T07:12:27.71496244Z   params: [ 1 ],
+2025-09-23T07:12:27.71496615Z   cause: error: column "credits_used" does not exist
+2025-09-23T07:12:27.71496904Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:27.71497177Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:27.714974461Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T07:12:27.714977701Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:27.714980121Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:27.714982331Z       at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:27.714984491Z       at async file:///opt/render/project/src/dist/index.js:2629:25 {
+2025-09-23T07:12:27.714986941Z     length: 113,
+2025-09-23T07:12:27.714990851Z     severity: 'ERROR',
+2025-09-23T07:12:27.714993371Z     code: '42703',
+2025-09-23T07:12:27.714995951Z     detail: undefined,
+2025-09-23T07:12:27.714998381Z     hint: undefined,
+2025-09-23T07:12:27.715000461Z     position: '231',
+2025-09-23T07:12:27.715003431Z     internalPosition: undefined,
+2025-09-23T07:12:27.715006151Z     internalQuery: undefined,
+2025-09-23T07:12:27.715008551Z     where: undefined,
+2025-09-23T07:12:27.715010891Z     schema: undefined,
+2025-09-23T07:12:27.715013381Z     table: undefined,
+2025-09-23T07:12:27.715015811Z     column: undefined,
+2025-09-23T07:12:27.715018211Z     dataType: undefined,
+2025-09-23T07:12:27.715020502Z     constraint: undefined,
+2025-09-23T07:12:27.715022902Z     file: 'parse_relation.c',
+2025-09-23T07:12:27.715025352Z     line: '3716',
+2025-09-23T07:12:27.715028702Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:27.715031032Z   }
+2025-09-23T07:12:27.715033642Z }
+2025-09-23T07:12:27.715648666Z 7:12:27 AM [express] GET /api/actual-costs 500 in 446ms :: {"message":"Failed to get actual costs"}
+2025-09-23T07:12:31.369848053Z 7:12:31 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"No token provided"}
+2025-09-23T07:12:35.362068242Z Smart schema query failed, trying minimal fallback: DrizzleQueryError: Failed query: 
+2025-09-23T07:12:35.362099172Z         SELECT id, email, password, credits, is_admin, created_at, updated_at,
+2025-09-23T07:12:35.362115743Z                CASE 
+2025-09-23T07:12:35.362118993Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') 
+2025-09-23T07:12:35.362122423Z                  THEN first_name 
+2025-09-23T07:12:35.362125343Z                  ELSE NULL 
+2025-09-23T07:12:35.362128403Z                END as first_name,
+2025-09-23T07:12:35.362131473Z                CASE 
+2025-09-23T07:12:35.362134553Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') 
+2025-09-23T07:12:35.362137163Z                  THEN last_name 
+2025-09-23T07:12:35.362139823Z                  ELSE NULL 
+2025-09-23T07:12:35.362142393Z                END as last_name,
+2025-09-23T07:12:35.362144893Z                CASE 
+2025-09-23T07:12:35.362147813Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') 
+2025-09-23T07:12:35.362150993Z                  THEN profile_image_url 
+2025-09-23T07:12:35.362152873Z                  ELSE NULL 
+2025-09-23T07:12:35.362154604Z                END as profile_image_url,
+2025-09-23T07:12:35.362156284Z                CASE 
+2025-09-23T07:12:35.362158164Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') 
+2025-09-23T07:12:35.362159894Z                  THEN stripe_customer_id 
+2025-09-23T07:12:35.362161534Z                  ELSE NULL 
+2025-09-23T07:12:35.362165034Z                END as stripe_customer_id,
+2025-09-23T07:12:35.362166744Z                CASE 
+2025-09-23T07:12:35.362168504Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') 
+2025-09-23T07:12:35.362170274Z                  THEN stripe_subscription_id 
+2025-09-23T07:12:35.362171914Z                  ELSE NULL 
+2025-09-23T07:12:35.362173594Z                END as stripe_subscription_id
+2025-09-23T07:12:35.362175274Z         FROM users 
+2025-09-23T07:12:35.362176924Z         WHERE email = $1 
+2025-09-23T07:12:35.362178784Z         LIMIT 1
+2025-09-23T07:12:35.362180474Z       
+2025-09-23T07:12:35.362182324Z params: admin@cgi-generator.com
+2025-09-23T07:12:35.362184264Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:35.362186084Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:35.362188894Z     at async PostgreSQLStorage.getUserByEmail (file:///opt/render/project/src/dist/index.js:1468:22)
+2025-09-23T07:12:35.362191964Z     at async file:///opt/render/project/src/dist/index.js:1937:20 {
+2025-09-23T07:12:35.362195014Z   query: '\n' +
+2025-09-23T07:12:35.362197805Z     '        SELECT id, email, password, credits, is_admin, created_at, updated_at,\n' +
+2025-09-23T07:12:35.362200754Z     '               CASE \n' +
+2025-09-23T07:12:35.362203605Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') \n" +
+2025-09-23T07:12:35.362206145Z     '                 THEN first_name \n' +
+2025-09-23T07:12:35.362208675Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:35.362211815Z     '               END as first_name,\n' +
+2025-09-23T07:12:35.362213875Z     '               CASE \n' +
+2025-09-23T07:12:35.362215595Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') \n" +
+2025-09-23T07:12:35.362221875Z     '                 THEN last_name \n' +
+2025-09-23T07:12:35.362223625Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:35.362225305Z     '               END as last_name,\n' +
+2025-09-23T07:12:35.362226965Z     '               CASE \n' +
+2025-09-23T07:12:35.362228995Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') \n" +
+2025-09-23T07:12:35.362231095Z     '                 THEN profile_image_url \n' +
+2025-09-23T07:12:35.362232755Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:35.362234485Z     '               END as profile_image_url,\n' +
+2025-09-23T07:12:35.362236125Z     '               CASE \n' +
+2025-09-23T07:12:35.362237815Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') \n" +
+2025-09-23T07:12:35.362239555Z     '                 THEN stripe_customer_id \n' +
+2025-09-23T07:12:35.362241215Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:35.362242866Z     '               END as stripe_customer_id,\n' +
+2025-09-23T07:12:35.362244566Z     '               CASE \n' +
+2025-09-23T07:12:35.362246236Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') \n" +
+2025-09-23T07:12:35.362247896Z     '                 THEN stripe_subscription_id \n' +
+2025-09-23T07:12:35.362249526Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:35.362251176Z     '               END as stripe_subscription_id\n' +
+2025-09-23T07:12:35.362252886Z     '        FROM users \n' +
+2025-09-23T07:12:35.362254866Z     '        WHERE email = $1 \n' +
+2025-09-23T07:12:35.362256786Z     '        LIMIT 1\n' +
+2025-09-23T07:12:35.362258426Z     '      ',
+2025-09-23T07:12:35.362260106Z   params: [ 'admin@cgi-generator.com' ],
+2025-09-23T07:12:35.362261736Z   cause: error: column "first_name" does not exist
+2025-09-23T07:12:35.362264246Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:35.362267186Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:35.362269936Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:12:35.362284336Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:35.362287576Z       at async PostgreSQLStorage.getUserByEmail (file:///opt/render/project/src/dist/index.js:1468:22)
+2025-09-23T07:12:35.362289407Z       at async file:///opt/render/project/src/dist/index.js:1937:20 {
+2025-09-23T07:12:35.362291087Z     length: 111,
+2025-09-23T07:12:35.362292757Z     severity: 'ERROR',
+2025-09-23T07:12:35.362294387Z     code: '42703',
+2025-09-23T07:12:35.362296137Z     detail: undefined,
+2025-09-23T07:12:35.362297837Z     hint: undefined,
+2025-09-23T07:12:35.362299507Z     position: '255',
+2025-09-23T07:12:35.362301217Z     internalPosition: undefined,
+2025-09-23T07:12:35.362302847Z     internalQuery: undefined,
+2025-09-23T07:12:35.362304557Z     where: undefined,
+2025-09-23T07:12:35.362306177Z     schema: undefined,
+2025-09-23T07:12:35.362307807Z     table: undefined,
+2025-09-23T07:12:35.362309507Z     column: undefined,
+2025-09-23T07:12:35.362311127Z     dataType: undefined,
+2025-09-23T07:12:35.362312787Z     constraint: undefined,
+2025-09-23T07:12:35.362314447Z     file: 'parse_relation.c',
+2025-09-23T07:12:35.362319847Z     line: '3716',
+2025-09-23T07:12:35.362321577Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:35.362323277Z   }
+2025-09-23T07:12:35.362325028Z }
+2025-09-23T07:12:37.205915118Z 7:12:37 AM [express] POST /api/auth/login 200 in 2314ms :: {"user":{"id":1,"email":"admin@cgi-genera…
+2025-09-23T07:12:37.659779965Z Smart schema query failed, trying minimal fallback: DrizzleQueryError: Failed query: 
+2025-09-23T07:12:37.659813165Z         SELECT id, email, password, credits, is_admin, created_at, updated_at,
+2025-09-23T07:12:37.659817566Z                CASE 
+2025-09-23T07:12:37.659821126Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') 
+2025-09-23T07:12:37.659824546Z                  THEN first_name 
+2025-09-23T07:12:37.659828296Z                  ELSE NULL 
+2025-09-23T07:12:37.659830986Z                END as first_name,
+2025-09-23T07:12:37.659833686Z                CASE 
+2025-09-23T07:12:37.659836416Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') 
+2025-09-23T07:12:37.659839046Z                  THEN last_name 
+2025-09-23T07:12:37.659841766Z                  ELSE NULL 
+2025-09-23T07:12:37.659844156Z                END as last_name,
+2025-09-23T07:12:37.659846896Z                CASE 
+2025-09-23T07:12:37.659849556Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') 
+2025-09-23T07:12:37.659852156Z                  THEN profile_image_url 
+2025-09-23T07:12:37.659854826Z                  ELSE NULL 
+2025-09-23T07:12:37.659857187Z                END as profile_image_url,
+2025-09-23T07:12:37.659859776Z                CASE 
+2025-09-23T07:12:37.659862327Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') 
+2025-09-23T07:12:37.659864937Z                  THEN stripe_customer_id 
+2025-09-23T07:12:37.659867407Z                  ELSE NULL 
+2025-09-23T07:12:37.659869857Z                END as stripe_customer_id,
+2025-09-23T07:12:37.659872297Z                CASE 
+2025-09-23T07:12:37.659875347Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') 
+2025-09-23T07:12:37.659878097Z                  THEN stripe_subscription_id 
+2025-09-23T07:12:37.659880507Z                  ELSE NULL 
+2025-09-23T07:12:37.659882997Z                END as stripe_subscription_id
+2025-09-23T07:12:37.659885847Z         FROM users 
+2025-09-23T07:12:37.659888287Z         WHERE id = $1 
+2025-09-23T07:12:37.659890727Z         LIMIT 1
+2025-09-23T07:12:37.659893197Z       
+2025-09-23T07:12:37.659895687Z params: 1
+2025-09-23T07:12:37.659898837Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:37.659901668Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:37.659904257Z     at async PostgreSQLStorage.getUser (file:///opt/render/project/src/dist/index.js:1393:22)
+2025-09-23T07:12:37.659907057Z     at async file:///opt/render/project/src/dist/index.js:1963:20 {
+2025-09-23T07:12:37.659909838Z   query: '\n' +
+2025-09-23T07:12:37.659912858Z     '        SELECT id, email, password, credits, is_admin, created_at, updated_at,\n' +
+2025-09-23T07:12:37.659915518Z     '               CASE \n' +
+2025-09-23T07:12:37.659918528Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') \n" +
+2025-09-23T07:12:37.659936738Z     '                 THEN first_name \n' +
+2025-09-23T07:12:37.659939568Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:37.659942328Z     '               END as first_name,\n' +
+2025-09-23T07:12:37.659944938Z     '               CASE \n' +
+2025-09-23T07:12:37.659947538Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') \n" +
+2025-09-23T07:12:37.659950329Z     '                 THEN last_name \n' +
+2025-09-23T07:12:37.659956209Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:37.659958899Z     '               END as last_name,\n' +
+2025-09-23T07:12:37.659961539Z     '               CASE \n' +
+2025-09-23T07:12:37.659964949Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') \n" +
+2025-09-23T07:12:37.659968199Z     '                 THEN profile_image_url \n' +
+2025-09-23T07:12:37.659970609Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:37.659973029Z     '               END as profile_image_url,\n' +
+2025-09-23T07:12:37.659975519Z     '               CASE \n' +
+2025-09-23T07:12:37.659977859Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') \n" +
+2025-09-23T07:12:37.659980159Z     '                 THEN stripe_customer_id \n' +
+2025-09-23T07:12:37.659982449Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:37.659984819Z     '               END as stripe_customer_id,\n' +
+2025-09-23T07:12:37.659987379Z     '               CASE \n' +
+2025-09-23T07:12:37.65998995Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') \n" +
+2025-09-23T07:12:37.65999267Z     '                 THEN stripe_subscription_id \n' +
+2025-09-23T07:12:37.65999526Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:37.65999793Z     '               END as stripe_subscription_id\n' +
+2025-09-23T07:12:37.66000091Z     '        FROM users \n' +
+2025-09-23T07:12:37.66000351Z     '        WHERE id = $1 \n' +
+2025-09-23T07:12:37.66000599Z     '        LIMIT 1\n' +
+2025-09-23T07:12:37.66000865Z     '      ',
+2025-09-23T07:12:37.66001127Z   params: [ 1 ],
+2025-09-23T07:12:37.66001394Z   cause: error: column "first_name" does not exist
+2025-09-23T07:12:37.66001662Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:37.66001955Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:37.66002278Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:12:37.660037431Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:37.660041031Z       at async PostgreSQLStorage.getUser (file:///opt/render/project/src/dist/index.js:1393:22)
+2025-09-23T07:12:37.660044021Z       at async file:///opt/render/project/src/dist/index.js:1963:20 {
+2025-09-23T07:12:37.660046531Z     length: 111,
+2025-09-23T07:12:37.660049011Z     severity: 'ERROR',
+2025-09-23T07:12:37.660051401Z     code: '42703',
+2025-09-23T07:12:37.660053721Z     detail: undefined,
+2025-09-23T07:12:37.660056061Z     hint: undefined,
+2025-09-23T07:12:37.660058461Z     position: '255',
+2025-09-23T07:12:37.660061541Z     internalPosition: undefined,
+2025-09-23T07:12:37.660063951Z     internalQuery: undefined,
+2025-09-23T07:12:37.660072341Z     where: undefined,
+2025-09-23T07:12:37.660074992Z     schema: undefined,
+2025-09-23T07:12:37.660077501Z     table: undefined,
+2025-09-23T07:12:37.660079762Z     column: undefined,
+2025-09-23T07:12:37.660082062Z     dataType: undefined,
+2025-09-23T07:12:37.660084282Z     constraint: undefined,
+2025-09-23T07:12:37.660086862Z     file: 'parse_relation.c',
+2025-09-23T07:12:37.660089442Z     line: '3716',
+2025-09-23T07:12:37.660092632Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:37.660095392Z   }
+2025-09-23T07:12:37.660098342Z }
+2025-09-23T07:12:38.124199246Z 7:12:38 AM [express] GET /api/auth/user 304 in 529ms :: {"id":1,"email":"admin@cgi-generator.com","f…
+2025-09-23T07:12:38.44886389Z Error fetching projects: DrizzleQueryError: Failed query: select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc
+2025-09-23T07:12:38.44888332Z params: 1
+2025-09-23T07:12:38.44888663Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:38.44888987Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:38.44889309Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:38.44889541Z     at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:38.44889866Z     at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T07:12:38.44890354Z   query: 'select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc',
+2025-09-23T07:12:38.44890644Z   params: [ 1 ],
+2025-09-23T07:12:38.448909251Z   cause: error: column "credits_used" does not exist
+2025-09-23T07:12:38.448911631Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:38.448913871Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:38.448915911Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T07:12:38.448918591Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:38.448922151Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:38.448924881Z       at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:38.448927421Z       at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T07:12:38.448929821Z     length: 113,
+2025-09-23T07:12:38.448933331Z     severity: 'ERROR',
+2025-09-23T07:12:38.448935661Z     code: '42703',
+2025-09-23T07:12:38.448937841Z     detail: undefined,
+2025-09-23T07:12:38.448940121Z     hint: undefined,
+2025-09-23T07:12:38.448954152Z     position: '231',
+2025-09-23T07:12:38.448957142Z     internalPosition: undefined,
+2025-09-23T07:12:38.448959442Z     internalQuery: undefined,
+2025-09-23T07:12:38.448961822Z     where: undefined,
+2025-09-23T07:12:38.448964082Z     schema: undefined,
+2025-09-23T07:12:38.448966292Z     table: undefined,
+2025-09-23T07:12:38.448969882Z     column: undefined,
+2025-09-23T07:12:38.448972092Z     dataType: undefined,
+2025-09-23T07:12:38.448974372Z     constraint: undefined,
+2025-09-23T07:12:38.448976522Z     file: 'parse_relation.c',
+2025-09-23T07:12:38.448978742Z     line: '3716',
+2025-09-23T07:12:38.448981482Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:38.448983662Z   }
+2025-09-23T07:12:38.448985892Z }
+2025-09-23T07:12:38.449715789Z 7:12:38 AM [express] GET /api/projects 500 in 70ms :: {"message":"Failed to fetch projects"}
+2025-09-23T07:12:38.841098988Z Error getting actual costs: DrizzleQueryError: Failed query: select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc
+2025-09-23T07:12:38.841114659Z params: 1
+2025-09-23T07:12:38.841118939Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:38.841124059Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:38.841128849Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:38.841131949Z     at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:38.841136129Z     at async file:///opt/render/project/src/dist/index.js:2629:25 {
+2025-09-23T07:12:38.841140549Z   query: 'select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc',
+2025-09-23T07:12:38.841143149Z   params: [ 1 ],
+2025-09-23T07:12:38.84114674Z   cause: error: column "credits_used" does not exist
+2025-09-23T07:12:38.8411497Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:38.84115246Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:38.84115533Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T07:12:38.84115971Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:38.84116144Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T07:12:38.84116314Z       at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T07:12:38.84116485Z       at async file:///opt/render/project/src/dist/index.js:2629:25 {
+2025-09-23T07:12:38.8411665Z     length: 113,
+2025-09-23T07:12:38.84116911Z     severity: 'ERROR',
+2025-09-23T07:12:38.84117816Z     code: '42703',
+2025-09-23T07:12:38.84117997Z     detail: undefined,
+2025-09-23T07:12:38.84118171Z     hint: undefined,
+2025-09-23T07:12:38.84118338Z     position: '231',
+2025-09-23T07:12:38.84118661Z     internalPosition: undefined,
+2025-09-23T07:12:38.841188301Z     internalQuery: undefined,
+2025-09-23T07:12:38.841189941Z     where: undefined,
+2025-09-23T07:12:38.84119161Z     schema: undefined,
+2025-09-23T07:12:38.841193271Z     table: undefined,
+2025-09-23T07:12:38.841194911Z     column: undefined,
+2025-09-23T07:12:38.841196601Z     dataType: undefined,
+2025-09-23T07:12:38.841198241Z     constraint: undefined,
+2025-09-23T07:12:38.841199901Z     file: 'parse_relation.c',
+2025-09-23T07:12:38.841201611Z     line: '3716',
+2025-09-23T07:12:38.841204711Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:38.841206431Z   }
+2025-09-23T07:12:38.841208191Z }
+2025-09-23T07:12:38.841908757Z 7:12:38 AM [express] GET /api/actual-costs 500 in 453ms :: {"message":"Failed to get actual costs"}
+2025-09-23T07:12:42.016305525Z Uploading to Cloudinary: { originalName: '1.jpg', fileSize: 31615 }
+2025-09-23T07:12:43.061381061Z 7:12:43 AM [express] POST /api/upload-product-image 200 in 1058ms :: {"url":"https://res.cloudinary.…
+2025-09-23T07:12:45.806564093Z Uploading to Cloudinary: {
+2025-09-23T07:12:45.806588744Z   originalName: '720da7cec4daa5bf30c98deb175e6219 (1).jpg',
+2025-09-23T07:12:45.806594154Z   fileSize: 309240
+2025-09-23T07:12:45.806598254Z }
+2025-09-23T07:12:47.326280718Z 7:12:47 AM [express] POST /api/upload-product-image 200 in 1725ms :: {"url":"https://res.cloudinary.…
+2025-09-23T07:12:48.479811928Z 🔍 Project creation request body: {
+2025-09-23T07:12:48.479830648Z   "title": "رؤلا",
+2025-09-23T07:12:48.479835468Z   "description": "",
+2025-09-23T07:12:48.479840578Z   "productImageUrl": "https://res.cloudinary.com/dqtsski2w/image/upload/v1758611562/cgi-generator/1758611562016-1.jpg.jpg",
+2025-09-23T07:12:48.479845829Z   "sceneImageUrl": "https://res.cloudinary.com/dqtsski2w/image/upload/v1758611566/cgi-generator/1758611565806-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg",
+2025-09-23T07:12:48.479849979Z   "sceneVideoUrl": "",
+2025-09-23T07:12:48.479855049Z   "contentType": "image",
+2025-09-23T07:12:48.479860169Z   "videoDurationSeconds": 5,
+2025-09-23T07:12:48.479864009Z   "resolution": "1024x1024",
+2025-09-23T07:12:48.479867079Z   "quality": "standard",
+2025-09-23T07:12:48.479869799Z   "includeAudio": false
+2025-09-23T07:12:48.479872569Z }
+2025-09-23T07:12:48.479875439Z ✅ Client project data validation passed
+2025-09-23T07:12:48.928026944Z Smart schema query failed, trying minimal fallback: DrizzleQueryError: Failed query: 
+2025-09-23T07:12:48.928062395Z         SELECT id, email, password, credits, is_admin, created_at, updated_at,
+2025-09-23T07:12:48.928068515Z                CASE 
+2025-09-23T07:12:48.928074125Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') 
+2025-09-23T07:12:48.928079645Z                  THEN first_name 
+2025-09-23T07:12:48.928085035Z                  ELSE NULL 
+2025-09-23T07:12:48.928089465Z                END as first_name,
+2025-09-23T07:12:48.928094375Z                CASE 
+2025-09-23T07:12:48.928098896Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') 
+2025-09-23T07:12:48.928103105Z                  THEN last_name 
+2025-09-23T07:12:48.928107156Z                  ELSE NULL 
+2025-09-23T07:12:48.928111276Z                END as last_name,
+2025-09-23T07:12:48.928129196Z                CASE 
+2025-09-23T07:12:48.928131836Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') 
+2025-09-23T07:12:48.928134366Z                  THEN profile_image_url 
+2025-09-23T07:12:48.928136856Z                  ELSE NULL 
+2025-09-23T07:12:48.928139297Z                END as profile_image_url,
+2025-09-23T07:12:48.928141597Z                CASE 
+2025-09-23T07:12:48.928144326Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') 
+2025-09-23T07:12:48.928146746Z                  THEN stripe_customer_id 
+2025-09-23T07:12:48.928148967Z                  ELSE NULL 
+2025-09-23T07:12:48.928151667Z                END as stripe_customer_id,
+2025-09-23T07:12:48.928154117Z                CASE 
+2025-09-23T07:12:48.928156367Z                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') 
+2025-09-23T07:12:48.928158607Z                  THEN stripe_subscription_id 
+2025-09-23T07:12:48.928160847Z                  ELSE NULL 
+2025-09-23T07:12:48.928163147Z                END as stripe_subscription_id
+2025-09-23T07:12:48.928165497Z         FROM users 
+2025-09-23T07:12:48.928167787Z         WHERE id = $1 
+2025-09-23T07:12:48.928170437Z         LIMIT 1
+2025-09-23T07:12:48.928173127Z       
+2025-09-23T07:12:48.928175667Z params: 1
+2025-09-23T07:12:48.928178957Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:48.928181907Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:48.928184367Z     at async PostgreSQLStorage.getUser (file:///opt/render/project/src/dist/index.js:1393:22)
+2025-09-23T07:12:48.928186978Z     at async file:///opt/render/project/src/dist/index.js:2218:20 {
+2025-09-23T07:12:48.928189527Z   query: '\n' +
+2025-09-23T07:12:48.928191918Z     '        SELECT id, email, password, credits, is_admin, created_at, updated_at,\n' +
+2025-09-23T07:12:48.928194318Z     '               CASE \n' +
+2025-09-23T07:12:48.928196698Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') \n" +
+2025-09-23T07:12:48.928199238Z     '                 THEN first_name \n' +
+2025-09-23T07:12:48.928201488Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:48.928203688Z     '               END as first_name,\n' +
+2025-09-23T07:12:48.928206078Z     '               CASE \n' +
+2025-09-23T07:12:48.928208378Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') \n" +
+2025-09-23T07:12:48.928210818Z     '                 THEN last_name \n' +
+2025-09-23T07:12:48.928213058Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:48.928215298Z     '               END as last_name,\n' +
+2025-09-23T07:12:48.928217688Z     '               CASE \n' +
+2025-09-23T07:12:48.928220468Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') \n" +
+2025-09-23T07:12:48.928223418Z     '                 THEN profile_image_url \n' +
+2025-09-23T07:12:48.928225808Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:48.928228208Z     '               END as profile_image_url,\n' +
+2025-09-23T07:12:48.928230508Z     '               CASE \n' +
+2025-09-23T07:12:48.928232839Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') \n" +
+2025-09-23T07:12:48.928241539Z     '                 THEN stripe_customer_id \n' +
+2025-09-23T07:12:48.928244469Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:48.928247089Z     '               END as stripe_customer_id,\n' +
+2025-09-23T07:12:48.928249489Z     '               CASE \n' +
+2025-09-23T07:12:48.928251969Z     "                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') \n" +
+2025-09-23T07:12:48.928254709Z     '                 THEN stripe_subscription_id \n' +
+2025-09-23T07:12:48.928257169Z     '                 ELSE NULL \n' +
+2025-09-23T07:12:48.928259409Z     '               END as stripe_subscription_id\n' +
+2025-09-23T07:12:48.928262159Z     '        FROM users \n' +
+2025-09-23T07:12:48.928264569Z     '        WHERE id = $1 \n' +
+2025-09-23T07:12:48.928266969Z     '        LIMIT 1\n' +
+2025-09-23T07:12:48.928269529Z     '      ',
+2025-09-23T07:12:48.928271929Z   params: [ 1 ],
+2025-09-23T07:12:48.9282747Z   cause: error: column "first_name" does not exist
+2025-09-23T07:12:48.928277189Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T07:12:48.92827971Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:48.92828286Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:12:48.92830148Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:48.92830412Z       at async PostgreSQLStorage.getUser (file:///opt/render/project/src/dist/index.js:1393:22)
+2025-09-23T07:12:48.9283065Z       at async file:///opt/render/project/src/dist/index.js:2218:20 {
+2025-09-23T07:12:48.9283088Z     length: 111,
+2025-09-23T07:12:48.92831126Z     severity: 'ERROR',
+2025-09-23T07:12:48.92831353Z     code: '42703',
+2025-09-23T07:12:48.928315721Z     detail: undefined,
+2025-09-23T07:12:48.928318061Z     hint: undefined,
+2025-09-23T07:12:48.928320321Z     position: '255',
+2025-09-23T07:12:48.928322631Z     internalPosition: undefined,
+2025-09-23T07:12:48.928324931Z     internalQuery: undefined,
+2025-09-23T07:12:48.928327201Z     where: undefined,
+2025-09-23T07:12:48.928329411Z     schema: undefined,
+2025-09-23T07:12:48.928334961Z     table: undefined,
+2025-09-23T07:12:48.928337501Z     column: undefined,
+2025-09-23T07:12:48.928339901Z     dataType: undefined,
+2025-09-23T07:12:48.928342281Z     constraint: undefined,
+2025-09-23T07:12:48.928345211Z     file: 'parse_relation.c',
+2025-09-23T07:12:48.928348151Z     line: '3716',
+2025-09-23T07:12:48.928350991Z     routine: 'errorMissingColumn'
+2025-09-23T07:12:48.928353491Z   }
+2025-09-23T07:12:48.928355901Z }
+2025-09-23T07:12:49.372856641Z 🔧 Job template prepared: {
+2025-09-23T07:12:49.372876562Z   type: 'cgi_generation',
+2025-09-23T07:12:49.372879692Z   userId: 1,
+2025-09-23T07:12:49.372882342Z   priority: 1,
+2025-09-23T07:12:49.372885382Z   dataLength: 384,
+2025-09-23T07:12:49.372888042Z   userIdType: 'number'
+2025-09-23T07:12:49.372890762Z }
+2025-09-23T07:12:49.372894142Z 🚀 Starting atomic project creation...
+2025-09-23T07:12:49.438877431Z 🔄 Starting atomic project creation transaction...
+2025-09-23T07:12:49.563483488Z ❌ Transaction failed, rolling back: DrizzleQueryError: Failed query: 
+2025-09-23T07:12:49.563501579Z           INSERT INTO projects (
+2025-09-23T07:12:49.563504599Z             user_id, title, description, product_image_url, scene_image_url, 
+2025-09-23T07:12:49.563570181Z             scene_video_url, content_type, video_duration_seconds, status, 
+2025-09-23T07:12:49.563573761Z             progress, enhanced_prompt, output_image_url, output_video_url, 
+2025-09-23T07:12:49.563576501Z             credits_used, actual_cost, resolution, quality, error_message,
+2025-09-23T07:12:49.563579421Z             kling_video_task_id, kling_sound_task_id, include_audio, 
+2025-09-23T07:12:49.563583121Z             full_task_details, created_at, updated_at
+2025-09-23T07:12:49.563586151Z           ) VALUES (
+2025-09-23T07:12:49.563591831Z             $1, $2, $3, 
+2025-09-23T07:12:49.563594981Z             $4, $5, 
+2025-09-23T07:12:49.563597631Z             $6, $7, 
+2025-09-23T07:12:49.563600031Z             $8, $9, 
+2025-09-23T07:12:49.563602781Z             $10, $11, 
+2025-09-23T07:12:49.563605481Z             $12, $13, 
+2025-09-23T07:12:49.563608191Z             $14, $15, 
+2025-09-23T07:12:49.563610691Z             $16, $17, 
+2025-09-23T07:12:49.563613182Z             $18, $19, 
+2025-09-23T07:12:49.563615791Z             $20, $21, 
+2025-09-23T07:12:49.563618562Z             $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+2025-09-23T07:12:49.563621272Z           )
+2025-09-23T07:12:49.563623892Z           RETURNING *
+2025-09-23T07:12:49.563626062Z         
+2025-09-23T07:12:49.563628782Z params: 1,رؤلا,,https://res.cloudinary.com/dqtsski2w/image/upload/v1758611562/cgi-generator/1758611562016-1.jpg.jpg,https://res.cloudinary.com/dqtsski2w/image/upload/v1758611566/cgi-generator/1758611565806-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg,,image,5,pending,0,,,,2,0,1024x1024,standard,,,,false,
+2025-09-23T07:12:49.563631132Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:49.563633702Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:49.563636062Z     at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T07:12:49.563638822Z     at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T07:12:49.563641952Z     at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T07:12:49.563644662Z   query: '\n' +
+2025-09-23T07:12:49.563647822Z     '          INSERT INTO projects (\n' +
+2025-09-23T07:12:49.563650432Z     '            user_id, title, description, product_image_url, scene_image_url, \n' +
+2025-09-23T07:12:49.563653203Z     '            scene_video_url, content_type, video_duration_seconds, status, \n' +
+2025-09-23T07:12:49.563655692Z     '            progress, enhanced_prompt, output_image_url, output_video_url, \n' +
+2025-09-23T07:12:49.563658312Z     '            credits_used, actual_cost, resolution, quality, error_message,\n' +
+2025-09-23T07:12:49.563660733Z     '            kling_video_task_id, kling_sound_task_id, include_audio, \n' +
+2025-09-23T07:12:49.563663083Z     '            full_task_details, created_at, updated_at\n' +
+2025-09-23T07:12:49.563665853Z     '          ) VALUES (\n' +
+2025-09-23T07:12:49.563668983Z     '            $1, $2, $3, \n' +
+2025-09-23T07:12:49.563671393Z     '            $4, $5, \n' +
+2025-09-23T07:12:49.563674113Z     '            $6, $7, \n' +
+2025-09-23T07:12:49.563676673Z     '            $8, $9, \n' +
+2025-09-23T07:12:49.563679313Z     '            $10, $11, \n' +
+2025-09-23T07:12:49.563681883Z     '            $12, $13, \n' +
+2025-09-23T07:12:49.563684503Z     '            $14, $15, \n' +
+2025-09-23T07:12:49.563687063Z     '            $16, $17, \n' +
+2025-09-23T07:12:49.563695624Z     '            $18, $19, \n' +
+2025-09-23T07:12:49.563698513Z     '            $20, $21, \n' +
+2025-09-23T07:12:49.563701124Z     '            $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP\n' +
+2025-09-23T07:12:49.563703444Z     '          )\n' +
+2025-09-23T07:12:49.563706314Z     '          RETURNING *\n' +
+2025-09-23T07:12:49.563708894Z     '        ',
+2025-09-23T07:12:49.563711574Z   params: [
+2025-09-23T07:12:49.563714264Z     1,
+2025-09-23T07:12:49.563716614Z     'رؤلا',
+2025-09-23T07:12:49.563719214Z     '',
+2025-09-23T07:12:49.563722304Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611562/cgi-generator/1758611562016-1.jpg.jpg',
+2025-09-23T07:12:49.563725504Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611566/cgi-generator/1758611565806-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T07:12:49.563728114Z     null,
+2025-09-23T07:12:49.563730494Z     'image',
+2025-09-23T07:12:49.563732924Z     5,
+2025-09-23T07:12:49.563735644Z     'pending',
+2025-09-23T07:12:49.563737984Z     0,
+2025-09-23T07:12:49.563740005Z     null,
+2025-09-23T07:12:49.563741994Z     null,
+2025-09-23T07:12:49.563743914Z     null,
+2025-09-23T07:12:49.563745914Z     2,
+2025-09-23T07:12:49.563747985Z     0,
+2025-09-23T07:12:49.563750285Z     '1024x1024',
+2025-09-23T07:12:49.563752775Z     'standard',
+2025-09-23T07:12:49.563800186Z     null,
+2025-09-23T07:12:49.563807266Z     null,
+2025-09-23T07:12:49.563809696Z     null,
+2025-09-23T07:12:49.563812346Z     false,
+2025-09-23T07:12:49.563814966Z     null
+2025-09-23T07:12:49.563817476Z   ],
+2025-09-23T07:12:49.563820046Z   cause: error: column "credits_used" of relation "projects" does not exist
+2025-09-23T07:12:49.563822976Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T07:12:49.563826067Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:49.563828587Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:12:49.563831456Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:49.563834257Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T07:12:49.563837167Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T07:12:49.563839787Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T07:12:49.563842297Z     length: 134,
+2025-09-23T07:12:49.563845097Z     severity: 'ERROR',
+2025-09-23T07:12:49.563847677Z     code: '42703',
+2025-09-23T07:12:49.563850467Z     detail: undefined,
+2025-09-23T07:12:49.563853117Z     hint: undefined,
+2025-09-23T07:12:49.563855687Z     position: '277',
+2025-09-23T07:12:49.563858377Z     internalPosition: undefined,
+2025-09-23T07:12:49.563876538Z     internalQuery: undefined,
+2025-09-23T07:12:49.563879438Z     where: undefined,
+2025-09-23T07:12:49.563881608Z     schema: undefined,
+2025-09-23T07:12:49.563883618Z     table: undefined,
+2025-09-23T07:12:49.563885668Z     column: undefined,
+2025-09-23T07:12:49.563888108Z     dataType: undefined,
+2025-09-23T07:12:49.563890658Z     constraint: undefined,
+2025-09-23T07:12:49.563893238Z     file: 'parse_target.c',
+2025-09-23T07:12:49.563895738Z     line: '1065',
+2025-09-23T07:12:49.563900918Z     routine: 'checkInsertTargets'
+2025-09-23T07:12:49.563903808Z   }
+2025-09-23T07:12:49.563906378Z }
+2025-09-23T07:12:49.628335501Z ❌ Error during project creation: DrizzleQueryError: Failed query: 
+2025-09-23T07:12:49.628353042Z           INSERT INTO projects (
+2025-09-23T07:12:49.628356572Z             user_id, title, description, product_image_url, scene_image_url, 
+2025-09-23T07:12:49.628359252Z             scene_video_url, content_type, video_duration_seconds, status, 
+2025-09-23T07:12:49.628362092Z             progress, enhanced_prompt, output_image_url, output_video_url, 
+2025-09-23T07:12:49.628364562Z             credits_used, actual_cost, resolution, quality, error_message,
+2025-09-23T07:12:49.628367072Z             kling_video_task_id, kling_sound_task_id, include_audio, 
+2025-09-23T07:12:49.628370242Z             full_task_details, created_at, updated_at
+2025-09-23T07:12:49.628373952Z           ) VALUES (
+2025-09-23T07:12:49.628376332Z             $1, $2, $3, 
+2025-09-23T07:12:49.628378762Z             $4, $5, 
+2025-09-23T07:12:49.628381502Z             $6, $7, 
+2025-09-23T07:12:49.628384243Z             $8, $9, 
+2025-09-23T07:12:49.628386932Z             $10, $11, 
+2025-09-23T07:12:49.628389452Z             $12, $13, 
+2025-09-23T07:12:49.628392133Z             $14, $15, 
+2025-09-23T07:12:49.628394843Z             $16, $17, 
+2025-09-23T07:12:49.628397933Z             $18, $19, 
+2025-09-23T07:12:49.628400613Z             $20, $21, 
+2025-09-23T07:12:49.628403013Z             $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+2025-09-23T07:12:49.628405683Z           )
+2025-09-23T07:12:49.628408283Z           RETURNING *
+2025-09-23T07:12:49.628410633Z         
+2025-09-23T07:12:49.628415933Z params: 1,رؤلا,,https://res.cloudinary.com/dqtsski2w/image/upload/v1758611562/cgi-generator/1758611562016-1.jpg.jpg,https://res.cloudinary.com/dqtsski2w/image/upload/v1758611566/cgi-generator/1758611565806-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg,,image,5,pending,0,,,,2,0,1024x1024,standard,,,,false,
+2025-09-23T07:12:49.628419173Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:49.628422803Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:49.628425103Z     at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T07:12:49.628431433Z     at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T07:12:49.628433884Z     at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T07:12:49.628436264Z   query: '\n' +
+2025-09-23T07:12:49.628439434Z     '          INSERT INTO projects (\n' +
+2025-09-23T07:12:49.628442484Z     '            user_id, title, description, product_image_url, scene_image_url, \n' +
+2025-09-23T07:12:49.628445044Z     '            scene_video_url, content_type, video_duration_seconds, status, \n' +
+2025-09-23T07:12:49.628447414Z     '            progress, enhanced_prompt, output_image_url, output_video_url, \n' +
+2025-09-23T07:12:49.628449634Z     '            credits_used, actual_cost, resolution, quality, error_message,\n' +
+2025-09-23T07:12:49.628451784Z     '            kling_video_task_id, kling_sound_task_id, include_audio, \n' +
+2025-09-23T07:12:49.628454064Z     '            full_task_details, created_at, updated_at\n' +
+2025-09-23T07:12:49.628456284Z     '          ) VALUES (\n' +
+2025-09-23T07:12:49.628458504Z     '            $1, $2, $3, \n' +
+2025-09-23T07:12:49.628460844Z     '            $4, $5, \n' +
+2025-09-23T07:12:49.628462984Z     '            $6, $7, \n' +
+2025-09-23T07:12:49.628465174Z     '            $8, $9, \n' +
+2025-09-23T07:12:49.628467644Z     '            $10, $11, \n' +
+2025-09-23T07:12:49.628480625Z     '            $12, $13, \n' +
+2025-09-23T07:12:49.628483245Z     '            $14, $15, \n' +
+2025-09-23T07:12:49.628485735Z     '            $16, $17, \n' +
+2025-09-23T07:12:49.628488605Z     '            $18, $19, \n' +
+2025-09-23T07:12:49.628491135Z     '            $20, $21, \n' +
+2025-09-23T07:12:49.628493965Z     '            $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP\n' +
+2025-09-23T07:12:49.628496445Z     '          )\n' +
+2025-09-23T07:12:49.628499045Z     '          RETURNING *\n' +
+2025-09-23T07:12:49.628501605Z     '        ',
+2025-09-23T07:12:49.628504235Z   params: [
+2025-09-23T07:12:49.628506945Z     1,
+2025-09-23T07:12:49.628509555Z     'رؤلا',
+2025-09-23T07:12:49.628512065Z     '',
+2025-09-23T07:12:49.628515426Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611562/cgi-generator/1758611562016-1.jpg.jpg',
+2025-09-23T07:12:49.628519026Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611566/cgi-generator/1758611565806-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T07:12:49.628521966Z     null,
+2025-09-23T07:12:49.628524636Z     'image',
+2025-09-23T07:12:49.628527086Z     5,
+2025-09-23T07:12:49.628529326Z     'pending',
+2025-09-23T07:12:49.628531506Z     0,
+2025-09-23T07:12:49.628533856Z     null,
+2025-09-23T07:12:49.628536146Z     null,
+2025-09-23T07:12:49.628538536Z     null,
+2025-09-23T07:12:49.628540736Z     2,
+2025-09-23T07:12:49.628542876Z     0,
+2025-09-23T07:12:49.628545036Z     '1024x1024',
+2025-09-23T07:12:49.628547256Z     'standard',
+2025-09-23T07:12:49.628549416Z     null,
+2025-09-23T07:12:49.628551436Z     null,
+2025-09-23T07:12:49.628553586Z     null,
+2025-09-23T07:12:49.628555686Z     false,
+2025-09-23T07:12:49.628557927Z     null
+2025-09-23T07:12:49.628560156Z   ],
+2025-09-23T07:12:49.628562827Z   cause: error: column "credits_used" of relation "projects" does not exist
+2025-09-23T07:12:49.628565227Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T07:12:49.628567497Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:49.628569697Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:12:49.628572417Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:49.628574637Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T07:12:49.628576787Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T07:12:49.628579037Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T07:12:49.628581377Z     length: 134,
+2025-09-23T07:12:49.628583837Z     severity: 'ERROR',
+2025-09-23T07:12:49.628586257Z     code: '42703',
+2025-09-23T07:12:49.628588517Z     detail: undefined,
+2025-09-23T07:12:49.628590657Z     hint: undefined,
+2025-09-23T07:12:49.628592937Z     position: '277',
+2025-09-23T07:12:49.628595167Z     internalPosition: undefined,
+2025-09-23T07:12:49.628600877Z     internalQuery: undefined,
+2025-09-23T07:12:49.628603337Z     where: undefined,
+2025-09-23T07:12:49.628605588Z     schema: undefined,
+2025-09-23T07:12:49.628607888Z     table: undefined,
+2025-09-23T07:12:49.628610318Z     column: undefined,
+2025-09-23T07:12:49.628612548Z     dataType: undefined,
+2025-09-23T07:12:49.628614918Z     constraint: undefined,
+2025-09-23T07:12:49.628622528Z     file: 'parse_target.c',
+2025-09-23T07:12:49.628625188Z     line: '1065',
+2025-09-23T07:12:49.628627868Z     routine: 'checkInsertTargets'
+2025-09-23T07:12:49.628630168Z   }
+2025-09-23T07:12:49.628632478Z }
+2025-09-23T07:12:49.628642558Z Error creating project: DrizzleQueryError: Failed query: 
+2025-09-23T07:12:49.628645289Z           INSERT INTO projects (
+2025-09-23T07:12:49.628647849Z             user_id, title, description, product_image_url, scene_image_url, 
+2025-09-23T07:12:49.628650629Z             scene_video_url, content_type, video_duration_seconds, status, 
+2025-09-23T07:12:49.628653129Z             progress, enhanced_prompt, output_image_url, output_video_url, 
+2025-09-23T07:12:49.628655349Z             credits_used, actual_cost, resolution, quality, error_message,
+2025-09-23T07:12:49.628657749Z             kling_video_task_id, kling_sound_task_id, include_audio, 
+2025-09-23T07:12:49.628660229Z             full_task_details, created_at, updated_at
+2025-09-23T07:12:49.628662749Z           ) VALUES (
+2025-09-23T07:12:49.628665329Z             $1, $2, $3, 
+2025-09-23T07:12:49.628667969Z             $4, $5, 
+2025-09-23T07:12:49.628670579Z             $6, $7, 
+2025-09-23T07:12:49.628673019Z             $8, $9, 
+2025-09-23T07:12:49.628675739Z             $10, $11, 
+2025-09-23T07:12:49.628678059Z             $12, $13, 
+2025-09-23T07:12:49.628680529Z             $14, $15, 
+2025-09-23T07:12:49.628682899Z             $16, $17, 
+2025-09-23T07:12:49.628685339Z             $18, $19, 
+2025-09-23T07:12:49.628687639Z             $20, $21, 
+2025-09-23T07:12:49.628689879Z             $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+2025-09-23T07:12:49.628692179Z           )
+2025-09-23T07:12:49.62869458Z           RETURNING *
+2025-09-23T07:12:49.62869886Z         
+2025-09-23T07:12:49.62870152Z params: 1,رؤلا,,https://res.cloudinary.com/dqtsski2w/image/upload/v1758611562/cgi-generator/1758611562016-1.jpg.jpg,https://res.cloudinary.com/dqtsski2w/image/upload/v1758611566/cgi-generator/1758611565806-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg,,image,5,pending,0,,,,2,0,1024x1024,standard,,,,false,
+2025-09-23T07:12:49.6287041Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T07:12:49.62870654Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:49.6287088Z     at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T07:12:49.62871113Z     at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T07:12:49.62871332Z     at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T07:12:49.62871734Z   query: '\n' +
+2025-09-23T07:12:49.62872005Z     '          INSERT INTO projects (\n' +
+2025-09-23T07:12:49.62872239Z     '            user_id, title, description, product_image_url, scene_image_url, \n' +
+2025-09-23T07:12:49.62872488Z     '            scene_video_url, content_type, video_duration_seconds, status, \n' +
+2025-09-23T07:12:49.62872726Z     '            progress, enhanced_prompt, output_image_url, output_video_url, \n' +
+2025-09-23T07:12:49.62872976Z     '            credits_used, actual_cost, resolution, quality, error_message,\n' +
+2025-09-23T07:12:49.628732351Z     '            kling_video_task_id, kling_sound_task_id, include_audio, \n' +
+2025-09-23T07:12:49.62873472Z     '            full_task_details, created_at, updated_at\n' +
+2025-09-23T07:12:49.62873714Z     '          ) VALUES (\n' +
+2025-09-23T07:12:49.628739531Z     '            $1, $2, $3, \n' +
+2025-09-23T07:12:49.628746991Z     '            $4, $5, \n' +
+2025-09-23T07:12:49.628749511Z     '            $6, $7, \n' +
+2025-09-23T07:12:49.628752261Z     '            $8, $9, \n' +
+2025-09-23T07:12:49.628772901Z     '            $10, $11, \n' +
+2025-09-23T07:12:49.628778961Z     '            $12, $13, \n' +
+2025-09-23T07:12:49.628781712Z     '            $14, $15, \n' +
+2025-09-23T07:12:49.628784142Z     '            $16, $17, \n' +
+2025-09-23T07:12:49.628786982Z     '            $18, $19, \n' +
+2025-09-23T07:12:49.628789572Z     '            $20, $21, \n' +
+2025-09-23T07:12:49.628792072Z     '            $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP\n' +
+2025-09-23T07:12:49.628794302Z     '          )\n' +
+2025-09-23T07:12:49.628796472Z     '          RETURNING *\n' +
+2025-09-23T07:12:49.628798742Z     '        ',
+2025-09-23T07:12:49.628800982Z   params: [
+2025-09-23T07:12:49.628803192Z     1,
+2025-09-23T07:12:49.628805412Z     'رؤلا',
+2025-09-23T07:12:49.628807562Z     '',
+2025-09-23T07:12:49.628810162Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611562/cgi-generator/1758611562016-1.jpg.jpg',
+2025-09-23T07:12:49.628813012Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758611566/cgi-generator/1758611565806-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T07:12:49.628815702Z     null,
+2025-09-23T07:12:49.628818293Z     'image',
+2025-09-23T07:12:49.628820562Z     5,
+2025-09-23T07:12:49.628822933Z     'pending',
+2025-09-23T07:12:49.628825573Z     0,
+2025-09-23T07:12:49.628828123Z     null,
+2025-09-23T07:12:49.628830733Z     null,
+2025-09-23T07:12:49.628833213Z     null,
+2025-09-23T07:12:49.628835723Z     2,
+2025-09-23T07:12:49.628838173Z     0,
+2025-09-23T07:12:49.628840583Z     '1024x1024',
+2025-09-23T07:12:49.628842933Z     'standard',
+2025-09-23T07:12:49.628845263Z     null,
+2025-09-23T07:12:49.628847563Z     null,
+2025-09-23T07:12:49.628849983Z     null,
+2025-09-23T07:12:49.628852453Z     false,
+2025-09-23T07:12:49.628854623Z     null
+2025-09-23T07:12:49.628856933Z   ],
+2025-09-23T07:12:49.628859594Z   cause: error: column "credits_used" of relation "projects" does not exist
+2025-09-23T07:12:49.628862343Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T07:12:49.628865023Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T07:12:49.628867564Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T07:12:49.628870364Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T07:12:49.628873074Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T07:12:49.628875504Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T07:12:49.628878024Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T07:12:49.628880534Z     length: 134,
+2025-09-23T07:12:49.628883164Z     severity: 'ERROR',
+2025-09-23T07:12:49.628885594Z     code: '42703',
+2025-09-23T07:12:49.628888024Z     detail: undefined,
+2025-09-23T07:12:49.628890274Z     hint: undefined,
+2025-09-23T07:12:49.628892854Z     position: '277',
+2025-09-23T07:12:49.628895394Z     internalPosition: undefined,
+2025-09-23T07:12:49.628897684Z     internalQuery: undefined,
+2025-09-23T07:12:49.628902655Z     where: undefined,
+2025-09-23T07:12:49.628905335Z     schema: undefined,
+2025-09-23T07:12:49.628907915Z     table: undefined,
+2025-09-23T07:12:49.628915685Z     column: undefined,
+2025-09-23T07:12:49.628918215Z     dataType: undefined,
+2025-09-23T07:12:49.628920575Z     constraint: undefined,
+2025-09-23T07:12:49.628923145Z     file: 'parse_target.c',
+2025-09-23T07:12:49.628925725Z     line: '1065',
+2025-09-23T07:12:49.628928425Z     routine: 'checkInsertTargets'
+2025-09-23T07:12:49.628931145Z   }
+2025-09-23T07:12:49.628933755Z }
+2025-09-23T07:12:49.632977619Z 7:12:49 AM [express] POST /api/projects 500 in 1154ms :: {"message":"Failed to create project"}

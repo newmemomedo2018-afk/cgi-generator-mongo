@@ -37,7 +37,8 @@ export async function ensureRequiredColumns() {
       'kling_video_task_id',
       'kling_sound_task_id', 
       'include_audio',
-      'full_task_details'
+      'full_task_details',
+      'credits_used'               // CRITICAL: Missing from production causing POST errors
     ];
 
     for (const columnName of columnsToCheck) {
@@ -55,6 +56,8 @@ export async function ensureRequiredColumns() {
         let columnType = 'TEXT';
         if (columnName === 'include_audio') {
           columnType = 'BOOLEAN DEFAULT FALSE NOT NULL';
+        } else if (columnName === 'credits_used') {
+          columnType = 'INTEGER NOT NULL DEFAULT 1';
         } else if (columnName.includes('task_id')) {
           columnType = 'VARCHAR(255)';
         } else if (columnName === 'enhanced_prompt' || columnName === 'output_image_url' || 
@@ -70,6 +73,42 @@ export async function ensureRequiredColumns() {
         console.log(`✅ Added ${columnName} column successfully`);
       } else {
         console.log(`✅ ${columnName} column already exists`);
+      }
+    }
+
+    // Check users table for missing columns
+    const userColumnsToCheck = [
+      'first_name',
+      'last_name', 
+      'profile_image_url',
+      'stripe_customer_id',
+      'stripe_subscription_id'
+    ];
+
+    for (const columnName of userColumnsToCheck) {
+      const userColumnCheck = await db.execute(sql`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name = ${columnName}
+      `);
+      
+      if (userColumnCheck.rows.length === 0) {
+        console.log(`⚠️ User column ${columnName} missing, adding it...`);
+        
+        // All user columns are optional VARCHAR or TEXT
+        let columnType = 'VARCHAR(255)';
+        if (columnName === 'profile_image_url') {
+          columnType = 'TEXT';
+        }
+        
+        await db.execute(sql`
+          ALTER TABLE users 
+          ADD COLUMN IF NOT EXISTS ${sql.identifier(columnName)} ${sql.raw(columnType)}
+        `);
+        console.log(`✅ Added user ${columnName} column successfully`);
+      } else {
+        console.log(`✅ User ${columnName} column already exists`);
       }
     }
 
