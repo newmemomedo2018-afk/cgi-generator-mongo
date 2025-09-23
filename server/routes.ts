@@ -260,7 +260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         creditsNeeded += 5; // Additional 5 credits for audio
       }
       
-      const isAdmin = user.email === 'admin@test.com';
+      const isAdmin = user.isAdmin === true;
       
       if (!isAdmin && user.credits < creditsNeeded) {
         return res.status(400).json({ message: "Insufficient credits" });
@@ -626,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Update user credits (except for admin) - IDEMPOTENT
         const user = await storage.getUser(parseInt(userId));
-        if (user && user.email !== 'admin@test.com') {
+        if (user && !user.isAdmin) {
           await storage.updateUserCredits(parseInt(userId), user.credits + parseInt(credits));
           console.log(`✅ Credits updated: User ${userId} now has ${user.credits + parseInt(credits)} credits`);
         }
@@ -1466,8 +1466,7 @@ function setupHealthCheckRoutes(app: Express) {
         database: dbHealthy ? 'connected' : 'disconnected',
         services: {
           gemini: !!process.env.GEMINI_API_KEY,
-          piapi: !!process.env.PIAPI_API_KEY,
-          fal: !!process.env.FAL_API_KEY,
+          kling: !!process.env.KLING_API_KEY,
           cloudinary: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY),
           stripe: !!process.env.STRIPE_SECRET_KEY
         }
