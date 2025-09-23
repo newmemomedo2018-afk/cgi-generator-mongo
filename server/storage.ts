@@ -66,8 +66,85 @@ export class PostgreSQLStorage implements IStorage {
 
   // User operations
   async getUser(id: number): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
-    return result[0];
+    try {
+      // Production-compatible query - handles both old and new schema
+      const result = await db.execute(sql`
+        SELECT id, email, password, credits, is_admin, created_at, updated_at,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') 
+                 THEN first_name 
+                 ELSE NULL 
+               END as first_name,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') 
+                 THEN last_name 
+                 ELSE NULL 
+               END as last_name,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') 
+                 THEN profile_image_url 
+                 ELSE NULL 
+               END as profile_image_url,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') 
+                 THEN stripe_customer_id 
+                 ELSE NULL 
+               END as stripe_customer_id,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') 
+                 THEN stripe_subscription_id 
+                 ELSE NULL 
+               END as stripe_subscription_id
+        FROM users 
+        WHERE id = ${id} 
+        LIMIT 1
+      `);
+      
+      if (result.rows.length === 0) return undefined;
+      
+      const row = result.rows[0] as any;
+      return {
+        id: row.id,
+        email: row.email,
+        password: row.password,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        profileImageUrl: row.profile_image_url,
+        credits: row.credits,
+        isAdmin: row.is_admin,
+        stripeCustomerId: row.stripe_customer_id,
+        stripeSubscriptionId: row.stripe_subscription_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
+    } catch (error) {
+      console.error('Smart schema query failed, trying minimal fallback:', error);
+      // Ultimate fallback: Only the columns we know exist in production
+      const result = await db.execute(sql`
+        SELECT id, email, password, credits, is_admin, created_at, updated_at
+        FROM users 
+        WHERE id = ${id} 
+        LIMIT 1
+      `);
+      
+      if (result.rows.length === 0) return undefined;
+      
+      const row = result.rows[0] as any;
+      return {
+        id: row.id,
+        email: row.email,
+        password: row.password,
+        firstName: null,
+        lastName: null,
+        profileImageUrl: null,
+        credits: row.credits,
+        isAdmin: row.is_admin,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
+    }
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
