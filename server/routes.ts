@@ -284,7 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const jobInputData = {
         type: 'cgi_generation',
         projectId: project.id!,
-        userId: userId,
+        userId: Number(userId), // Ensure userId is a number
         priority: clientProjectData.contentType === 'video' ? 2 : 1, // Videos have higher priority
         data: JSON.stringify({
           contentType: clientProjectData.contentType,

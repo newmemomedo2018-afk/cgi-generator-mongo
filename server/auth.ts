@@ -3,7 +3,11 @@ import bcrypt from "bcrypt";
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || "cgi-generator-secret-2024";
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || "fallback-dev-secret";
+
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET && !process.env.SESSION_SECRET) {
+  throw new Error("JWT_SECRET or SESSION_SECRET environment variable is required in production");
+}
 
 export interface JWTPayload {
   userId: string;
@@ -56,8 +60,13 @@ export const isAuthenticated: RequestHandler = async (req: any, res, next) => {
     }
 
     // Attach user info to request
+    const userId = Number(payload.userId);
+    if (Number.isNaN(userId)) {
+      return res.status(401).json({ message: "Invalid user ID in token" });
+    }
+    
     req.user = {
-      id: payload.userId,
+      id: userId,
       email: payload.email
     };
 
