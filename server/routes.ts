@@ -278,6 +278,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate and create job for async processing (Vercel compatible)
+      console.log(`🔧 Creating job for project ${project.id}...`);
+      
       const jobInput = createJobInputSchema.parse({
         type: 'cgi_generation',
         projectId: project.id!,
@@ -294,9 +296,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
       });
       
+      console.log(`🔧 Job input validated successfully:`, {
+        type: jobInput.type,
+        projectId: jobInput.projectId,
+        userId: jobInput.userId,
+        priority: jobInput.priority,
+        dataLength: jobInput.data?.length || 0
+      });
+      
       const job = await storage.createJob(jobInput);
 
-      console.log(`🎯 Job created for project ${project.id}: ${job.id}`);
+      console.log(`🎯 Job created successfully for project ${project.id}: ${job.id}`);
 
       res.json({
         ...project,
@@ -304,7 +314,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid project data", errors: error.errors });
+        console.error("🚨 Zod validation error details:", {
+          errors: error.errors,
+          receivedData: req.body,
+          formattedErrors: error.errors.map(err => ({
+            path: err.path.join('.'),
+            message: err.message,
+            code: err.code
+          }))
+        });
+        return res.status(400).json({ 
+          message: "Invalid project data", 
+          errors: error.errors,
+          debug: {
+            paths: error.errors.map(err => err.path.join('.')),
+            messages: error.errors.map(err => err.message)
+          }
+        });
       }
       console.error("Error creating project:", error);
       res.status(500).json({ message: "Failed to create project" });
