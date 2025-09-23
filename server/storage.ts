@@ -72,27 +72,62 @@ export class PostgreSQLStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     try {
-      // Try to get all columns including firstName/lastName (production database)
-      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
-      return result[0];
+      // Direct raw SQL query to avoid schema conflicts
+      const result = await db.execute(sql`
+        SELECT id, email, password, profile_image_url, credits, is_admin, 
+               stripe_customer_id, stripe_subscription_id, created_at, updated_at,
+               COALESCE(first_name, NULL) as first_name,
+               COALESCE(last_name, NULL) as last_name
+        FROM users 
+        WHERE email = ${email} 
+        LIMIT 1
+      `);
+      
+      if (result.rows.length === 0) return undefined;
+      
+      const row = result.rows[0] as any;
+      return {
+        id: row.id,
+        email: row.email,
+        password: row.password,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        profileImageUrl: row.profile_image_url,
+        credits: row.credits,
+        isAdmin: row.is_admin,
+        stripeCustomerId: row.stripe_customer_id,
+        stripeSubscriptionId: row.stripe_subscription_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
     } catch (error) {
-      // Fallback: If production database doesn't have firstName/lastName columns
-      console.log('Falling back to basic column selection:', error);
-      const result = await db.select({
-        id: users.id,
-        email: users.email,
-        password: users.password,
-        firstName: sql<string | null>`NULL`.as('firstName'),
-        lastName: sql<string | null>`NULL`.as('lastName'),
-        profileImageUrl: users.profileImageUrl,
-        credits: users.credits,
-        isAdmin: users.isAdmin,
-        stripeCustomerId: users.stripeCustomerId,
-        stripeSubscriptionId: users.stripeSubscriptionId,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt,
-      }).from(users).where(eq(users.email, email)).limit(1);
-      return result[0];
+      console.error('Raw SQL query failed, trying basic query:', error);
+      // Ultimate fallback: Basic query without firstName/lastName
+      const result = await db.execute(sql`
+        SELECT id, email, password, profile_image_url, credits, is_admin, 
+               stripe_customer_id, stripe_subscription_id, created_at, updated_at
+        FROM users 
+        WHERE email = ${email} 
+        LIMIT 1
+      `);
+      
+      if (result.rows.length === 0) return undefined;
+      
+      const row = result.rows[0] as any;
+      return {
+        id: row.id,
+        email: row.email,
+        password: row.password,
+        firstName: null,
+        lastName: null,
+        profileImageUrl: row.profile_image_url,
+        credits: row.credits,
+        isAdmin: row.is_admin,
+        stripeCustomerId: row.stripe_customer_id,
+        stripeSubscriptionId: row.stripe_subscription_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      };
     }
   }
 
