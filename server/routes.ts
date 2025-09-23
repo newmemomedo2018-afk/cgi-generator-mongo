@@ -1441,8 +1441,8 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
 
 // Health check endpoints for deployment platforms
 function setupHealthCheckRoutes(app: Express) {
-  // Root health check
-  app.get('/', (req, res) => {
+  // Basic API health check (moved from "/" to "/api")
+  app.get('/api', (req, res) => {
     res.json({ 
       message: 'CGI Generator API is running!',
       timestamp: new Date().toISOString(),
