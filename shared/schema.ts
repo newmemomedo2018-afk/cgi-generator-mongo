@@ -17,13 +17,11 @@ export const contentTypeEnum = pgEnum('content_type', ['image', 'video']);
 export const transactionStatusEnum = pgEnum('transaction_status', ['pending', 'completed', 'failed']);
 export const jobStatusEnum = pgEnum('job_status', ['pending', 'processing', 'completed', 'failed']);
 
-// Users table (PostgreSQL)
+// Users table (PostgreSQL) - Production compatible schema
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(),
-  firstName: varchar('first_name', { length: 100 }),
-  lastName: varchar('last_name', { length: 100 }),
   profileImageUrl: text('profile_image_url'),
   credits: integer('credits').default(5).notNull(),
   isAdmin: boolean('is_admin').default(false).notNull(),
@@ -96,12 +94,10 @@ export const jobs = pgTable('jobs', {
   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-// Manual Zod schemas (compatible with Drizzle)
+// Manual Zod schemas (compatible with Drizzle - Production compatible)
 export const insertUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
   profileImageUrl: z.string().optional(),
   credits: z.number().min(0).default(5),
   isAdmin: z.boolean().default(false),

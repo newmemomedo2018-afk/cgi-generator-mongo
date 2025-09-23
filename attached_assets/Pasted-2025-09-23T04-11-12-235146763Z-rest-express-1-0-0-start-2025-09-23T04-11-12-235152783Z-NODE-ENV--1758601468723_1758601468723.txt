@@ -1,0 +1,50 @@
+2025-09-23T04:11:12.235146763Z > rest-express@1.0.0 start
+2025-09-23T04:11:12.235152783Z > NODE_ENV=production node dist/index.js
+2025-09-23T04:11:12.235155443Z 
+2025-09-23T04:11:23.834383469Z [dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+2025-09-23T04:11:24.141480919Z 4:11:23 AM [express] serving on port 10000
+2025-09-23T04:11:24.739320253Z Connected to Neon PostgreSQL successfully
+2025-09-23T04:11:26.089474296Z ==> Your service is live 🎉
+2025-09-23T04:11:26.127544615Z ==> 
+2025-09-23T04:11:26.156407965Z ==> ///////////////////////////////////////////////////////////
+2025-09-23T04:11:26.184373655Z ==> 
+2025-09-23T04:11:26.218362094Z ==> Available at your primary URL https://cgi-generator-mongo.onrender.com
+2025-09-23T04:11:26.247658074Z ==> 
+2025-09-23T04:11:26.280465933Z ==> ///////////////////////////////////////////////////////////
+2025-09-23T04:11:29.363384225Z Production setup failed: DrizzleQueryError: Failed query: select "id", "email", "password", "first_name", "last_name", "profile_image_url", "credits", "is_admin", "stripe_customer_id", "stripe_subscription_id", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2
+2025-09-23T04:11:29.363436988Z params: admin@cgi-generator.com,1
+2025-09-23T04:11:29.363443168Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T04:11:29.363450208Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T04:11:29.363455709Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T04:11:29.36346652Z     at async PostgreSQLStorage.getUserByEmail (file:///opt/render/project/src/dist/index.js:1380:20)
+2025-09-23T04:11:29.36347222Z     at async file:///opt/render/project/src/dist/index.js:2925:29 {
+2025-09-23T04:11:29.36347773Z   query: 'select "id", "email", "password", "first_name", "last_name", "profile_image_url", "credits", "is_admin", "stripe_customer_id", "stripe_subscription_id", "created_at", "updated_at" from "users" where "users"."email" = $1 limit $2',
+2025-09-23T04:11:29.36348197Z   params: [ 'admin@cgi-generator.com', 1 ],
+2025-09-23T04:11:29.363486931Z   cause: error: column "first_name" does not exist
+2025-09-23T04:11:29.363490851Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T04:11:29.363495041Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T04:11:29.363499231Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T04:11:29.363505852Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T04:11:29.363511082Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T04:11:29.363516242Z       at async PostgreSQLStorage.getUserByEmail (file:///opt/render/project/src/dist/index.js:1380:20)
+2025-09-23T04:11:29.363520303Z       at async file:///opt/render/project/src/dist/index.js:2925:29 {
+2025-09-23T04:11:29.363524523Z     length: 110,
+2025-09-23T04:11:29.363530903Z     severity: 'ERROR',
+2025-09-23T04:11:29.363534873Z     code: '42703',
+2025-09-23T04:11:29.363538844Z     detail: undefined,
+2025-09-23T04:11:29.363543734Z     hint: undefined,
+2025-09-23T04:11:29.363547914Z     position: '35',
+2025-09-23T04:11:29.363553465Z     internalPosition: undefined,
+2025-09-23T04:11:29.363557465Z     internalQuery: undefined,
+2025-09-23T04:11:29.363561955Z     where: undefined,
+2025-09-23T04:11:29.363566045Z     schema: undefined,
+2025-09-23T04:11:29.363570286Z     table: undefined,
+2025-09-23T04:11:29.363574146Z     column: undefined,
+2025-09-23T04:11:29.363578366Z     dataType: undefined,
+2025-09-23T04:11:29.363583096Z     constraint: undefined,
+2025-09-23T04:11:29.363587216Z     file: 'parse_relation.c',
+2025-09-23T04:11:29.363591287Z     line: '3716',
+2025-09-23T04:11:29.363612178Z     routine: 'errorMissingColumn'
+2025-09-23T04:11:29.363615308Z   }
+2025-09-23T04:11:29.363617818Z }
+2025-09-23T04:11:29.366848237Z 4:11:29 AM [express] POST /api/setup-production 500 in 97ms :: {"success":false,"error":"Failed quer…
