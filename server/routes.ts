@@ -319,6 +319,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`💰 Credits deducted: ${creditsNeeded} from user ${userId}`);
       }
 
+      // 🚀 AUTO-START JOB PROCESSING IMMEDIATELY
+      console.log(`🚀 Auto-starting job processing for job ${job.id}...`);
+      
+      // Start job processing asynchronously without blocking the response
+      setImmediate(async () => {
+        try {
+          const claimed = await storage.claimJob(job.id!);
+          if (claimed) {
+            console.log(`🎯 Job ${job.id} claimed successfully, starting processing...`);
+            processJobAsync(job.id!).catch(async (error) => {
+              console.error(`❌ Auto-triggered job ${job.id} failed:`, error);
+              await storage.markJobFailed(job.id!, error.message);
+            });
+          } else {
+            console.log(`⚠️ Job ${job.id} was already claimed by another worker`);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to auto-start job ${job.id}:`, error);
+        }
+      });
+
       res.json({
         ...project,
         jobId: job.id
