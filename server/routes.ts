@@ -1485,11 +1485,23 @@ function setupHealthCheckRoutes(app: Express) {
     }
   });
 
-  // Production setup endpoint - run once to initialize admin user (PROTECTED)
+  // Production setup endpoint - run once to initialize admin user (HEAVILY PROTECTED)
   app.post('/api/setup-production', async (req, res) => {
     // Security: Only allow in production environment
     if (process.env.NODE_ENV !== 'production') {
       return res.status(403).json({ error: 'Setup only allowed in production' });
+    }
+    
+    // Security: Require setup token
+    const setupToken = req.headers['x-setup-token'] || req.body.setupToken;
+    const expectedToken = process.env.SETUP_ADMIN_TOKEN;
+    
+    if (!expectedToken) {
+      return res.status(503).json({ error: 'Setup not configured - SETUP_ADMIN_TOKEN missing' });
+    }
+    
+    if (!setupToken || setupToken !== expectedToken) {
+      return res.status(401).json({ error: 'Invalid setup token' });
     }
     
     try {
