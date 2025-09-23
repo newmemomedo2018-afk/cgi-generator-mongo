@@ -268,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Insufficient credits" });
       }
 
-      // Inject server-managed fields and create project
+      // Prepare project data and job data for atomic transaction
       const projectData = {
         ...clientProjectData,
         userId,
@@ -278,19 +278,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         actualCost: 0
       };
       
-      console.log("🚀 Creating project...");
-      const project = await storage.createProject(projectData);
-      createdProjectId = project.id!;
-      console.log(`✅ Project created successfully with ID: ${createdProjectId}`);
-
-      // Validate job input BEFORE creating job
-      console.log(`🔧 Preparing job for project ${project.id}...`);
-      
-      const jobInputData = {
+      // Prepare job data without projectId (will be set in transaction)
+      const jobDataTemplate = {
         type: 'cgi_generation',
-        projectId: project.id!,
-        userId: Number(userId), // Ensure userId is a number
-        priority: clientProjectData.contentType === 'video' ? 2 : 1, // Videos have higher priority
+        userId: Number(userId),
+        priority: clientProjectData.contentType === 'video' ? 2 : 1,
         data: JSON.stringify({
           contentType: clientProjectData.contentType,
           videoDurationSeconds: clientProjectData.videoDurationSeconds,
@@ -301,28 +293,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
           includeAudio: clientProjectData.includeAudio
         })
       };
-      
-      console.log(`🔧 Job input data prepared:`, {
-        type: jobInputData.type,
-        projectId: jobInputData.projectId,
-        userId: jobInputData.userId,
-        priority: jobInputData.priority,
-        dataLength: jobInputData.data?.length || 0,
-        projectIdType: typeof jobInputData.projectId,
-        userIdType: typeof jobInputData.userId
+
+      console.log(`🔧 Job template prepared:`, {
+        type: jobDataTemplate.type,
+        userId: jobDataTemplate.userId,
+        priority: jobDataTemplate.priority,
+        dataLength: jobDataTemplate.data?.length || 0,
+        userIdType: typeof jobDataTemplate.userId
       });
-
-      const jobInput = createJobInputSchema.parse(jobInputData);
-      console.log("✅ Job input validation passed");
       
-      const job = await storage.createJob(jobInput);
-      console.log(`🎯 Job created successfully for project ${project.id}: ${job.id}`);
-
-      // Deduct credits from user account (except for admin)
-      if (!isAdmin) {
-        await storage.updateUserCredits(userId, user.credits - creditsNeeded);
-        console.log(`💰 Credits deducted: ${creditsNeeded} from user ${userId}`);
-      }
+      // 🚀 ATOMIC TRANSACTION: Create project + deduct credits + create job
+      console.log("🚀 Starting atomic project creation...");
+      const { project, job } = await storage.createProjectWithTransaction(
+        projectData,
+        { ...jobDataTemplate, projectId: 0 }, // projectId will be set within transaction
+        isAdmin
+      );
+      
+      createdProjectId = project.id!;
+      console.log(`✅ Atomic transaction completed: Project ${project.id}, Job ${job.id}`);
 
       // 🚀 AUTO-START JOB PROCESSING IMMEDIATELY
       console.log(`🚀 Auto-starting job processing for job ${job.id}...`);
@@ -352,16 +341,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("❌ Error during project creation:", error);
       
-      // Rollback: Delete the created project if job creation failed
-      if (createdProjectId) {
-        try {
-          console.log(`🔄 Rolling back project ${createdProjectId} due to error...`);
-          await storage.deleteProject(createdProjectId);
-          console.log(`✅ Project ${createdProjectId} rolled back successfully`);
-        } catch (rollbackError) {
-          console.error(`❌ Failed to rollback project ${createdProjectId}:`, rollbackError);
-        }
+      // Handle specific transaction errors
+      if (error instanceof Error && error.message.includes('Insufficient credits')) {
+        return res.status(400).json({ 
+          message: "Insufficient credits",
+          details: error.message 
+        });
       }
+      
+      // No rollback needed for atomic transaction - already handled by transaction rollback
+      // Only old non-atomic path needed manual rollback
       
       if (error instanceof z.ZodError) {
         console.error("🚨 Zod validation error details:", {

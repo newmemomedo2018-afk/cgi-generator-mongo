@@ -25,6 +25,13 @@ export interface IStorage {
   upsertUser(user: NewUser & { id?: number }): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<void>;
   updateUserCredits(id: number, credits: number): Promise<void>;
+
+  // Atomic project creation operation
+  createProjectWithTransaction(
+    projectData: Omit<NewProject, "id"> & { userId: number; creditsUsed: number; status?: string },
+    jobData: CreateJobInput,
+    isAdmin?: boolean
+  ): Promise<{ project: Project; job: Job }>;
   
   // Project operations
   createProject(project: Omit<NewProject, "id"> & { userId: number; creditsUsed: number; status?: string }): Promise<Project>;
@@ -416,6 +423,109 @@ export class PostgreSQLStorage implements IStorage {
       totalTransactions: transactionsCount.length,
       generatedAt: new Date(),
     };
+  }
+
+  // Atomic operation: Create project + deduct credits + create job in one transaction
+  async createProjectWithTransaction(
+    projectData: Omit<NewProject, "id"> & { userId: number; creditsUsed: number; status?: string },
+    jobData: CreateJobInput,
+    isAdmin: boolean = false
+  ): Promise<{ project: Project; job: Job }> {
+    return db.transaction(async (tx) => {
+      try {
+        console.log("🔄 Starting atomic project creation transaction...");
+        
+        // 1. Check user credits first (within transaction)
+        const userResult = await tx.execute(sql`
+          SELECT id, credits, is_admin 
+          FROM users 
+          WHERE id = ${projectData.userId}
+          FOR UPDATE
+        `);
+        
+        if (!userResult.rows || userResult.rows.length === 0) {
+          throw new Error('User not found');
+        }
+        
+        const user = userResult.rows[0] as any;
+        const currentCredits = user.credits;
+        
+        // Check if user has sufficient credits (unless admin)
+        if (!isAdmin && currentCredits < projectData.creditsUsed) {
+          throw new Error(`Insufficient credits. Need ${projectData.creditsUsed}, have ${currentCredits}`);
+        }
+
+        // 2. Create project using raw SQL within transaction
+        const projectResult = await tx.execute(sql`
+          INSERT INTO projects (
+            user_id, title, description, product_image_url, scene_image_url, 
+            scene_video_url, content_type, video_duration_seconds, status, 
+            progress, enhanced_prompt, output_image_url, output_video_url, 
+            credits_used, actual_cost, resolution, quality, error_message,
+            kling_video_task_id, kling_sound_task_id, include_audio, 
+            full_task_details, created_at, updated_at
+          ) VALUES (
+            ${projectData.userId}, ${projectData.title}, ${projectData.description}, 
+            ${projectData.productImageUrl}, ${projectData.sceneImageUrl || null}, 
+            ${projectData.sceneVideoUrl || null}, ${projectData.contentType}, 
+            ${projectData.videoDurationSeconds || 5}, ${projectData.status || 'pending'}, 
+            ${projectData.progress || 0}, ${projectData.enhancedPrompt || null}, 
+            ${projectData.outputImageUrl || null}, ${projectData.outputVideoUrl || null}, 
+            ${projectData.creditsUsed}, ${projectData.actualCost || 0}, 
+            ${projectData.resolution || '1024x1024'}, ${projectData.quality || 'standard'}, 
+            ${projectData.errorMessage || null}, ${projectData.klingVideoTaskId || null}, 
+            ${projectData.klingSoundTaskId || null}, ${projectData.includeAudio || false}, 
+            ${projectData.fullTaskDetails || null}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+          )
+          RETURNING *
+        `);
+
+        if (!projectResult.rows || projectResult.rows.length === 0) {
+          throw new Error('Failed to create project');
+        }
+
+        const project = projectResult.rows[0] as Project;
+        console.log(`✅ Project created in transaction: ${project.id}`);
+
+        // 3. Deduct credits from user (unless admin)
+        if (!isAdmin) {
+          const newCredits = currentCredits - projectData.creditsUsed;
+          await tx.execute(sql`
+            UPDATE users 
+            SET credits = ${newCredits}, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ${projectData.userId}
+          `);
+          console.log(`💰 Credits deducted in transaction: ${projectData.creditsUsed} (${currentCredits} → ${newCredits})`);
+        }
+
+        // 4. Create job within transaction (using the created project ID)
+        const jobResult = await tx.execute(sql`
+          INSERT INTO jobs (
+            type, project_id, user_id, priority, data, status, 
+            progress, retry_count, max_retries, created_at, updated_at
+          ) VALUES (
+            ${jobData.type}, ${project.id}, ${jobData.userId}, 
+            ${jobData.priority || 1}, ${jobData.data}, 'pending', 
+            0, 0, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+          )
+          RETURNING *
+        `);
+
+        if (!jobResult.rows || jobResult.rows.length === 0) {
+          throw new Error('Failed to create job');
+        }
+
+        const job = jobResult.rows[0] as Job;
+        console.log(`🎯 Job created in transaction: ${job.id}`);
+
+        console.log("✅ Atomic transaction completed successfully!");
+        return { project, job };
+        
+      } catch (error) {
+        console.error("❌ Transaction failed, rolling back:", error);
+        throw error; // This will trigger rollback automatically
+      }
+    });
   }
 
   // Job Queue operations
