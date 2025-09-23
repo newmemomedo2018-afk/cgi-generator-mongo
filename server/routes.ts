@@ -1480,4 +1480,43 @@ function setupHealthCheckRoutes(app: Express) {
       });
     }
   });
+
+  // Production setup endpoint - run once to initialize admin user
+  app.post('/api/setup-production', async (req, res) => {
+    try {
+      // Check if admin user already exists
+      const existingAdmin = await storage.getUserByEmail('admin@cgi-generator.com');
+      
+      if (existingAdmin) {
+        return res.json({ 
+          success: true,
+          message: 'Admin user already exists',
+          adminId: existingAdmin.id
+        });
+      }
+
+      // Create admin user
+      const adminUser = await storage.createUser({
+        email: 'admin@cgi-generator.com',
+        password: '$2b$10$8K1p/a9ti6HxtAcg.5ieKe.aVjZqe5xK5H5nEeY/iQ.aLR2nJWgY6', // bcrypt hash for 'admin123'
+        firstName: 'Admin',
+        lastName: 'User',
+        credits: 100,
+        isAdmin: true
+      });
+
+      res.json({ 
+        success: true,
+        message: 'Admin user created successfully',
+        adminId: adminUser.id
+      });
+      
+    } catch (error) {
+      console.error('Production setup failed:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Setup failed'
+      });
+    }
+  });
 }
