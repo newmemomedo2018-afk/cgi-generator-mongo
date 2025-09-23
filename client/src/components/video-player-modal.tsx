@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Volume2, VolumeX, Download, X, Loader2, AlertCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -132,10 +132,14 @@ export default function VideoPlayerModal({
             <DialogTitle className="text-2xl">
               {title}
             </DialogTitle>
+            <DialogDescription className="sr-only">
+              مشغل الفيديو للعرض والتحكم في الفيديو المُنتج
+            </DialogDescription>
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={onClose}
+              aria-label="إغلاق"
               data-testid="close-video-modal"
             >
               <X className="h-5 w-5" />

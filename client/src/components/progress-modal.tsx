@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Check, Loader2, X } from "lucide-react";
@@ -95,7 +95,9 @@ export default function ProgressModal({ isOpen, onClose, projectId }: ProgressMo
         <DialogHeader className="text-center">
           <div className="text-4xl mb-4">🎬</div>
           <DialogTitle className="text-2xl">جاري إنتاج CGI</DialogTitle>
-          <p className="text-muted-foreground">يرجى الانتظار، هذا قد يستغرق بضع دقائق</p>
+          <DialogDescription className="text-muted-foreground">
+            يرجى الانتظار، هذا قد يستغرق بضع دقائق
+          </DialogDescription>
         </DialogHeader>
 
         {/* Progress Steps */}

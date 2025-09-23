@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
@@ -30,6 +30,9 @@ export function AuthDialog({ children, defaultTab = "login" }: AuthDialogProps) 
           <DialogTitle>
             {activeTab === "login" ? "تسجيل الدخول" : "إنشاء حساب جديد"}
           </DialogTitle>
+          <DialogDescription>
+            {activeTab === "login" ? "نموذج تسجيل الدخول للوصول إلى حسابك" : "نموذج إنشاء حساب جديد للبدء في استخدام الخدمة"}
+          </DialogDescription>
         </VisuallyHidden>
         {activeTab === "login" ? (
           <LoginForm 
