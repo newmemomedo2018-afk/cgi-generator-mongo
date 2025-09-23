@@ -72,12 +72,34 @@ export class PostgreSQLStorage implements IStorage {
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     try {
-      // Direct raw SQL query to avoid schema conflicts
+      // Production-compatible query - handles both old and new schema
       const result = await db.execute(sql`
-        SELECT id, email, password, profile_image_url, credits, is_admin, 
-               stripe_customer_id, stripe_subscription_id, created_at, updated_at,
-               COALESCE(first_name, NULL) as first_name,
-               COALESCE(last_name, NULL) as last_name
+        SELECT id, email, password, credits, is_admin, created_at, updated_at,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'first_name') 
+                 THEN first_name 
+                 ELSE NULL 
+               END as first_name,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'last_name') 
+                 THEN last_name 
+                 ELSE NULL 
+               END as last_name,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'profile_image_url') 
+                 THEN profile_image_url 
+                 ELSE NULL 
+               END as profile_image_url,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') 
+                 THEN stripe_customer_id 
+                 ELSE NULL 
+               END as stripe_customer_id,
+               CASE 
+                 WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') 
+                 THEN stripe_subscription_id 
+                 ELSE NULL 
+               END as stripe_subscription_id
         FROM users 
         WHERE email = ${email} 
         LIMIT 1
@@ -101,11 +123,10 @@ export class PostgreSQLStorage implements IStorage {
         updatedAt: row.updated_at,
       };
     } catch (error) {
-      console.error('Raw SQL query failed, trying basic query:', error);
-      // Ultimate fallback: Basic query without firstName/lastName
+      console.error('Smart schema query failed, trying minimal fallback:', error);
+      // Ultimate fallback: Only the columns we know exist in production
       const result = await db.execute(sql`
-        SELECT id, email, password, profile_image_url, credits, is_admin, 
-               stripe_customer_id, stripe_subscription_id, created_at, updated_at
+        SELECT id, email, password, credits, is_admin, created_at, updated_at
         FROM users 
         WHERE email = ${email} 
         LIMIT 1
@@ -120,11 +141,11 @@ export class PostgreSQLStorage implements IStorage {
         password: row.password,
         firstName: null,
         lastName: null,
-        profileImageUrl: row.profile_image_url,
+        profileImageUrl: null,
         credits: row.credits,
         isAdmin: row.is_admin,
-        stripeCustomerId: row.stripe_customer_id,
-        stripeSubscriptionId: row.stripe_subscription_id,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
