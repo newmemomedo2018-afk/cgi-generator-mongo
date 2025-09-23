@@ -30,6 +30,10 @@ export async function ensureRequiredColumns() {
 
     // Check other potentially missing columns that might be needed
     const columnsToCheck = [
+      'enhanced_prompt',           // Missing from production - causing current error
+      'output_image_url',
+      'output_video_url', 
+      'error_message',
       'kling_video_task_id',
       'kling_sound_task_id', 
       'include_audio',
@@ -50,9 +54,13 @@ export async function ensureRequiredColumns() {
         // Different column types based on name
         let columnType = 'TEXT';
         if (columnName === 'include_audio') {
-          columnType = 'BOOLEAN DEFAULT FALSE';
+          columnType = 'BOOLEAN DEFAULT FALSE NOT NULL';
         } else if (columnName.includes('task_id')) {
           columnType = 'VARCHAR(255)';
+        } else if (columnName === 'enhanced_prompt' || columnName === 'output_image_url' || 
+                   columnName === 'output_video_url' || columnName === 'error_message' || 
+                   columnName === 'full_task_details') {
+          columnType = 'TEXT';
         }
         
         await db.execute(sql`

@@ -1,0 +1,50 @@
+2025-09-23T06:48:31.300789885Z     'رؤر',
+2025-09-23T06:48:31.300791945Z     '',
+2025-09-23T06:48:31.300794195Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758610104/cgi-generator/1758610103634-1.jpg.jpg',
+2025-09-23T06:48:31.300796465Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758610107/cgi-generator/1758610107479-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T06:48:31.300798655Z     null,
+2025-09-23T06:48:31.300800706Z     'image',
+2025-09-23T06:48:31.300802746Z     5,
+2025-09-23T06:48:31.300804786Z     'pending',
+2025-09-23T06:48:31.300806826Z     0,
+2025-09-23T06:48:31.300808866Z     null,
+2025-09-23T06:48:31.300810906Z     null,
+2025-09-23T06:48:31.300812946Z     null,
+2025-09-23T06:48:31.300814966Z     2,
+2025-09-23T06:48:31.300816966Z     0,
+2025-09-23T06:48:31.300818986Z     '1024x1024',
+2025-09-23T06:48:31.300821016Z     'standard',
+2025-09-23T06:48:31.300823046Z     null,
+2025-09-23T06:48:31.300825046Z     null,
+2025-09-23T06:48:31.300827036Z     null,
+2025-09-23T06:48:31.300829256Z     false,
+2025-09-23T06:48:31.300831356Z     null
+2025-09-23T06:48:31.300833406Z   ],
+2025-09-23T06:48:31.300835556Z   cause: error: column "enhanced_prompt" of relation "projects" does not exist
+2025-09-23T06:48:31.300837726Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T06:48:31.300839776Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T06:48:31.300841846Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T06:48:31.300843956Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T06:48:31.300846046Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T06:48:31.300851607Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T06:48:31.300853707Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T06:48:31.300855736Z     length: 137,
+2025-09-23T06:48:31.300857796Z     severity: 'ERROR',
+2025-09-23T06:48:31.300859827Z     code: '42703',
+2025-09-23T06:48:31.300861827Z     detail: undefined,
+2025-09-23T06:48:31.300863907Z     hint: undefined,
+2025-09-23T06:48:31.300865917Z     position: '211',
+2025-09-23T06:48:31.300867987Z     internalPosition: undefined,
+2025-09-23T06:48:31.300870087Z     internalQuery: undefined,
+2025-09-23T06:48:31.300886787Z     where: undefined,
+2025-09-23T06:48:31.300890337Z     schema: undefined,
+2025-09-23T06:48:31.300909988Z     table: undefined,
+2025-09-23T06:48:31.300913908Z     column: undefined,
+2025-09-23T06:48:31.300917728Z     dataType: undefined,
+2025-09-23T06:48:31.300921228Z     constraint: undefined,
+2025-09-23T06:48:31.300924828Z     file: 'parse_target.c',
+2025-09-23T06:48:31.300927888Z     line: '1065',
+2025-09-23T06:48:31.300931298Z     routine: 'checkInsertTargets'
+2025-09-23T06:48:31.300934458Z   }
+2025-09-23T06:48:31.300937218Z }
+2025-09-23T06:48:31.301414267Z 6:48:31 AM [express] POST /api/projects 500 in 1174ms :: {"message":"Failed to create project"}
