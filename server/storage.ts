@@ -31,6 +31,7 @@ export interface IStorage {
   getProject(id: number): Promise<Project | undefined>;
   getUserProjects(userId: number): Promise<Project[]>;
   updateProject(id: number, updates: Partial<Project>): Promise<void>;
+  deleteProject(id: number): Promise<void>;
   
   // Transaction operations
   createTransaction(transaction: Omit<NewTransaction, "id"> & { userId: number }): Promise<Transaction>;
@@ -149,6 +150,10 @@ export class PostgreSQLStorage implements IStorage {
     (updateData as any).updatedAt = new Date();
 
     await db.update(projects).set(updateData).where(eq(projects.id, id));
+  }
+
+  async deleteProject(id: number): Promise<void> {
+    await db.delete(projects).where(eq(projects.id, id));
   }
 
   // Transaction operations

@@ -234,6 +234,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post('/api/projects', isAuthenticated, async (req: any, res) => {
+    let createdProjectId: number | null = null;
+    
     try {
       const userId = req.user.id;
       
@@ -241,6 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("🔍 Project creation request body:", JSON.stringify(req.body, null, 2));
       
       const clientProjectData = createProjectInputSchema.parse(req.body);
+      console.log("✅ Client project data validation passed");
       
       // Check user credits
       const user = await storage.getUser(userId);
@@ -270,17 +273,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         actualCost: 0
       };
       
+      console.log("🚀 Creating project...");
       const project = await storage.createProject(projectData);
+      createdProjectId = project.id!;
+      console.log(`✅ Project created successfully with ID: ${createdProjectId}`);
 
-      // Deduct credits from user account (except for admin)
-      if (!isAdmin) {
-        await storage.updateUserCredits(userId, user.credits - creditsNeeded);
-      }
-
-      // Validate and create job for async processing (Vercel compatible)
-      console.log(`🔧 Creating job for project ${project.id}...`);
+      // Validate job input BEFORE creating job
+      console.log(`🔧 Preparing job for project ${project.id}...`);
       
-      const jobInput = createJobInputSchema.parse({
+      const jobInputData = {
         type: 'cgi_generation',
         projectId: project.id!,
         userId: userId,
@@ -294,25 +295,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: clientProjectData.description,
           includeAudio: clientProjectData.includeAudio
         })
-      });
+      };
       
-      console.log(`🔧 Job input validated successfully:`, {
-        type: jobInput.type,
-        projectId: jobInput.projectId,
-        userId: jobInput.userId,
-        priority: jobInput.priority,
-        dataLength: jobInput.data?.length || 0
+      console.log(`🔧 Job input data prepared:`, {
+        type: jobInputData.type,
+        projectId: jobInputData.projectId,
+        userId: jobInputData.userId,
+        priority: jobInputData.priority,
+        dataLength: jobInputData.data?.length || 0,
+        projectIdType: typeof jobInputData.projectId,
+        userIdType: typeof jobInputData.userId
       });
+
+      const jobInput = createJobInputSchema.parse(jobInputData);
+      console.log("✅ Job input validation passed");
       
       const job = await storage.createJob(jobInput);
-
       console.log(`🎯 Job created successfully for project ${project.id}: ${job.id}`);
+
+      // Deduct credits from user account (except for admin)
+      if (!isAdmin) {
+        await storage.updateUserCredits(userId, user.credits - creditsNeeded);
+        console.log(`💰 Credits deducted: ${creditsNeeded} from user ${userId}`);
+      }
 
       res.json({
         ...project,
         jobId: job.id
       });
     } catch (error) {
+      console.error("❌ Error during project creation:", error);
+      
+      // Rollback: Delete the created project if job creation failed
+      if (createdProjectId) {
+        try {
+          console.log(`🔄 Rolling back project ${createdProjectId} due to error...`);
+          await storage.deleteProject(createdProjectId);
+          console.log(`✅ Project ${createdProjectId} rolled back successfully`);
+        } catch (rollbackError) {
+          console.error(`❌ Failed to rollback project ${createdProjectId}:`, rollbackError);
+        }
+      }
+      
       if (error instanceof z.ZodError) {
         console.error("🚨 Zod validation error details:", {
           errors: error.errors,
