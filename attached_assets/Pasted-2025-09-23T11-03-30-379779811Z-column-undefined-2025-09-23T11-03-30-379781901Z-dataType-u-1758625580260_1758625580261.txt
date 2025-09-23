@@ -1,0 +1,464 @@
+2025-09-23T11:03:30.379779811Z     column: undefined,
+2025-09-23T11:03:30.379781901Z     dataType: undefined,
+2025-09-23T11:03:30.379783921Z     constraint: undefined,
+2025-09-23T11:03:30.379786021Z     file: 'parse_relation.c',
+2025-09-23T11:03:30.379788501Z     line: '3716',
+2025-09-23T11:03:30.379791782Z     routine: 'errorMissingColumn'
+2025-09-23T11:03:30.379794462Z   }
+2025-09-23T11:03:30.379797332Z }
+2025-09-23T11:03:30.380497684Z 11:03:30 AM [express] GET /api/projects 500 in 473ms :: {"message":"Failed to fetch projects"}
+2025-09-23T11:04:30.276719367Z ==> Deploying...
+2025-09-23T11:04:53.724290687Z ==> Running 'npm start'
+2025-09-23T11:04:54.829159502Z 
+2025-09-23T11:04:54.829181104Z > rest-express@1.0.0 start
+2025-09-23T11:04:54.829187254Z > NODE_ENV=production node dist/index.js
+2025-09-23T11:04:54.829190974Z 
+2025-09-23T11:05:05.520636138Z [dotenv@17.2.2] injecting env (0) from .env -- tip: ⚙️  override existing env vars with { override: true }
+2025-09-23T11:05:05.525285627Z 🚀 Running database migrations...
+2025-09-23T11:05:05.525623456Z 🔍 Checking database schema compatibility...
+2025-09-23T11:05:06.271895791Z ✅ scene_video_url column already exists
+2025-09-23T11:05:06.274591587Z Connected to Neon PostgreSQL successfully
+2025-09-23T11:05:06.342457442Z ✅ enhanced_prompt column already exists
+2025-09-23T11:05:06.411524037Z ✅ output_image_url column already exists
+2025-09-23T11:05:06.48038402Z ✅ output_video_url column already exists
+2025-09-23T11:05:06.54937133Z ✅ error_message column already exists
+2025-09-23T11:05:06.618497618Z ✅ kling_video_task_id column already exists
+2025-09-23T11:05:06.687311868Z ✅ kling_sound_task_id column already exists
+2025-09-23T11:05:06.759913518Z ✅ include_audio column already exists
+2025-09-23T11:05:06.829492512Z ✅ full_task_details column already exists
+2025-09-23T11:05:06.899174553Z ⚠️ Column credits_used missing, adding it...
+2025-09-23T11:05:06.981796912Z ✅ Added credits_used column successfully
+2025-09-23T11:05:07.051191435Z ⚠️ User column first_name missing, adding it...
+2025-09-23T11:05:07.121407987Z ✅ Added user first_name column successfully
+2025-09-23T11:05:07.190809161Z ⚠️ User column last_name missing, adding it...
+2025-09-23T11:05:07.26029156Z ✅ Added user last_name column successfully
+2025-09-23T11:05:07.330000182Z ⚠️ User column profile_image_url missing, adding it...
+2025-09-23T11:05:07.400270286Z ✅ Added user profile_image_url column successfully
+2025-09-23T11:05:07.468713695Z ⚠️ User column stripe_customer_id missing, adding it...
+2025-09-23T11:05:07.536899939Z ✅ Added user stripe_customer_id column successfully
+2025-09-23T11:05:07.605749411Z ⚠️ User column stripe_subscription_id missing, adding it...
+2025-09-23T11:05:07.674067793Z ✅ Added user stripe_subscription_id column successfully
+2025-09-23T11:05:07.674082494Z 🎉 Database schema check completed successfully
+2025-09-23T11:05:07.674087114Z ✅ All migrations completed successfully
+2025-09-23T11:05:07.721440123Z 11:05:07 AM [express] serving on port 10000
+2025-09-23T11:05:11.026801624Z ==> Your service is live 🎉
+2025-09-23T11:05:11.058698083Z ==> 
+2025-09-23T11:05:11.090060933Z ==> ///////////////////////////////////////////////////////////
+2025-09-23T11:05:11.119183823Z ==> 
+2025-09-23T11:05:11.150416452Z ==> Available at your primary URL https://cgi-generator-mongo.onrender.com
+2025-09-23T11:05:11.182108382Z ==> 
+2025-09-23T11:05:11.210445431Z ==> ///////////////////////////////////////////////////////////
+2025-09-23T11:05:34.190705524Z 11:05:34 AM [express] GET /api/auth/user 304 in 90ms :: {"id":1,"email":"admin@cgi-generator.com","fi…
+2025-09-23T11:05:34.552602836Z Error fetching projects: DrizzleQueryError: Failed query: select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc
+2025-09-23T11:05:34.552622847Z params: 1
+2025-09-23T11:05:34.552627807Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T11:05:34.552632387Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:34.552636528Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T11:05:34.552640238Z     at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T11:05:34.552716002Z     at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T11:05:34.552721083Z   query: 'select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc',
+2025-09-23T11:05:34.552723613Z   params: [ 1 ],
+2025-09-23T11:05:34.552726333Z   cause: error: column "actual_cost" does not exist
+2025-09-23T11:05:34.552728623Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T11:05:34.552730883Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:34.552733123Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T11:05:34.552735753Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T11:05:34.552738094Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T11:05:34.552740204Z       at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T11:05:34.552742414Z       at async file:///opt/render/project/src/dist/index.js:2184:25 {
+2025-09-23T11:05:34.552744654Z     length: 112,
+2025-09-23T11:05:34.552747544Z     severity: 'ERROR',
+2025-09-23T11:05:34.552761345Z     code: '42703',
+2025-09-23T11:05:34.552763915Z     detail: undefined,
+2025-09-23T11:05:34.552766275Z     hint: undefined,
+2025-09-23T11:05:34.552768535Z     position: '247',
+2025-09-23T11:05:34.552778876Z     internalPosition: undefined,
+2025-09-23T11:05:34.552781326Z     internalQuery: undefined,
+2025-09-23T11:05:34.552783686Z     where: undefined,
+2025-09-23T11:05:34.552785996Z     schema: undefined,
+2025-09-23T11:05:34.552788136Z     table: undefined,
+2025-09-23T11:05:34.552790417Z     column: undefined,
+2025-09-23T11:05:34.552792667Z     dataType: undefined,
+2025-09-23T11:05:34.552794897Z     constraint: undefined,
+2025-09-23T11:05:34.552797077Z     file: 'parse_relation.c',
+2025-09-23T11:05:34.552799267Z     line: '3716',
+2025-09-23T11:05:34.552801897Z     routine: 'errorMissingColumn'
+2025-09-23T11:05:34.552804157Z   }
+2025-09-23T11:05:34.552806397Z }
+2025-09-23T11:05:34.554159686Z 11:05:34 AM [express] GET /api/projects 500 in 79ms :: {"message":"Failed to fetch projects"}
+2025-09-23T11:05:34.557198362Z Error getting actual costs: DrizzleQueryError: Failed query: select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc
+2025-09-23T11:05:34.557199182Z 11:05:34 AM [express] GET /api/actual-costs 500 in 74ms :: {"message":"Failed to get actual costs"}
+2025-09-23T11:05:34.557228724Z params: 1
+2025-09-23T11:05:34.557232904Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T11:05:34.557236474Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:34.557261385Z     at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T11:05:34.557265015Z     at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T11:05:34.557268006Z     at async file:///opt/render/project/src/dist/index.js:2629:25 {
+2025-09-23T11:05:34.557271406Z   query: 'select "id", "user_id", "title", "description", "product_image_url", "scene_image_url", "scene_video_url", "content_type", "video_duration_seconds", "status", "progress", "enhanced_prompt", "output_image_url", "output_video_url", "credits_used", "actual_cost", "resolution", "quality", "error_message", "kling_video_task_id", "kling_sound_task_id", "include_audio", "full_task_details", "created_at", "updated_at" from "projects" where "projects"."user_id" = $1 order by "projects"."created_at" desc',
+2025-09-23T11:05:34.557274076Z   params: [ 1 ],
+2025-09-23T11:05:34.557277336Z   cause: error: column "actual_cost" does not exist
+2025-09-23T11:05:34.557279696Z       at /opt/render/project/src/node_modules/pg-pool/index.js:45:11
+2025-09-23T11:05:34.557283116Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:34.557285417Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:124:18
+2025-09-23T11:05:34.557288587Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T11:05:34.557290917Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:117:22
+2025-09-23T11:05:34.557293167Z       at async PostgreSQLStorage.getUserProjects (file:///opt/render/project/src/dist/index.js:1622:20)
+2025-09-23T11:05:34.557295477Z       at async file:///opt/render/project/src/dist/index.js:2629:25 {
+2025-09-23T11:05:34.557297697Z     length: 112,
+2025-09-23T11:05:34.557300898Z     severity: 'ERROR',
+2025-09-23T11:05:34.557303208Z     code: '42703',
+2025-09-23T11:05:34.557305358Z     detail: undefined,
+2025-09-23T11:05:34.557307678Z     hint: undefined,
+2025-09-23T11:05:34.557309798Z     position: '247',
+2025-09-23T11:05:34.557312828Z     internalPosition: undefined,
+2025-09-23T11:05:34.557315189Z     internalQuery: undefined,
+2025-09-23T11:05:34.557317318Z     where: undefined,
+2025-09-23T11:05:34.557319529Z     schema: undefined,
+2025-09-23T11:05:34.557321689Z     table: undefined,
+2025-09-23T11:05:34.557324009Z     column: undefined,
+2025-09-23T11:05:34.557326089Z     dataType: undefined,
+2025-09-23T11:05:34.557328669Z     constraint: undefined,
+2025-09-23T11:05:34.557330949Z     file: 'parse_relation.c',
+2025-09-23T11:05:34.557333119Z     line: '3716',
+2025-09-23T11:05:34.55733604Z     routine: 'errorMissingColumn'
+2025-09-23T11:05:34.55733825Z   }
+2025-09-23T11:05:34.55734064Z }
+2025-09-23T11:05:42.257111798Z Uploading to Cloudinary: { originalName: '1.jpg', fileSize: 31615 }
+2025-09-23T11:05:44.163277692Z 11:05:44 AM [express] POST /api/upload-product-image 200 in 1915ms :: {"url":"https://res.cloudinary.…
+2025-09-23T11:05:46.784952672Z Uploading to Cloudinary: {
+2025-09-23T11:05:46.784985344Z   originalName: '720da7cec4daa5bf30c98deb175e6219 (1).jpg',
+2025-09-23T11:05:46.784989714Z   fileSize: 309240
+2025-09-23T11:05:46.784992674Z }
+2025-09-23T11:05:48.018516232Z 11:05:48 AM [express] POST /api/upload-product-image 200 in 1376ms :: {"url":"https://res.cloudinary.…
+2025-09-23T11:05:49.195648108Z 🔍 Project creation request body: {
+2025-09-23T11:05:49.195691161Z   "title": "ئءئ",
+2025-09-23T11:05:49.195694731Z   "description": "",
+2025-09-23T11:05:49.195698571Z   "productImageUrl": "https://res.cloudinary.com/dqtsski2w/image/upload/v1758625543/cgi-generator/1758625542259-1.jpg.jpg",
+2025-09-23T11:05:49.195701811Z   "sceneImageUrl": "https://res.cloudinary.com/dqtsski2w/image/upload/v1758625547/cgi-generator/1758625546785-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg",
+2025-09-23T11:05:49.195704281Z   "sceneVideoUrl": "",
+2025-09-23T11:05:49.195707542Z   "contentType": "image",
+2025-09-23T11:05:49.195710032Z   "videoDurationSeconds": 5,
+2025-09-23T11:05:49.195712192Z   "resolution": "1024x1024",
+2025-09-23T11:05:49.195714582Z   "quality": "standard",
+2025-09-23T11:05:49.195716862Z   "includeAudio": false
+2025-09-23T11:05:49.195719162Z }
+2025-09-23T11:05:49.197430401Z ✅ Client project data validation passed
+2025-09-23T11:05:49.685727325Z 🔧 Job template prepared: {
+2025-09-23T11:05:49.685752646Z   type: 'cgi_generation',
+2025-09-23T11:05:49.685755766Z   userId: 1,
+2025-09-23T11:05:49.685758276Z   priority: 1,
+2025-09-23T11:05:49.685760996Z   dataLength: 384,
+2025-09-23T11:05:49.685763257Z   userIdType: 'number'
+2025-09-23T11:05:49.685765557Z }
+2025-09-23T11:05:49.685768457Z 🚀 Starting atomic project creation...
+2025-09-23T11:05:49.756911802Z 🔄 Starting atomic project creation transaction...
+2025-09-23T11:05:49.907702654Z ❌ Transaction failed, rolling back: DrizzleQueryError: Failed query: 
+2025-09-23T11:05:49.907723955Z           INSERT INTO projects (
+2025-09-23T11:05:49.907727405Z             user_id, title, description, product_image_url, scene_image_url, 
+2025-09-23T11:05:49.907730275Z             scene_video_url, content_type, video_duration_seconds, status, 
+2025-09-23T11:05:49.907732626Z             progress, enhanced_prompt, output_image_url, output_video_url, 
+2025-09-23T11:05:49.907735146Z             credits_used, actual_cost, resolution, quality, error_message,
+2025-09-23T11:05:49.907737856Z             kling_video_task_id, kling_sound_task_id, include_audio, 
+2025-09-23T11:05:49.907740776Z             full_task_details, created_at, updated_at
+2025-09-23T11:05:49.907743556Z           ) VALUES (
+2025-09-23T11:05:49.907745906Z             $1, $2, $3, 
+2025-09-23T11:05:49.907748307Z             $4, $5, 
+2025-09-23T11:05:49.907750857Z             $6, $7, 
+2025-09-23T11:05:49.907753187Z             $8, $9, 
+2025-09-23T11:05:49.907755497Z             $10, $11, 
+2025-09-23T11:05:49.907758127Z             $12, $13, 
+2025-09-23T11:05:49.907760607Z             $14, $15, 
+2025-09-23T11:05:49.907762907Z             $16, $17, 
+2025-09-23T11:05:49.907765288Z             $18, $19, 
+2025-09-23T11:05:49.907767597Z             $20, $21, 
+2025-09-23T11:05:49.907769928Z             $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+2025-09-23T11:05:49.907772318Z           )
+2025-09-23T11:05:49.907774678Z           RETURNING *
+2025-09-23T11:05:49.907777378Z         
+2025-09-23T11:05:49.907782858Z params: 1,ئءئ,,https://res.cloudinary.com/dqtsski2w/image/upload/v1758625543/cgi-generator/1758625542259-1.jpg.jpg,https://res.cloudinary.com/dqtsski2w/image/upload/v1758625547/cgi-generator/1758625546785-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg,,image,5,pending,0,,,,2,0,1024x1024,standard,,,,false,
+2025-09-23T11:05:49.907786839Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T11:05:49.907790129Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:49.907792429Z     at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T11:05:49.907820891Z     at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T11:05:49.907823671Z     at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T11:05:49.907826191Z   query: '\n' +
+2025-09-23T11:05:49.907830251Z     '          INSERT INTO projects (\n' +
+2025-09-23T11:05:49.907833061Z     '            user_id, title, description, product_image_url, scene_image_url, \n' +
+2025-09-23T11:05:49.907835532Z     '            scene_video_url, content_type, video_duration_seconds, status, \n' +
+2025-09-23T11:05:49.907837732Z     '            progress, enhanced_prompt, output_image_url, output_video_url, \n' +
+2025-09-23T11:05:49.907840172Z     '            credits_used, actual_cost, resolution, quality, error_message,\n' +
+2025-09-23T11:05:49.907842432Z     '            kling_video_task_id, kling_sound_task_id, include_audio, \n' +
+2025-09-23T11:05:49.907844722Z     '            full_task_details, created_at, updated_at\n' +
+2025-09-23T11:05:49.907847012Z     '          ) VALUES (\n' +
+2025-09-23T11:05:49.907849282Z     '            $1, $2, $3, \n' +
+2025-09-23T11:05:49.907851633Z     '            $4, $5, \n' +
+2025-09-23T11:05:49.907854062Z     '            $6, $7, \n' +
+2025-09-23T11:05:49.907856353Z     '            $8, $9, \n' +
+2025-09-23T11:05:49.907858663Z     '            $10, $11, \n' +
+2025-09-23T11:05:49.907860883Z     '            $12, $13, \n' +
+2025-09-23T11:05:49.907863173Z     '            $14, $15, \n' +
+2025-09-23T11:05:49.907865603Z     '            $16, $17, \n' +
+2025-09-23T11:05:49.907867873Z     '            $18, $19, \n' +
+2025-09-23T11:05:49.907870094Z     '            $20, $21, \n' +
+2025-09-23T11:05:49.907872384Z     '            $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP\n' +
+2025-09-23T11:05:49.907874944Z     '          )\n' +
+2025-09-23T11:05:49.907877344Z     '          RETURNING *\n' +
+2025-09-23T11:05:49.907880054Z     '        ',
+2025-09-23T11:05:49.907882504Z   params: [
+2025-09-23T11:05:49.907884784Z     1,
+2025-09-23T11:05:49.907887155Z     'ئءئ',
+2025-09-23T11:05:49.907889475Z     '',
+2025-09-23T11:05:49.907893365Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758625543/cgi-generator/1758625542259-1.jpg.jpg',
+2025-09-23T11:05:49.907897415Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758625547/cgi-generator/1758625546785-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T11:05:49.907901915Z     null,
+2025-09-23T11:05:49.907904385Z     'image',
+2025-09-23T11:05:49.907906696Z     5,
+2025-09-23T11:05:49.907909056Z     'pending',
+2025-09-23T11:05:49.907911406Z     0,
+2025-09-23T11:05:49.907913706Z     null,
+2025-09-23T11:05:49.907916036Z     null,
+2025-09-23T11:05:49.907918336Z     null,
+2025-09-23T11:05:49.907920957Z     2,
+2025-09-23T11:05:49.907923506Z     0,
+2025-09-23T11:05:49.907925857Z     '1024x1024',
+2025-09-23T11:05:49.907928207Z     'standard',
+2025-09-23T11:05:49.907930397Z     null,
+2025-09-23T11:05:49.907932787Z     null,
+2025-09-23T11:05:49.907935087Z     null,
+2025-09-23T11:05:49.907937437Z     false,
+2025-09-23T11:05:49.907939838Z     null
+2025-09-23T11:05:49.907942078Z   ],
+2025-09-23T11:05:49.907944838Z   cause: error: column "actual_cost" of relation "projects" does not exist
+2025-09-23T11:05:49.907947418Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T11:05:49.907949968Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:49.907952398Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T11:05:49.907960759Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T11:05:49.907963239Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T11:05:49.907965569Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T11:05:49.907968459Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T11:05:49.907970899Z     length: 133,
+2025-09-23T11:05:49.9079733Z     severity: 'ERROR',
+2025-09-23T11:05:49.90797577Z     code: '42703',
+2025-09-23T11:05:49.90797806Z     detail: undefined,
+2025-09-23T11:05:49.90798034Z     hint: undefined,
+2025-09-23T11:05:49.90798266Z     position: '291',
+2025-09-23T11:05:49.90798486Z     internalPosition: undefined,
+2025-09-23T11:05:49.908001211Z     internalQuery: undefined,
+2025-09-23T11:05:49.908003871Z     where: undefined,
+2025-09-23T11:05:49.908006231Z     schema: undefined,
+2025-09-23T11:05:49.908009011Z     table: undefined,
+2025-09-23T11:05:49.908011342Z     column: undefined,
+2025-09-23T11:05:49.908013702Z     dataType: undefined,
+2025-09-23T11:05:49.908015992Z     constraint: undefined,
+2025-09-23T11:05:49.908018302Z     file: 'parse_target.c',
+2025-09-23T11:05:49.908020532Z     line: '1065',
+2025-09-23T11:05:49.908022862Z     routine: 'checkInsertTargets'
+2025-09-23T11:05:49.908025223Z   }
+2025-09-23T11:05:49.908027543Z }
+2025-09-23T11:05:49.975150275Z ❌ Error during project creation: DrizzleQueryError: Failed query: 
+2025-09-23T11:05:49.975177787Z           INSERT INTO projects (
+2025-09-23T11:05:49.975180947Z             user_id, title, description, product_image_url, scene_image_url, 
+2025-09-23T11:05:49.975183367Z             scene_video_url, content_type, video_duration_seconds, status, 
+2025-09-23T11:05:49.975185477Z             progress, enhanced_prompt, output_image_url, output_video_url, 
+2025-09-23T11:05:49.975187457Z             credits_used, actual_cost, resolution, quality, error_message,
+2025-09-23T11:05:49.975189497Z             kling_video_task_id, kling_sound_task_id, include_audio, 
+2025-09-23T11:05:49.975192097Z             full_task_details, created_at, updated_at
+2025-09-23T11:05:49.975194518Z           ) VALUES (
+2025-09-23T11:05:49.975196518Z             $1, $2, $3, 
+2025-09-23T11:05:49.975198618Z             $4, $5, 
+2025-09-23T11:05:49.975227279Z             $6, $7, 
+2025-09-23T11:05:49.97523372Z             $8, $9, 
+2025-09-23T11:05:49.975236Z             $10, $11, 
+2025-09-23T11:05:49.97523811Z             $12, $13, 
+2025-09-23T11:05:49.97524047Z             $14, $15, 
+2025-09-23T11:05:49.97524246Z             $16, $17, 
+2025-09-23T11:05:49.975244291Z             $18, $19, 
+2025-09-23T11:05:49.975246261Z             $20, $21, 
+2025-09-23T11:05:49.975248441Z             $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+2025-09-23T11:05:49.975250571Z           )
+2025-09-23T11:05:49.975252551Z           RETURNING *
+2025-09-23T11:05:49.975254601Z         
+2025-09-23T11:05:49.975259801Z params: 1,ئءئ,,https://res.cloudinary.com/dqtsski2w/image/upload/v1758625543/cgi-generator/1758625542259-1.jpg.jpg,https://res.cloudinary.com/dqtsski2w/image/upload/v1758625547/cgi-generator/1758625546785-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg,,image,5,pending,0,,,,2,0,1024x1024,standard,,,,false,
+2025-09-23T11:05:49.975263472Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T11:05:49.975277362Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:49.975279902Z     at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T11:05:49.975282323Z     at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T11:05:49.975285083Z     at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T11:05:49.975287663Z   query: '\n' +
+2025-09-23T11:05:49.975290683Z     '          INSERT INTO projects (\n' +
+2025-09-23T11:05:49.975293483Z     '            user_id, title, description, product_image_url, scene_image_url, \n' +
+2025-09-23T11:05:49.975295983Z     '            scene_video_url, content_type, video_duration_seconds, status, \n' +
+2025-09-23T11:05:49.975298034Z     '            progress, enhanced_prompt, output_image_url, output_video_url, \n' +
+2025-09-23T11:05:49.975300114Z     '            credits_used, actual_cost, resolution, quality, error_message,\n' +
+2025-09-23T11:05:49.975302174Z     '            kling_video_task_id, kling_sound_task_id, include_audio, \n' +
+2025-09-23T11:05:49.975304324Z     '            full_task_details, created_at, updated_at\n' +
+2025-09-23T11:05:49.975306464Z     '          ) VALUES (\n' +
+2025-09-23T11:05:49.975309154Z     '            $1, $2, $3, \n' +
+2025-09-23T11:05:49.975311254Z     '            $4, $5, \n' +
+2025-09-23T11:05:49.975313255Z     '            $6, $7, \n' +
+2025-09-23T11:05:49.975315385Z     '            $8, $9, \n' +
+2025-09-23T11:05:49.975317465Z     '            $10, $11, \n' +
+2025-09-23T11:05:49.975319515Z     '            $12, $13, \n' +
+2025-09-23T11:05:49.975321565Z     '            $14, $15, \n' +
+2025-09-23T11:05:49.975323545Z     '            $16, $17, \n' +
+2025-09-23T11:05:49.975325615Z     '            $18, $19, \n' +
+2025-09-23T11:05:49.975327575Z     '            $20, $21, \n' +
+2025-09-23T11:05:49.975329556Z     '            $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP\n' +
+2025-09-23T11:05:49.975331825Z     '          )\n' +
+2025-09-23T11:05:49.975333876Z     '          RETURNING *\n' +
+2025-09-23T11:05:49.975335896Z     '        ',
+2025-09-23T11:05:49.975337916Z   params: [
+2025-09-23T11:05:49.975339946Z     1,
+2025-09-23T11:05:49.975342006Z     'ئءئ',
+2025-09-23T11:05:49.975343966Z     '',
+2025-09-23T11:05:49.975346837Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758625543/cgi-generator/1758625542259-1.jpg.jpg',
+2025-09-23T11:05:49.975350777Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758625547/cgi-generator/1758625546785-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T11:05:49.975352927Z     null,
+2025-09-23T11:05:49.975354977Z     'image',
+2025-09-23T11:05:49.975357007Z     5,
+2025-09-23T11:05:49.975358997Z     'pending',
+2025-09-23T11:05:49.975361037Z     0,
+2025-09-23T11:05:49.975363027Z     null,
+2025-09-23T11:05:49.975364987Z     null,
+2025-09-23T11:05:49.975366978Z     null,
+2025-09-23T11:05:49.975368998Z     2,
+2025-09-23T11:05:49.975370938Z     0,
+2025-09-23T11:05:49.975373018Z     '1024x1024',
+2025-09-23T11:05:49.975375038Z     'standard',
+2025-09-23T11:05:49.975376988Z     null,
+2025-09-23T11:05:49.975378988Z     null,
+2025-09-23T11:05:49.975380988Z     null,
+2025-09-23T11:05:49.975382999Z     false,
+2025-09-23T11:05:49.975385109Z     null
+2025-09-23T11:05:49.975387129Z   ],
+2025-09-23T11:05:49.975389219Z   cause: error: column "actual_cost" of relation "projects" does not exist
+2025-09-23T11:05:49.975391659Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T11:05:49.975397899Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:49.97540028Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T11:05:49.97540377Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T11:05:49.97540598Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T11:05:49.97540817Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T11:05:49.9754103Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T11:05:49.97541236Z     length: 133,
+2025-09-23T11:05:49.97541441Z     severity: 'ERROR',
+2025-09-23T11:05:49.97541651Z     code: '42703',
+2025-09-23T11:05:49.97541857Z     detail: undefined,
+2025-09-23T11:05:49.975420631Z     hint: undefined,
+2025-09-23T11:05:49.975422671Z     position: '291',
+2025-09-23T11:05:49.975424681Z     internalPosition: undefined,
+2025-09-23T11:05:49.975441582Z     internalQuery: undefined,
+2025-09-23T11:05:49.975444012Z     where: undefined,
+2025-09-23T11:05:49.975446052Z     schema: undefined,
+2025-09-23T11:05:49.975448062Z     table: undefined,
+2025-09-23T11:05:49.975450192Z     column: undefined,
+2025-09-23T11:05:49.975452252Z     dataType: undefined,
+2025-09-23T11:05:49.975454263Z     constraint: undefined,
+2025-09-23T11:05:49.975456383Z     file: 'parse_target.c',
+2025-09-23T11:05:49.975458423Z     line: '1065',
+2025-09-23T11:05:49.975460503Z     routine: 'checkInsertTargets'
+2025-09-23T11:05:49.975462533Z   }
+2025-09-23T11:05:49.975464613Z }
+2025-09-23T11:05:49.975593951Z Error creating project: DrizzleQueryError: Failed query: 
+2025-09-23T11:05:49.975600411Z           INSERT INTO projects (
+2025-09-23T11:05:49.975602801Z             user_id, title, description, product_image_url, scene_image_url, 
+2025-09-23T11:05:49.975604591Z             scene_video_url, content_type, video_duration_seconds, status, 
+2025-09-23T11:05:49.975607361Z             progress, enhanced_prompt, output_image_url, output_video_url, 
+2025-09-23T11:05:49.975610202Z             credits_used, actual_cost, resolution, quality, error_message,
+2025-09-23T11:05:49.975613062Z             kling_video_task_id, kling_sound_task_id, include_audio, 
+2025-09-23T11:05:49.975615552Z             full_task_details, created_at, updated_at
+2025-09-23T11:05:49.975618302Z           ) VALUES (
+2025-09-23T11:05:49.975621122Z             $1, $2, $3, 
+2025-09-23T11:05:49.975623862Z             $4, $5, 
+2025-09-23T11:05:49.975626602Z             $6, $7, 
+2025-09-23T11:05:49.975628973Z             $8, $9, 
+2025-09-23T11:05:49.975631893Z             $10, $11, 
+2025-09-23T11:05:49.975634433Z             $12, $13, 
+2025-09-23T11:05:49.975637053Z             $14, $15, 
+2025-09-23T11:05:49.975639743Z             $16, $17, 
+2025-09-23T11:05:49.975642474Z             $18, $19, 
+2025-09-23T11:05:49.975645254Z             $20, $21, 
+2025-09-23T11:05:49.975647804Z             $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+2025-09-23T11:05:49.975650374Z           )
+2025-09-23T11:05:49.975652914Z           RETURNING *
+2025-09-23T11:05:49.975655424Z         
+2025-09-23T11:05:49.975658335Z params: 1,ئءئ,,https://res.cloudinary.com/dqtsski2w/image/upload/v1758625543/cgi-generator/1758625542259-1.jpg.jpg,https://res.cloudinary.com/dqtsski2w/image/upload/v1758625547/cgi-generator/1758625546785-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg,,image,5,pending,0,,,,2,0,1024x1024,standard,,,,false,
+2025-09-23T11:05:49.975670185Z     at NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:41:15)
+2025-09-23T11:05:49.975672585Z     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:49.975674515Z     at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T11:05:49.975676156Z     at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T11:05:49.975677856Z     at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T11:05:49.975679606Z   query: '\n' +
+2025-09-23T11:05:49.975681476Z     '          INSERT INTO projects (\n' +
+2025-09-23T11:05:49.975683196Z     '            user_id, title, description, product_image_url, scene_image_url, \n' +
+2025-09-23T11:05:49.975684826Z     '            scene_video_url, content_type, video_duration_seconds, status, \n' +
+2025-09-23T11:05:49.975686566Z     '            progress, enhanced_prompt, output_image_url, output_video_url, \n' +
+2025-09-23T11:05:49.975688216Z     '            credits_used, actual_cost, resolution, quality, error_message,\n' +
+2025-09-23T11:05:49.975689906Z     '            kling_video_task_id, kling_sound_task_id, include_audio, \n' +
+2025-09-23T11:05:49.975691606Z     '            full_task_details, created_at, updated_at\n' +
+2025-09-23T11:05:49.975693326Z     '          ) VALUES (\n' +
+2025-09-23T11:05:49.975694946Z     '            $1, $2, $3, \n' +
+2025-09-23T11:05:49.975696627Z     '            $4, $5, \n' +
+2025-09-23T11:05:49.975698317Z     '            $6, $7, \n' +
+2025-09-23T11:05:49.975700007Z     '            $8, $9, \n' +
+2025-09-23T11:05:49.975701717Z     '            $10, $11, \n' +
+2025-09-23T11:05:49.975703367Z     '            $12, $13, \n' +
+2025-09-23T11:05:49.975705057Z     '            $14, $15, \n' +
+2025-09-23T11:05:49.975706697Z     '            $16, $17, \n' +
+2025-09-23T11:05:49.975708327Z     '            $18, $19, \n' +
+2025-09-23T11:05:49.975710198Z     '            $20, $21, \n' +
+2025-09-23T11:05:49.975711847Z     '            $22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP\n' +
+2025-09-23T11:05:49.975713548Z     '          )\n' +
+2025-09-23T11:05:49.975715288Z     '          RETURNING *\n' +
+2025-09-23T11:05:49.975716948Z     '        ',
+2025-09-23T11:05:49.975718638Z   params: [
+2025-09-23T11:05:49.975721138Z     1,
+2025-09-23T11:05:49.975723948Z     'ئءئ',
+2025-09-23T11:05:49.975726698Z     '',
+2025-09-23T11:05:49.975729588Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758625543/cgi-generator/1758625542259-1.jpg.jpg',
+2025-09-23T11:05:49.975733239Z     'https://res.cloudinary.com/dqtsski2w/image/upload/v1758625547/cgi-generator/1758625546785-720da7cec4daa5bf30c98deb175e6219%20%281%29.jpg.jpg',
+2025-09-23T11:05:49.975735779Z     null,
+2025-09-23T11:05:49.975738439Z     'image',
+2025-09-23T11:05:49.975740949Z     5,
+2025-09-23T11:05:49.975743699Z     'pending',
+2025-09-23T11:05:49.97574604Z     0,
+2025-09-23T11:05:49.97574848Z     null,
+2025-09-23T11:05:49.97575106Z     null,
+2025-09-23T11:05:49.97575366Z     null,
+2025-09-23T11:05:49.97575638Z     2,
+2025-09-23T11:05:49.97575816Z     0,
+2025-09-23T11:05:49.97575979Z     '1024x1024',
+2025-09-23T11:05:49.97576142Z     'standard',
+2025-09-23T11:05:49.97576303Z     null,
+2025-09-23T11:05:49.97576467Z     null,
+2025-09-23T11:05:49.975766351Z     null,
+2025-09-23T11:05:49.975768011Z     false,
+2025-09-23T11:05:49.975773471Z     null
+2025-09-23T11:05:49.975775221Z   ],
+2025-09-23T11:05:49.975777011Z   cause: error: column "actual_cost" of relation "projects" does not exist
+2025-09-23T11:05:49.975778761Z       at /opt/render/project/src/node_modules/pg/lib/client.js:545:17
+2025-09-23T11:05:49.975780402Z       at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+2025-09-23T11:05:49.975782111Z       at async file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:113:20
+2025-09-23T11:05:49.975784182Z       at async NodePgPreparedQuery.queryWithCache (file:///opt/render/project/src/node_modules/drizzle-orm/pg-core/session.js:39:16)
+2025-09-23T11:05:49.975785932Z       at async file:///opt/render/project/src/dist/index.js:1699:31
+2025-09-23T11:05:49.975787632Z       at async NodePgSession.transaction (file:///opt/render/project/src/node_modules/drizzle-orm/node-postgres/session.js:185:22)
+2025-09-23T11:05:49.975789292Z       at async file:///opt/render/project/src/dist/index.js:2260:32 {
+2025-09-23T11:05:49.975790932Z     length: 133,
+2025-09-23T11:05:49.975792672Z     severity: 'ERROR',
+2025-09-23T11:05:49.975794432Z     code: '42703',
+2025-09-23T11:05:49.975796062Z     detail: undefined,
+2025-09-23T11:05:49.975797683Z     hint: undefined,
+2025-09-23T11:05:49.975799303Z     position: '291',
+2025-09-23T11:05:49.975800973Z     internalPosition: undefined,
+2025-09-23T11:05:49.975802613Z     internalQuery: undefined,
+2025-09-23T11:05:49.975816073Z     where: undefined,
+2025-09-23T11:05:49.975819304Z     schema: undefined,
+2025-09-23T11:05:49.975822044Z     table: undefined,
+2025-09-23T11:05:49.975824664Z     column: undefined,
+2025-09-23T11:05:49.975827494Z     dataType: undefined,
+2025-09-23T11:05:49.975830404Z     constraint: undefined,
+2025-09-23T11:05:49.975832985Z     file: 'parse_target.c',
+2025-09-23T11:05:49.975835685Z     line: '1065',
+2025-09-23T11:05:49.975838275Z     routine: 'checkInsertTargets'
+2025-09-23T11:05:49.975840715Z   }
+2025-09-23T11:05:49.975843145Z }
+2025-09-23T11:05:49.976356305Z 11:05:49 AM [express] POST /api/projects 500 in 782ms :: {"message":"Failed to create project"}

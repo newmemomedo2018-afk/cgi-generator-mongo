@@ -38,7 +38,8 @@ export async function ensureRequiredColumns() {
       'kling_sound_task_id', 
       'include_audio',
       'full_task_details',
-      'credits_used'               // CRITICAL: Missing from production causing POST errors
+      'credits_used',              // CRITICAL: Missing from production causing POST errors
+      'actual_cost'                // CRITICAL: Missing causing GET projects errors
     ];
 
     for (const columnName of columnsToCheck) {
@@ -58,6 +59,8 @@ export async function ensureRequiredColumns() {
           columnType = 'BOOLEAN DEFAULT FALSE NOT NULL';
         } else if (columnName === 'credits_used') {
           columnType = 'INTEGER NOT NULL DEFAULT 1';
+        } else if (columnName === 'actual_cost') {
+          columnType = 'INTEGER DEFAULT 0 NOT NULL';
         } else if (columnName.includes('task_id')) {
           columnType = 'VARCHAR(255)';
         } else if (columnName === 'enhanced_prompt' || columnName === 'output_image_url' || 
