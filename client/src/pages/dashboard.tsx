@@ -15,7 +15,8 @@ import { apiRequest } from "@/lib/queryClient";
 import UploadZone from "@/components/upload-zone";
 import ProjectCard from "@/components/project-card";
 import ProgressModal from "@/components/progress-modal";
-import { Coins, User, Plus, Image, Video, Wand2, Info } from "lucide-react";
+import SceneSelectionModal from "@/components/scene-selection-modal";
+import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles } from "lucide-react";
 import type { User as UserType, Project } from "@shared/schema";
 
 export default function Dashboard() {
@@ -43,6 +44,7 @@ export default function Dashboard() {
   
   // Track reset key to force UploadZone preview reset
   const [resetKey, setResetKey] = useState<string>("");
+  const [showSceneSelector, setShowSceneSelector] = useState(false);
 
   const { data: userData } = useQuery<UserType>({
     queryKey: ["/api/auth/user"],
@@ -327,6 +329,29 @@ export default function Dashboard() {
     }
   };
 
+  // Handle scene selection from modal
+  const handleSceneSelection = (scene: any) => {
+    console.log('🎬 Scene selected from modal:', scene);
+    
+    // Update project data with selected scene
+    setProjectData(prev => ({
+      ...prev,
+      sceneImageUrl: scene.imageUrl,
+      sceneVideoUrl: "" // Clear video URL when scene image is selected
+    }));
+    
+    setIsSceneImageUploaded(true);
+    
+    // Show success toast
+    toast({
+      title: "تم اختيار المشهد",
+      description: `تم اختيار "${scene.name || scene.title}" كمشهد للمشروع`,
+    });
+
+    // Close the modal
+    setShowSceneSelector(false);
+  };
+
   const handleCreateProject = () => {
     // Debug: Log current project data before validation
     console.log("🔍 Frontend projectData before submission:", JSON.stringify(projectData, null, 2));
@@ -457,9 +482,23 @@ export default function Dashboard() {
 
                       {/* Scene Upload (Image or Video based on content type) */}
                       <div>
-                        <Label className="block text-sm font-medium mb-2">
-                          {projectData.contentType === "video" ? "صورة أو فيديو المشهد" : "صورة المشهد"}
-                        </Label>
+                        <div className="flex items-center justify-between mb-2">
+                          <Label className="text-sm font-medium">
+                            {projectData.contentType === "video" ? "صورة أو فيديو المشهد" : "صورة المشهد"}
+                          </Label>
+                          {projectData.productImageUrl && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => setShowSceneSelector(true)}
+                              className="text-xs"
+                              data-testid="scene-selector-button"
+                            >
+                              <Sparkles className="ml-2 h-3 w-3" />
+                              اختيار مشهد جاهز
+                            </Button>
+                          )}
+                        </div>
                         <UploadZone
                           onFileUpload={handleSceneUpload}
                           isUploading={uploadSceneMutation.isPending}
@@ -479,6 +518,11 @@ export default function Dashboard() {
                           resetKey={resetKey}
                           acceptedTypes={projectData.contentType === "video" ? "both" : "image"}
                         />
+                        {projectData.productImageUrl && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            💡 نصيحة: يمكنك اختيار مشهد جاهز بناء على تحليل منتجك تلقائياً
+                          </p>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -839,6 +883,15 @@ export default function Dashboard() {
           onClose={() => setShowProgressModal(false)}
         />
       )}
+
+      {/* Scene Selection Modal */}
+      <SceneSelectionModal
+        isOpen={showSceneSelector}
+        onClose={() => setShowSceneSelector(false)}
+        onSceneSelect={handleSceneSelection}
+        productImageUrl={projectData.productImageUrl}
+        productType="أثاث" // TODO: Extract product type from analysis
+      />
     </div>
   );
 }

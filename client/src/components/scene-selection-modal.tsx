@@ -56,18 +56,48 @@ export default function SceneSelectionModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // جلب المشاهد الافتراضية
-  const { data: defaultScenes = [], isLoading: defaultLoading } = useQuery<SceneData[]>({
+  const { data: defaultScenes = [], isLoading: defaultLoading, error: defaultError } = useQuery<SceneData[]>({
     queryKey: ['/api/scenes/default', productType],
-    enabled: isOpen && activeTab === 'default'
+    queryFn: () => {
+      const params = new URLSearchParams();
+      if (productType) params.append('productType', productType);
+      return fetch(`/api/scenes/default?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+      }).then(res => {
+        if (!res.ok) throw new Error('Failed to load default scenes');
+        return res.json();
+      });
+    },
+    enabled: isOpen && activeTab === 'default',
+    retry: 2
   });
 
   // جلب مشاهد Pinterest
-  const { data: pinterestScenes = [], isLoading: pinterestLoading, refetch: refetchPinterest } = useQuery<PinterestScene[]>({
+  const { data: pinterestScenes = [], isLoading: pinterestLoading, error: pinterestError, refetch: refetchPinterest } = useQuery<PinterestScene[]>({
     queryKey: ['/api/scenes/pinterest', searchQuery],
-    enabled: false // يتم التشغيل يدوياً
+    queryFn: () => {
+      if (!searchQuery?.trim()) return Promise.resolve([]);
+      const params = new URLSearchParams({
+        q: searchQuery,
+        productType: productType || 'أثاث',
+        maxResults: '20'
+      });
+      return fetch(`/api/scenes/pinterest?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+      }).then(res => {
+        if (!res.ok) throw new Error('Pinterest search failed');
+        return res.json();
+      });
+    },
+    enabled: false, // يتم التشغيل يدوياً
+    retry: 2
   });
 
-  // تحليل المنتج تلقائياً عند فتح المودال
+  // تحليل المنتج تلقائياً عند فتح المودال  
   useEffect(() => {
     if (isOpen && productImageUrl && activeTab === 'pinterest') {
       analyzeProductAndSearch();
@@ -84,6 +114,7 @@ export default function SceneSelectionModal({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
         },
         body: JSON.stringify({ imageUrl: productImageUrl }),
       });
@@ -95,9 +126,13 @@ export default function SceneSelectionModal({
         
         // البحث التلقائي بناء على التحليل
         refetchPinterest();
+      } else {
+        throw new Error(`Analysis failed: ${analysisResponse.status}`);
       }
     } catch (error) {
       console.error('Product analysis failed:', error);
+      // Set a fallback search query  
+      setSearchQuery('CGI interior design');
     } finally {
       setIsAnalyzing(false);
     }

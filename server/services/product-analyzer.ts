@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { URL } from 'url';
 
 /**
  * Product Analyzer Service
@@ -17,23 +18,96 @@ export interface ProductAnalysis {
 }
 
 /**
+ * فلترة أمان URL لمنع SSRF attacks
+ */
+function isUrlSafe(url: string): boolean {
+  try {
+    const parsedUrl = new URL(url);
+    
+    // Allow only HTTP and HTTPS
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return false;
+    }
+    
+    // Block internal/private networks
+    const hostname = parsedUrl.hostname.toLowerCase();
+    
+    // Block localhost variants
+    if (['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname)) {
+      return false;
+    }
+    
+    // Block private IP ranges
+    if (hostname.match(/^10\./) || hostname.match(/^192\.168\./) || hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./)) {
+      return false;
+    }
+    
+    // Block metadata services
+    if (hostname.includes('169.254.') || hostname.includes('metadata')) {
+      return false;
+    }
+    
+    // Block other internal services
+    if (hostname.includes('.local') || hostname.startsWith('internal')) {
+      return false;
+    }
+    
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * تحليل صورة المنتج لاستخراج معلومات مفيدة للبحث
  */
 export async function analyzeProductForScenes(imageUrl: string): Promise<ProductAnalysis> {
   try {
+    // أمان URL validation
+    if (!imageUrl || !isUrlSafe(imageUrl)) {
+      throw new Error('Invalid or unsafe image URL provided');
+    }
+    
     console.log('🔍 Analyzing product image for scene suggestions:', {
       imageUrl: imageUrl.substring(0, 50) + '...'
     });
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // تحميل الصورة
-    const imageResponse = await fetch(imageUrl);
+    // تحميل الصورة مع timeout وsize limits
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const imageResponse = await fetch(imageUrl, { 
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'CGI-Generator-Bot/1.0',
+      }
+    });
+    clearTimeout(timeoutId);
+    
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.status}`);
     }
+    
+    // Check content type
+    const contentType = imageResponse.headers.get('content-type');
+    if (!contentType || !contentType.startsWith('image/')) {
+      throw new Error('URL does not point to a valid image');
+    }
+    
+    // Check content length (max 10MB)
+    const contentLength = imageResponse.headers.get('content-length');
+    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
+      throw new Error('Image too large (max 10MB)');
+    }
 
     const imageBuffer = await imageResponse.arrayBuffer();
+    
+    // Additional size check after download
+    if (imageBuffer.byteLength > 10 * 1024 * 1024) {
+      throw new Error('Image too large (max 10MB)');
+    }
     const imageData = {
       inlineData: {
         data: Buffer.from(imageBuffer).toString('base64'),
