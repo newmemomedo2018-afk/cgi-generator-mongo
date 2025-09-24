@@ -56,7 +56,7 @@ export default function SceneSelectionModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // جلب المشاهد الافتراضية
-  const { data: defaultScenes = [], isLoading: defaultLoading, error: defaultError, refetch: refetchDefault } = useQuery<SceneData[]>({
+  const { data: defaultScenes = [], status: defaultStatus, error: defaultError, refetch: refetchDefault } = useQuery<SceneData[]>({
     queryKey: ['/api/scenes/default', productType],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -231,17 +231,17 @@ export default function SceneSelectionModal({
                 </Button>
               </div>
 
-              {defaultLoading ? (
+              {defaultStatus === 'pending' ? (
                 <div className="flex flex-col items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   <span className="mt-3 text-sm font-medium">جاري تحميل المشاهد...</span>
                   <span className="mt-1 text-xs text-muted-foreground">انتظر قليلاً...</span>
                 </div>
-              ) : defaultError ? (
+              ) : defaultStatus === 'error' ? (
                 <div className="text-center py-12">
                   <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
                     <p className="text-red-600 dark:text-red-400 font-medium">حدث خطأ في تحميل المشاهد</p>
-                    <p className="text-sm mt-2 text-red-500 dark:text-red-300">{(defaultError as Error)?.message}</p>
+                    <p className="text-sm mt-2 text-red-500 dark:text-red-300">{defaultError?.message}</p>
                     <Button 
                       onClick={() => refetchDefault()}
                       variant="outline" 
@@ -253,7 +253,7 @@ export default function SceneSelectionModal({
                     </Button>
                   </div>
                 </div>
-              ) : defaultScenes.length === 0 ? (
+              ) : !defaultScenes || defaultScenes.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
                     <p className="text-yellow-600 dark:text-yellow-400">لا توجد مشاهد متاحة حالياً</p>
