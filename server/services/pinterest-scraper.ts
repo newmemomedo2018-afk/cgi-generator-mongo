@@ -1,12 +1,6 @@
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-
-// Enable stealth plugin لتجنب detection
-puppeteer.use(StealthPlugin());
-
 /**
- * Pinterest Scraper Service  
- * سحب مشاهد CGI احترافية من Pinterest
+ * Pinterest API Service  
+ * سحب مشاهد CGI احترافية من Pinterest باستخدام الـ API الرسمي
  */
 
 export interface PinterestScene {
@@ -30,16 +24,9 @@ interface ScrapingOptions {
   retryCount?: number;
 }
 
-/**
- * User Agents للتبديل العشوائي
- */
-const USER_AGENTS = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0'
-];
+// Pinterest API Configuration
+const PINTEREST_ACCESS_TOKEN = process.env.PINTEREST_ACCESS_TOKEN || 'pina_AMA7UXYXACN34BAAGDADMDTN55CHVGIBQBIQCDFP7J7EONGFEWTPNQS2CGFLUX5XXVGOIIGKOH5RYUHSUKSV475QRXTFF7IA';
+const PINTEREST_API_BASE = 'https://api.pinterest.com/v5';
 
 /**
  * Keywords للتأكد إن المشهد CGI
@@ -117,189 +104,120 @@ function extractKeywords(title: string, description: string = ''): string[] {
 }
 
 /**
- * وقت انتظار عشوائي لمحاكاة السلوك البشري
+ * Pinterest API search for CGI interior scenes
  */
-function randomDelay(min: number = 1000, max: number = 3000): Promise<void> {
-  const delay = Math.floor(Math.random() * (max - min + 1)) + min;
-  return new Promise(resolve => setTimeout(resolve, delay));
+async function searchPinterestAPI(query: string, limit: number = 20): Promise<any[]> {
+  const searchUrl = `${PINTEREST_API_BASE}/pins/search`;
+  
+  const params = new URLSearchParams({
+    query: query + ' CGI interior design 3D rendering',
+    limit: limit.toString(),
+    fields: 'id,title,description,link,media,board,creator'
+  });
+
+  console.log('🔍 Pinterest API search:', {
+    url: `${searchUrl}?${params}`,
+    query: query
+  });
+
+  try {
+    const response = await fetch(`${searchUrl}?${params}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${PINTEREST_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'CGI-Generator/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('❌ Pinterest API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorData
+      });
+      throw new Error(`Pinterest API error: ${response.status} - ${errorData}`);
+    }
+
+    const data = await response.json();
+    console.log('✅ Pinterest API response:', {
+      itemsCount: data.items?.length || 0,
+      hasMore: !!data.bookmark
+    });
+
+    return data.items || [];
+  } catch (error) {
+    console.error('❌ Pinterest API request failed:', error);
+    return [];
+  }
 }
 
 /**
- * سحب مشاهد من Pinterest بحسب الكلمات المفتاحية
+ * سحب مشاهد من Pinterest باستخدام الـ API الرسمي
  */
 export async function scrapePinterestScenes(
   searchKeywords: string,
   options: ScrapingOptions = {}
 ): Promise<PinterestScene[]> {
   const {
-    maxResults = 20,
-    timeout = 60000,
-    retryCount = 3
+    maxResults = 20
   } = options;
 
-  console.log('🔍 Starting Pinterest scraping:', {
+  console.log('🔍 Starting Pinterest API search:', {
     searchKeywords,
-    maxResults,
-    timeout
+    maxResults
   });
 
-  let browser;
-  let attempt = 0;
-  
-  while (attempt < retryCount) {
-    try {
-      attempt++;
-      console.log(`📱 Launch attempt ${attempt}/${retryCount}`);
+  try {
+    const pinterestResults = await searchPinterestAPI(searchKeywords, maxResults);
 
-      // إعداد Puppeteer مع stealth
-      browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--disable-gpu'
-        ],
-        defaultViewport: {
-          width: 1366,
-          height: 768
-        }
-      });
+    console.log(`📌 Retrieved ${pinterestResults.length} pins from Pinterest API`);
 
-      const page = await browser.newPage();
-      
-      // تعيين User Agent عشوائي
-      const randomUserAgent = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
-      await page.setUserAgent(randomUserAgent);
-      
-      // تعيين headers إضافية لمحاكاة متصفح حقيقي
-      await page.setExtraHTTPHeaders({
-        'Accept-Language': 'en-US,en;q=0.9,ar;q=0.8',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-      });
+    // معالجة النتائج وفلترة CGI
+    const processedScenes: PinterestScene[] = [];
 
-      console.log('🌐 Navigating to Pinterest search...');
-      
-      // بناء URL البحث
-      const searchUrl = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(searchKeywords)}`;
-      
-      await page.goto(searchUrl, { 
-        waitUntil: 'networkidle2', 
-        timeout 
-      });
-
-      // انتظار تحميل النتائج
-      await randomDelay(2000, 4000);
-
-      console.log('📊 Extracting Pinterest pins...');
-
-      // استخراج البيانات من الصفحة
-      const pinterestResults = await page.evaluate((maxRes) => {
-        const pins = [];
-        const pinElements = document.querySelectorAll('[data-test-id="pin"]');
+    for (const pin of pinterestResults) {
+      try {
+        const title = pin.title || '';
+        const description = pin.description || '';
         
-        console.log(`Found ${pinElements.length} pin elements on page`);
-        
-        for (let i = 0; i < Math.min(pinElements.length, maxRes); i++) {
-          const pinElement = pinElements[i];
-          
-          try {
-            // استخراج الصورة
-            const imgElement = pinElement.querySelector('img');
-            const imageUrl = imgElement?.src || imgElement?.getAttribute('data-src') || '';
-            
-            // استخراج العنوان
-            const titleElement = pinElement.querySelector('[data-test-id="pinrep-title"]') || 
-                                 pinElement.querySelector('[title]');
-            const title = titleElement?.textContent || titleElement?.getAttribute('title') || 'Untitled';
-            
-            // استخراج الرابط
-            const linkElement = pinElement.querySelector('a[href*="/pin/"]');
-            const pinterestUrl = linkElement ? `https://www.pinterest.com${linkElement.getAttribute('href')}` : '';
-            
-            // استخراج معلومات إضافية
-            const userElement = pinElement.querySelector('[data-test-id="creator-profile-link"]');
-            const userName = userElement?.textContent || '';
-            
-            if (imageUrl && title && pinterestUrl) {
-              pins.push({
-                title: title.trim(),
-                imageUrl: imageUrl,
-                pinterestUrl: pinterestUrl,
-                userName: userName.trim(),
-                description: '' // سنضيفه لاحقاً إذا أمكن
-              });
-            }
-          } catch (error) {
-            console.warn('Error extracting pin data:', error);
-          }
-        }
-        
-        return pins;
-      }, maxResults);
-
-      console.log(`📌 Extracted ${pinterestResults.length} pins from Pinterest`);
-
-      // إغلاق المتصفح
-      await browser.close();
-
-      // معالجة النتائج وفلترة CGI
-      const processedScenes: PinterestScene[] = [];
-
-      for (const result of pinterestResults) {
         // فحص إذا كان المشهد CGI
-        const isCGI = isCGIScene(result.title, result.description);
+        const isCGI = isCGIScene(title, description);
         
-        if (isCGI) {
+        if (isCGI && pin.media?.images?.['600x']) {
           const scene: PinterestScene = {
-            id: `pinterest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            title: result.title,
-            description: result.description || '',
-            imageUrl: result.imageUrl,
-            pinterestUrl: result.pinterestUrl,
-            userName: result.userName,
+            id: `pinterest_api_${pin.id}`,
+            title: title,
+            description: description,
+            imageUrl: pin.media.images['600x'].url,
+            pinterestUrl: `https://www.pinterest.com/pin/${pin.id}/`,
+            userName: pin.creator?.username || '',
             isCGI: true,
-            category: categorizeScene(result.title, result.description),
-            extractedKeywords: extractKeywords(result.title, result.description),
+            category: categorizeScene(title, description),
+            extractedKeywords: extractKeywords(title, description),
             scrapedAt: new Date()
           };
           
           processedScenes.push(scene);
         }
+      } catch (error) {
+        console.warn('Error processing pin:', error);
       }
-
-      console.log('✅ Pinterest scraping completed:', {
-        totalPinsFound: pinterestResults.length,
-        cgiScenesFiltered: processedScenes.length,
-        categories: Array.from(new Set(processedScenes.map(s => s.category)))
-      });
-
-      return processedScenes;
-
-    } catch (error) {
-      console.error(`❌ Pinterest scraping attempt ${attempt} failed:`, error);
-      
-      if (browser) {
-        try {
-          await browser.close();
-        } catch (closeError) {
-          console.warn('Warning: failed to close browser:', closeError);
-        }
-      }
-
-      if (attempt >= retryCount) {
-        throw new Error(`Pinterest scraping failed after ${retryCount} attempts: ${error}`);
-      }
-
-      // انتظار قبل إعادة المحاولة
-      await randomDelay(5000, 10000);
     }
-  }
 
-  return []; // fallback
+    console.log('✅ Pinterest API search completed:', {
+      totalPinsFound: pinterestResults.length,
+      cgiScenesFiltered: processedScenes.length,
+      categories: Array.from(new Set(processedScenes.map(s => s.category)))
+    });
+
+    return processedScenes;
+
+  } catch (error) {
+    console.error('❌ Pinterest API search failed:', error);
+    return [];
+  }
 }
 
 /**

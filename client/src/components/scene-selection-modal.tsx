@@ -182,6 +182,15 @@ export default function SceneSelectionModal({
                   <Loader2 className="h-6 w-6 animate-spin" />
                   <span className="ml-2">جاري تحميل المشاهد...</span>
                 </div>
+              ) : defaultError ? (
+                <div className="text-center py-12 text-red-500">
+                  <p>حدث خطأ في تحميل المشاهد</p>
+                  <p className="text-sm mt-2">{(defaultError as Error)?.message}</p>
+                </div>
+              ) : defaultScenes.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <p>لا توجد مشاهد متاحة حالياً</p>
+                </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto">
                   {defaultScenes.map((scene: SceneData) => (
