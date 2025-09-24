@@ -16,39 +16,30 @@ async function getImageDataFromStorage(filePath: string): Promise<{base64: strin
     let filename = null;
     
     if (filePath.startsWith('http')) {
-      // Check for Cloudinary URLs first
-      if (filePath.includes('cloudinary.com') || filePath.includes('res.cloudinary.com')) {
-        console.log("Fetching Cloudinary image:", filePath);
-        
-        try {
-          const response = await fetch(filePath);
-          if (!response.ok) {
-            throw new Error(`Failed to fetch Cloudinary image: ${response.status} ${response.statusText}`);
-          }
-          
-          const buffer = await response.arrayBuffer();
-          const base64 = Buffer.from(buffer).toString('base64');
-          const mimeType = response.headers.get('content-type') || 'image/jpeg';
-          
-          console.log("Cloudinary image loaded successfully:", {
-            url: filePath,
-            bufferLength: buffer.byteLength,
-            base64Length: base64.length,
-            mimeType
-          });
-          
-          return { base64, mimeType };
-        } catch (error) {
-          console.error("Error fetching Cloudinary image:", error);
-          throw new Error(`Failed to load Cloudinary image: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-      }
+      // Handle all HTTP/HTTPS URLs (Cloudinary, Unsplash, etc.) 
+      console.log("Fetching external image:", filePath);
       
-      // Extract filename from URL path like /api/files/uploads/filename.jpg
-      const urlPath = new URL(filePath).pathname;
-      const match = urlPath.match(/\/api\/files\/uploads\/(.+)/);
-      if (match) {
-        filename = match[1];
+      try {
+        const response = await fetch(filePath);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch external image: ${response.status} ${response.statusText}`);
+        }
+        
+        const buffer = await response.arrayBuffer();
+        const base64 = Buffer.from(buffer).toString('base64');
+        const mimeType = response.headers.get('content-type') || 'image/jpeg';
+        
+        console.log("External image loaded successfully:", {
+          url: filePath,
+          bufferLength: buffer.byteLength,
+          base64Length: base64.length,
+          mimeType
+        });
+        
+        return { base64, mimeType };
+      } catch (error) {
+        console.error("Error fetching external image:", error);
+        throw new Error(`Failed to load external image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     } else if (filePath.includes('/api/files/uploads/')) {
       // Handle relative paths like /api/files/uploads/filename.jpg
