@@ -54,6 +54,7 @@ export default function SceneSelectionModal({
   const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('default');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzedProductType, setAnalyzedProductType] = useState<string | null>(null);
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
 
   // جلب المشاهد الافتراضية
@@ -123,12 +124,19 @@ export default function SceneSelectionModal({
 
   // جلب مشاهد Pinterest
   const { data: pinterestScenes = [], isLoading: pinterestLoading, error: pinterestError, refetch: refetchPinterest } = useQuery<PinterestScene[]>({
-    queryKey: ['/api/scenes/pinterest', searchQuery],
+    queryKey: ['/api/scenes/pinterest', searchQuery, analyzedProductType],
     queryFn: () => {
       if (!searchQuery?.trim()) return Promise.resolve([]);
+      const currentProductType = analyzedProductType || productType || 'أثاث';
+      console.log('🔍 Pinterest search with analyzed product type:', { 
+        searchQuery, 
+        originalProductType: productType, 
+        analyzedProductType,
+        finalProductType: currentProductType 
+      });
       const params = new URLSearchParams({
         q: searchQuery,
-        productType: productType || 'أثاث',
+        productType: currentProductType,
         maxResults: '24'
       });
       return fetch(`/api/scenes/pinterest?${params}`, {
@@ -183,18 +191,27 @@ export default function SceneSelectionModal({
       if (analysisResponse.ok) {
         const analysis = await analysisResponse.json();
         const optimizedQuery = analysis.pinterestSearchTerms?.[0] || 'CGI interior design';
+        
+        // حفظ نوع المنتج المحلل
+        setAnalyzedProductType(analysis.productType);
         setSearchQuery(optimizedQuery);
         
+        console.log('✅ Analysis completed, updating Pinterest search:', {
+          analyzedProductType: analysis.productType,
+          searchQuery: optimizedQuery,
+          pinterestSearchTerms: analysis.pinterestSearchTerms
+        });
+        
         // البحث التلقائي بناء على التحليل
-        refetchPinterest();
+        setTimeout(() => refetchPinterest(), 100);
       } else {
         throw new Error(`Analysis failed: ${analysisResponse.status}`);
       }
     } catch (error) {
       console.error('Product analysis failed:', error);
-      // Set a fallback search query  
+      // Set a fallback search query without changing product type
       setSearchQuery('CGI interior design');
-      refetchPinterest();
+      setTimeout(() => refetchPinterest(), 100);
     } finally {
       setIsAnalyzing(false);
     }
