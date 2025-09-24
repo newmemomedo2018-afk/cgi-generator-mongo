@@ -92,7 +92,7 @@ export default function SceneSelectionModal({
       console.log('✅ Default scenes loaded:', {
         count: data.length,
         firstScene: data[0]?.name,
-        categories: [...new Set(data.map((s: SceneData) => s.category))]
+        categories: Array.from(new Set(data.map((s: SceneData) => s.category)))
       });
       
       return data;
