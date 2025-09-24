@@ -109,6 +109,9 @@ function extractKeywords(title: string, description: string = ''): string[] {
 async function searchPinterestAPI(query: string, limit: number = 20): Promise<any[]> {
   const searchUrl = `${PINTEREST_API_BASE}/search/pins`;
   
+  // ⚠️ WARNING: Pinterest API v5 has limitations - only works with user's own content
+  console.warn('⚠️  Pinterest API v5 Limitation: Search only works on user\'s own pins/boards');
+  
   const params = new URLSearchParams({
     query: query + ' CGI interior design 3D rendering',
     limit: limit.toString(),
@@ -143,7 +146,8 @@ async function searchPinterestAPI(query: string, limit: number = 20): Promise<an
     const data = await response.json();
     console.log('✅ Pinterest API response:', {
       itemsCount: data.items?.length || 0,
-      hasMore: !!data.bookmark
+      hasMore: !!data.bookmark,
+      fullData: JSON.stringify(data, null, 2).substring(0, 500) // Show first 500 chars of response
     });
 
     return data.items || [];
