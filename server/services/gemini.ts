@@ -16,29 +16,81 @@ async function getImageDataFromStorage(filePath: string): Promise<{base64: strin
     let filename = null;
     
     if (filePath.startsWith('http')) {
-      // Handle all HTTP/HTTPS URLs (Cloudinary, Unsplash, etc.) 
+      // Security: Only allow trusted domains for external image fetching
+      const allowedDomains = [
+        'res.cloudinary.com',
+        'images.unsplash.com',
+        'cloudinary.com'
+      ];
+      
+      let url: URL;
+      try {
+        url = new URL(filePath);
+      } catch {
+        throw new Error(`Invalid URL format: ${filePath}`);
+      }
+      
+      const isAllowedDomain = allowedDomains.some(domain => 
+        url.hostname === domain || url.hostname.endsWith('.' + domain)
+      );
+      
+      if (!isAllowedDomain) {
+        throw new Error(`Domain not allowed: ${url.hostname}. Only trusted image domains are supported.`);
+      }
+      
       console.log("Fetching external image:", filePath);
       
       try {
-        const response = await fetch(filePath);
+        // Add timeout and size limits for security
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
+        const response = await fetch(filePath, { 
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'CGI-Generator/1.0'
+          }
+        });
+        clearTimeout(timeoutId);
+        
         if (!response.ok) {
           throw new Error(`Failed to fetch external image: ${response.status} ${response.statusText}`);
         }
         
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.startsWith('image/')) {
+          throw new Error(`Invalid content type: ${contentType}. Only images are allowed.`);
+        }
+        
+        // Check content length before downloading
+        const contentLength = response.headers.get('content-length');
+        if (contentLength && parseInt(contentLength) > 15 * 1024 * 1024) { // 15MB limit
+          throw new Error(`Image too large: ${contentLength} bytes. Maximum 15MB allowed.`);
+        }
+        
         const buffer = await response.arrayBuffer();
+        
+        // Double-check size after download
+        if (buffer.byteLength > 15 * 1024 * 1024) {
+          throw new Error(`Image too large: ${buffer.byteLength} bytes. Maximum 15MB allowed.`);
+        }
+        
         const base64 = Buffer.from(buffer).toString('base64');
-        const mimeType = response.headers.get('content-type') || 'image/jpeg';
         
         console.log("External image loaded successfully:", {
           url: filePath,
+          domain: url.hostname,
           bufferLength: buffer.byteLength,
           base64Length: base64.length,
-          mimeType
+          mimeType: contentType
         });
         
-        return { base64, mimeType };
+        return { base64, mimeType: contentType };
       } catch (error) {
         console.error("Error fetching external image:", error);
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error(`Request timeout: Failed to load image within 10 seconds`);
+        }
         throw new Error(`Failed to load external image: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     } else if (filePath.includes('/api/files/uploads/')) {
