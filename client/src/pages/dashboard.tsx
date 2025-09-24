@@ -513,7 +513,7 @@ export default function Dashboard() {
                                   size="sm"
                                   data-testid="edit-product-image"
                                 >
-                                  <Edit className="ml-2 h-4 w-4" />
+                                  <Wand2 className="ml-2 h-4 w-4" />
                                   تعديل الصورة
                                 </Button>
                               </div>
