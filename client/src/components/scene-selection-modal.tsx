@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Search, Sparkles, ImageIcon, ExternalLink } from 'lucide-react';
+import { Loader2, Search, Sparkles, ImageIcon, ExternalLink, Scale, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 /**
@@ -39,7 +39,7 @@ interface PinterestScene {
 interface SceneSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSceneSelect: (scene: SceneData | PinterestScene) => void;
+  onSceneSelect: (scene: SceneData | PinterestScene, productSize?: 'normal' | 'emphasized') => void;
   productImageUrl?: string;
   productType?: string;
 }
@@ -54,6 +54,7 @@ export default function SceneSelectionModal({
   const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('default');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
 
   // جلب المشاهد الافتراضية
   const { data: defaultScenes = [], status: defaultStatus, error: defaultError, refetch: refetchDefault } = useQuery<SceneData[]>({
@@ -190,7 +191,7 @@ export default function SceneSelectionModal({
   };
 
   const handleSceneClick = (scene: SceneData | PinterestScene) => {
-    onSceneSelect(scene);
+    onSceneSelect(scene, productSize);
     onClose();
   };
 
@@ -203,6 +204,40 @@ export default function SceneSelectionModal({
             اختيار مشهد للمنتج
           </DialogTitle>
         </DialogHeader>
+
+        {/* خيارات حجم المنتج */}
+        <div className="border rounded-lg p-4 bg-muted/30">
+          <div className="flex items-center gap-2 mb-3">
+            <Scale className="h-4 w-4 text-primary" />
+            <span className="font-medium text-sm">حجم المنتج في المشهد</span>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              variant={productSize === 'normal' ? 'default' : 'outline'}
+              onClick={() => setProductSize('normal')}
+              className="flex items-center gap-2 h-auto py-3 justify-start"
+              data-testid="product-size-normal"
+            >
+              <Scale className="h-4 w-4" />
+              <div className="text-right">
+                <div className="font-medium text-sm">مناسب للغرفة</div>
+                <div className="text-xs opacity-75">حجم طبيعي ومتناسق</div>
+              </div>
+            </Button>
+            <Button
+              variant={productSize === 'emphasized' ? 'default' : 'outline'}
+              onClick={() => setProductSize('emphasized')}
+              className="flex items-center gap-2 h-auto py-3 justify-start"
+              data-testid="product-size-emphasized"
+            >
+              <Zap className="h-4 w-4" />
+              <div className="text-right">
+                <div className="font-medium text-sm">مُبرز وبارز</div>
+                <div className="text-xs opacity-75">إبراز للمنتج كنقطة تركيز</div>
+              </div>
+            </Button>
+          </div>
+        </div>
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-2">

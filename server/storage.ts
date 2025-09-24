@@ -299,7 +299,7 @@ export class PostgreSQLStorage implements IStorage {
           user_id, title, description, product_image_url, scene_image_url, 
           scene_video_url, content_type, video_duration_seconds, status, 
           progress, enhanced_prompt, output_image_url, output_video_url, 
-          credits_used, actual_cost, resolution, quality, error_message,
+          credits_used, actual_cost, resolution, quality, product_size, error_message,
           kling_video_task_id, kling_sound_task_id, include_audio, 
           full_task_details, created_at, updated_at
         ) VALUES (
@@ -311,9 +311,10 @@ export class PostgreSQLStorage implements IStorage {
           ${projectData.outputImageUrl || null}, ${projectData.outputVideoUrl || null}, 
           ${projectData.creditsUsed}, ${projectData.actualCost || 0}, 
           ${projectData.resolution || '1024x1024'}, ${projectData.quality || 'standard'}, 
-          ${projectData.errorMessage || null}, ${projectData.klingVideoTaskId || null}, 
-          ${projectData.klingSoundTaskId || null}, ${projectData.includeAudio || false}, 
-          ${projectData.fullTaskDetails || null}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+          ${(projectData as any).productSize || 'normal'}, ${projectData.errorMessage || null}, 
+          ${projectData.klingVideoTaskId || null}, ${projectData.klingSoundTaskId || null}, 
+          ${projectData.includeAudio || false}, ${projectData.fullTaskDetails || null}, 
+          CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
         )
         RETURNING *
       `);

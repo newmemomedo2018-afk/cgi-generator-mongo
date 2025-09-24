@@ -54,6 +54,7 @@ export const projects = pgTable('projects', {
   actualCost: integer('actual_cost').default(0).notNull(), // in millicents
   resolution: varchar('resolution', { length: 50 }).default('1024x1024').notNull(),
   quality: varchar('quality', { length: 50 }).default('standard').notNull(),
+  productSize: varchar('product_size', { length: 20 }).default('normal').notNull(),
   errorMessage: text('error_message'),
   // Kling AI task tracking
   klingVideoTaskId: varchar('kling_video_task_id', { length: 255 }),
@@ -121,6 +122,7 @@ export const createProjectInputSchema = z.object({
   videoDurationSeconds: z.number().min(5).max(10).default(5),
   resolution: z.string().default('1024x1024'),
   quality: z.string().default('standard'),
+  productSize: z.enum(['normal', 'emphasized']).default('normal'),
   includeAudio: z.boolean().default(false),
 });
 

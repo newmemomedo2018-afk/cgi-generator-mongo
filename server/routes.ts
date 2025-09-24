@@ -290,6 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sceneImageUrl: clientProjectData.sceneImageUrl,
           sceneVideoUrl: clientProjectData.sceneVideoUrl,
           description: clientProjectData.description,
+          productSize: clientProjectData.productSize,
           includeAudio: clientProjectData.includeAudio
         })
       };
@@ -1183,6 +1184,7 @@ async function processProjectFromJob(job: any) {
     const productImagePath = jobData.productImageUrl || project.productImageUrl || "";
     const sceneImagePath = jobData.sceneImageUrl || project.sceneImageUrl || "";
     const sceneVideoPath = jobData.sceneVideoUrl || project.sceneVideoUrl || "";
+    const productSize = jobData.productSize || (project as any).productSize || 'normal';
     
     console.log("Media paths for Gemini:", { 
       productImagePath, 
@@ -1234,7 +1236,8 @@ async function processProjectFromJob(job: any) {
         enhancedPrompt = await enhancePromptWithGemini(
           productImagePath,
           scenePath,
-          project.description || "CGI image generation"
+          project.description || "CGI image generation",
+          productSize
         );
       }
     } finally {
@@ -1266,7 +1269,8 @@ async function processProjectFromJob(job: any) {
       geminiImageResult = await generateImageWithGemini(
         productImagePath,
         sceneImagePath,
-        imagePrompt // Use separated static scene prompt when available
+        imagePrompt, // Use separated static scene prompt when available
+        productSize
       );
     } finally {
       // Record cost even if call fails

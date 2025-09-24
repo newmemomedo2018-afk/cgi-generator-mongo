@@ -342,22 +342,24 @@ export default function Dashboard() {
   };
 
   // Handle scene selection from modal
-  const handleSceneSelection = (scene: any) => {
-    console.log('🎬 Scene selected from modal:', scene);
+  const handleSceneSelection = (scene: any, productSize: 'normal' | 'emphasized' = 'normal') => {
+    console.log('🎬 Scene selected from modal:', { scene, productSize });
     
-    // Update project data with selected scene
+    // Update project data with selected scene and product size
     setProjectData(prev => ({
       ...prev,
       sceneImageUrl: scene.imageUrl,
-      sceneVideoUrl: "" // Clear video URL when scene image is selected
+      sceneVideoUrl: "", // Clear video URL when scene image is selected
+      productSize: productSize // Store product size preference
     }));
     
     setIsSceneImageUploaded(true);
     
     // Show success toast
+    const sizeText = productSize === 'emphasized' ? 'مُبرز وبارز' : 'مناسب للغرفة';
     toast({
       title: "تم اختيار المشهد",
-      description: `تم اختيار "${scene.name || scene.title}" كمشهد للمشروع`,
+      description: `تم اختيار "${scene.name || scene.title}" بحجم ${sizeText}`,
     });
 
     // Close the modal

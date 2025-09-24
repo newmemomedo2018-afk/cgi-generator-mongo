@@ -158,7 +158,8 @@ async function getImageDataFromStorage(filePath: string): Promise<{base64: strin
 export async function enhancePromptWithGemini(
   productImagePath: string,
   sceneImagePath: string,
-  userDescription: string
+  userDescription: string,
+  productSize: 'normal' | 'emphasized' = 'normal'
 ): Promise<string> {
   try {
     console.log("Gemini API request details:", {
@@ -197,6 +198,18 @@ export async function enhancePromptWithGemini(
 🔄 خطوة 2: الاستبدال المحدود (المنتج المماثل فقط)
 1. إذا لم يوجد عنصر مماثل في المشهد، ضع المنتج الجديد في موضع طبيعي مناسب بدون حذف أي عنصر على الإطلاق
 2. إذا وُجد أكثر من عنصر مماثل، استبدل عنصراً واحداً فقط (الأكثر وضوحاً/في مركز الكادر/الأقرب للكاميرا) واترك الباقي كما هو
+
+📏 خطوة 3: حجم وإبراز المنتج (مهم جداً)
+${productSize === 'emphasized' ? 
+`- اجعل المنتج مُبرز وبارز كنقطة تركيز في المشهد
+- زود حجم المنتج بنسبة 20-30% عن الحجم الطبيعي
+- ضع إضاءة إضافية على المنتج ليظهر بوضوح أكبر
+- اجعل المنتج في موضع مركزي يلفت الانتباه
+- أضف تدرج ضوئي خفيف حول المنتج ليبرز عن الخلفية` :
+`- اجعل المنتج بحجم طبيعي ومتناسق مع باقي عناصر المشهد
+- لا تزود أو تقلل الحجم، خليه مناسب للمكان
+- الإضاءة طبيعية ومتوازنة مع باقي المشهد
+- المنتج يندمج بشكل طبيعي دون إبراز زائد`}
 3. اشيل بس المنتج المماثل الموجود الواحد (نفس النوع) - مش أي حاجة تانية
 4. استخدم inpainting محدوداً داخل قناع المنتج فقط بدون لمس الخلفية المحيطة
 5. ⚠️ مهم جداً: احتفظ بكل باقي عناصر المشهد (طرابيز، كراسي، ديكورات، نباتات، أضاءة إضافية، أثاث)
@@ -251,7 +264,8 @@ export async function enhancePromptWithGemini(
 export async function generateImageWithGemini(
   productImagePath: string,
   sceneImagePath: string,
-  enhancedPrompt: string
+  enhancedPrompt: string,
+  productSize: 'normal' | 'emphasized' = 'normal'
 ): Promise<{base64: string; mimeType: string}> {
   try {
     console.log("Gemini Image Generation request:", {
@@ -281,6 +295,18 @@ INPUT 2 (Scene): Place the product into this environment
 COMPOSITION INSTRUCTIONS:
 ${enhancedPrompt}
 
+PRODUCT SIZE SPECIFICATIONS:
+${productSize === 'emphasized' ? 
+`- Make the product PROMINENT and EMPHASIZED as a focal point
+- Increase product size by 20-30% compared to natural proportions
+- Add enhanced lighting on the product for better visibility
+- Place product in a central, attention-grabbing position
+- Add subtle light gradient around product to make it stand out from background` :
+`- Keep product at NATURAL, PROPORTIONAL size that fits the scene
+- Do not oversizend or undersizend the product - make it scene-appropriate
+- Use balanced, natural lighting consistent with the scene
+- Product should blend naturally without excessive emphasis`}
+
 CRITICAL IMAGE GENERATION REQUIREMENTS:
 - CREATE A NEW PHOTOREALISTIC IMAGE (not text description)
 - Extract the product from image 1 and seamlessly place it in scene from image 2
@@ -289,7 +315,7 @@ CRITICAL IMAGE GENERATION REQUIREMENTS:
 - Remove exactly one matching instance (most prominent/center/closest to camera), then place the new product in that exact spot; do not delete or alter any other object.
 - Use minimal inpainting strictly within the replaced object's mask; do not modify adjacent background, textures, or nearby objects.
 - Match lighting, shadows, and perspective perfectly
-- Ultra-sharp details, high resolution (1024x1024 minimum)
+- Ultra-sharp details, Full HD quality (1920x1080 minimum for landscapes, 1536x1536 for square compositions)
 - Use exact product branding, colors, and shape from first image
 - Professional CGI quality with no compositing artifacts
 - OUTPUT: Return the generated composite image, not text analysis
