@@ -447,6 +447,7 @@ export async function enhanceVideoPromptWithGemini(
   options: {
     duration?: number; // 5 or 10 seconds
     isSceneVideo?: boolean; // true if sceneMediaPath is a video
+    productSize?: 'normal' | 'emphasized'; // Product size preference
   } = {}
 ): Promise<{
   enhancedPrompt: string;
@@ -486,6 +487,18 @@ ANALYZE the images:
 2. SCENE: Environment, lighting, layout
 
 USER REQUEST: "${userDescription}"
+
+📏 PRODUCT SIZE PREFERENCE: ${options.productSize || 'normal'}
+${options.productSize === 'emphasized' ? `
+- المنتج يجب أن يكون مُبرز وبارز كنقطة تركيز في المشهد
+- زود حجم المنتج بنسبة 20-30% عن الحجم الطبيعي
+- ضع إضاءة إضافية على المنتج ليظهر بوضوح أكبر
+- اجعل المنتج في موضع مركزي يلفت الانتباه
+- أضف تدرج ضوئي خفيف حول المنتج ليبرز عن الخلفية` : `
+- اجعل المنتج بحجم طبيعي ومتناسق مع باقي عناصر المشهد
+- لا تزود أو تقلل الحجم، خليه مناسب للمكان
+- الإضاءة طبيعية ومتوازنة مع باقي المشهد
+- المنتج يندمج بشكل طبيعي دون إبراز زائد`}
 
 🔍 CRITICAL TASK: INTELLIGENT CONFLICT ANALYSIS + TWO PHASES:
 

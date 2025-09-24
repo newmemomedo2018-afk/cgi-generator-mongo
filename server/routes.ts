@@ -1186,6 +1186,14 @@ async function processProjectFromJob(job: any) {
     const sceneVideoPath = jobData.sceneVideoUrl || project.sceneVideoUrl || "";
     const productSize = jobData.productSize || (project as any).productSize || 'normal';
     
+    console.log("Media paths and product settings for AI:", { 
+      productImagePath, 
+      sceneImagePath, 
+      sceneVideoPath, 
+      contentType: project.contentType,
+      productSize: productSize
+    });
+    
     console.log("Media paths for Gemini:", { 
       productImagePath, 
       sceneImagePath, 
@@ -1215,7 +1223,8 @@ async function processProjectFromJob(job: any) {
           project.description || "CGI video generation",
           {
             duration: project.videoDurationSeconds || undefined,
-            isSceneVideo: !!isSceneVideo
+            isSceneVideo: !!isSceneVideo,
+            productSize: productSize
           }
         );
         enhancedPrompt = result.enhancedPrompt;

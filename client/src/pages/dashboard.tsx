@@ -33,7 +33,7 @@ export default function Dashboard() {
     sceneVideoUrl: "",
     contentType: "image" as "image" | "video",
     videoDurationSeconds: 5,
-    resolution: "1024x1024",
+    resolution: "1920x1080",
     quality: "standard",
     includeAudio: false
   });
@@ -218,7 +218,7 @@ export default function Dashboard() {
         sceneVideoUrl: "",
         contentType: "image",
         videoDurationSeconds: 5,
-        resolution: "1024x1024",
+        resolution: "1920x1080",
         quality: "standard",
         includeAudio: false
       });
