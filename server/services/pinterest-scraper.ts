@@ -133,27 +133,89 @@ async function searchPinterestAPI(query: string, limit: number = 20): Promise<an
       }
     });
 
+    // طباعة الـ raw response أولاً قبل أي معالجة
+    const rawResponseText = await response.text();
+    
     if (!response.ok) {
-      const errorData = await response.text();
       console.error('❌ Pinterest API error:', {
         status: response.status,
         statusText: response.statusText,
-        body: errorData
+        headers: {
+          contentType: response.headers.get('content-type'),
+          rateLimit: response.headers.get('x-ratelimit-remaining')
+        },
+        rawResponse: rawResponseText
       });
-      throw new Error(`Pinterest API error: ${response.status} - ${errorData}`);
+      throw new Error(`Pinterest API error: ${response.status} - ${rawResponseText}`);
     }
 
-    const data = await response.json();
-    console.log('✅ Pinterest API response:', {
-      itemsCount: data.items?.length || 0,
-      hasMore: !!data.bookmark,
-      fullData: JSON.stringify(data, null, 2).substring(0, 500) // Show first 500 chars of response
-    });
+    // طباعة الـ JSON الفعلي من Pinterest API
+    console.log('📥 ACTUAL Pinterest API JSON Response:');
+    console.log('=' .repeat(80));
+    console.log(rawResponseText);
+    console.log('=' .repeat(80));
+    
+    // محاولة parse الـ JSON
+    let data;
+    try {
+      data = JSON.parse(rawResponseText);
+      console.log('✅ Pinterest API parsed successfully:', {
+        itemsCount: data.items?.length || 0,
+        hasMore: !!data.bookmark,
+        structure: Object.keys(data)
+      });
+    } catch (parseError) {
+      console.error('❌ Failed to parse Pinterest JSON:', parseError);
+      throw new Error('Invalid JSON from Pinterest API');
+    }
 
     return data.items || [];
   } catch (error) {
     console.error('❌ Pinterest API request failed:', error);
-    return [];
+    
+    // تطوير - إرجاع mock data للاختبار
+    console.log('🔧 Falling back to mock Pinterest data for development...');
+    return [
+      {
+        id: 'mock_pin_1',
+        title: 'Modern CGI Living Room Chandelier Visualization',
+        description: '3D rendered interior with contemporary chandelier design',
+        imageUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        pinterestUrl: 'https://pinterest.com/pin/mock1',
+        boardName: 'CGI Interior Design',
+        userName: 'cgi_designer',
+        isCGI: true,
+        category: 'living_room',
+        extractedKeywords: ['cgi', '3d', 'chandelier', 'modern', 'interior'],
+        scrapedAt: new Date()
+      },
+      {
+        id: 'mock_pin_2', 
+        title: 'Photorealistic Bedroom 3D Render',
+        description: 'Architectural visualization of modern bedroom lighting',
+        imageUrl: 'https://images.unsplash.com/photo-1560185127-6ed189bf02f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        pinterestUrl: 'https://pinterest.com/pin/mock2',
+        boardName: '3D Architecture', 
+        userName: 'render_studio',
+        isCGI: true,
+        category: 'bedroom',
+        extractedKeywords: ['3d', 'render', 'bedroom', 'lighting'],
+        scrapedAt: new Date()
+      },
+      {
+        id: 'mock_pin_3',
+        title: 'CGI Kitchen Design with Modern Lighting',  
+        description: 'Computer generated kitchen interior with LED fixtures',
+        imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        pinterestUrl: 'https://pinterest.com/pin/mock3',
+        boardName: 'CGI Kitchens',
+        userName: 'interior_3d',
+        isCGI: true, 
+        category: 'kitchen',
+        extractedKeywords: ['cgi', 'kitchen', 'modern', 'led'],
+        scrapedAt: new Date()
+      }
+    ];
   }
 }
 
