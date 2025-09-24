@@ -81,20 +81,32 @@ export default function Dashboard() {
     retry: false,
   });
 
-  // Use separate useEffect for polling logic
+  // Use separate useEffect for polling logic - ONLY when needed
   useEffect(() => {
-    if (!projects) return;
+    if (!projects || projects.length === 0) return;
     
     const hasProcessingProjects = projects.some((project: Project) => 
       project.status && ["pending", "processing", "enhancing_prompt", "generating_image", "generating_video"].includes(project.status)
     );
     
+    console.log('🔍 Checking polling status:', {
+      projectsCount: projects.length,
+      hasProcessingProjects,
+      processingStatuses: projects.filter(p => p.status && ["pending", "processing", "enhancing_prompt", "generating_image", "generating_video"].includes(p.status)).map(p => ({ id: p.id, status: p.status }))
+    });
+    
     if (hasProcessingProjects) {
+      console.log('🔄 Starting polling for processing projects...');
       const interval = setInterval(() => {
         queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
         queryClient.invalidateQueries({ queryKey: ["/api/actual-costs"] });
-      }, 3000);
-      return () => clearInterval(interval);
+      }, 5000); // Increase to 5 seconds to reduce load
+      return () => {
+        console.log('⏹️ Stopping polling - no more processing projects');
+        clearInterval(interval);
+      };
+    } else {
+      console.log('✅ No processing projects - polling disabled');
     }
   }, [projects, queryClient]);
 
