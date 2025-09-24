@@ -126,7 +126,7 @@ EXTRACT THE FOLLOWING IN JSON FORMAT:
   "productStyle": "string (modern, classic, minimalist, luxury, cozy, industrial)",
   "productKeywords": ["array of 5-7 relevant keywords in Arabic/English"],
   "suggestedCategories": ["array of suitable room categories: living_room, bedroom, kitchen, office, bathroom"],
-  "pinterestSearchTerms": ["array of 4-5 search terms for Pinterest CGI scenes"],
+  "pinterestSearchTerms": ["array of exactly 2 search terms for Pinterest CGI scenes - one must be 'cgi'"],
   "confidence": "number 0-100 (how confident are you in this analysis)"
 }
 
@@ -135,7 +135,7 @@ ANALYSIS RULES:
 2. Style: Choose ONE primary style that best matches the design
 3. Keywords: Mix Arabic and English, focus on visual characteristics
 4. Categories: List ALL suitable room types where this product could be placed
-5. Pinterest Terms: Create search queries that would find CGI scenes suitable for this product
+5. Pinterest Terms: Create exactly 2 search terms - one MUST be "cgi" and the other should be the most relevant keyword for this product type
 6. Confidence: Lower if image is unclear or product is ambiguous
 
 EXAMPLES:
@@ -176,7 +176,7 @@ Return ONLY valid JSON, no additional text.
         productStyle: 'modern',
         productKeywords: ['أثاث', 'تصميم', 'منزل'],
         suggestedCategories: ['living_room', 'bedroom'],
-        pinterestSearchTerms: ['CGI interior design', '3D furniture placement'],
+        pinterestSearchTerms: ['cgi', 'furniture'],
         confidence: 30
       };
     }
@@ -187,7 +187,7 @@ Return ONLY valid JSON, no additional text.
       productStyle: analysisJson.productStyle || 'modern', 
       productKeywords: Array.isArray(analysisJson.productKeywords) ? analysisJson.productKeywords : ['أثاث'],
       suggestedCategories: Array.isArray(analysisJson.suggestedCategories) ? analysisJson.suggestedCategories : ['living_room'],
-      pinterestSearchTerms: Array.isArray(analysisJson.pinterestSearchTerms) ? analysisJson.pinterestSearchTerms : ['CGI interior'],
+      pinterestSearchTerms: Array.isArray(analysisJson.pinterestSearchTerms) ? analysisJson.pinterestSearchTerms : ['cgi', 'interior'],
       confidence: typeof analysisJson.confidence === 'number' ? analysisJson.confidence : 50
     };
 
