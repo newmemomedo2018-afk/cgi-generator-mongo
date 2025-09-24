@@ -529,63 +529,110 @@ export default function Dashboard() {
                             🎬 صورة المشهد
                           </Label>
                           
-                          {/* Library Selection Button */}
+                          {/* Scene Image Display or Selection */}
                           <div className="space-y-4">
-                            <div 
-                              onClick={() => setShowSceneSelector(true)}
-                              className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 bg-gradient-to-br from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 transition-all duration-300 p-6"
-                              data-testid="scene-library-button"
-                            >
-                              <div className="text-center space-y-3">
-                                <div className="relative mx-auto w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
-                                  <Sparkles className="h-8 w-8 text-white" />
+                            {!projectData.sceneImageUrl && !projectData.sceneVideoUrl ? (
+                              <>
+                                {/* Library Selection Button */}
+                                <div 
+                                  onClick={() => setShowSceneSelector(true)}
+                                  className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 bg-gradient-to-br from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 transition-all duration-300 p-6"
+                                  data-testid="scene-library-button"
+                                >
+                                  <div className="text-center space-y-3">
+                                    <div className="relative mx-auto w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                      <Sparkles className="h-8 w-8 text-white" />
+                                    </div>
+                                    <div>
+                                      <h3 className="text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
+                                        اختيار من المكتبة
+                                      </h3>
+                                      <p className="text-sm text-muted-foreground mt-2">
+                                        مجموعة مذهلة من المشاهد الجاهزة المصممة خصيصاً لمنتجك
+                                      </p>
+                                    </div>
+                                    <Badge className="bg-primary/20 text-primary border-0 px-4 py-1 text-sm font-medium">
+                                      مدعوم بالذكاء الاصطناعي ✨
+                                    </Badge>
+                                  </div>
                                 </div>
-                                <div>
-                                  <h3 className="text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
-                                    اختيار من المكتبة
-                                  </h3>
-                                  <p className="text-sm text-muted-foreground mt-2">
-                                    مجموعة مذهلة من المشاهد الجاهزة المصممة خصيصاً لمنتجك
-                                  </p>
+
+                                {/* OR Divider */}
+                                <div className="relative py-4">
+                                  <div className="absolute inset-0 flex items-center">
+                                    <span className="w-full border-t border-border/40"></span>
+                                  </div>
+                                  <div className="relative flex justify-center text-sm">
+                                    <span className="bg-background px-4 text-muted-foreground font-medium">أو</span>
+                                  </div>
                                 </div>
-                                <Badge className="bg-primary/20 text-primary border-0 px-4 py-1 text-sm font-medium">
-                                  مدعوم بالذكاء الاصطناعي ✨
-                                </Badge>
-                              </div>
-                            </div>
 
-                            {/* OR Divider */}
-                            <div className="relative py-4">
-                              <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-border/40"></span>
+                                {/* Custom Upload Zone */}
+                                <div className="space-y-2">
+                                  <UploadZone
+                                    onFileUpload={handleSceneUpload}
+                                    isUploading={uploadSceneMutation.isPending}
+                                    previewUrl=""
+                                    label={projectData.contentType === "video" ? 
+                                      "اسحب وأفلت صورة أو فيديو المشهد الخاص بك هنا" : 
+                                      "اسحب وأفلت صورة المشهد الخاص بك هنا"
+                                    }
+                                    sublabel={projectData.contentType === "video" ? 
+                                      "أو انقر للتصفح - صور حتى 10MB، فيديو حتى 50MB" : 
+                                      "أو انقر للتصفح - PNG, JPG حتى 10MB"
+                                    }
+                                    testId="scene-upload-zone"
+                                    resetKey={resetKey}
+                                    acceptedTypes={projectData.contentType === "video" ? "both" : "image"}
+                                  />
+                                </div>
+                              </>
+                            ) : (
+                              /* Selected Scene Display */
+                              <div className="space-y-3">
+                                <div className="relative group">
+                                  <img 
+                                    src={projectData.contentType === "video" ? 
+                                      (projectData.sceneVideoUrl || projectData.sceneImageUrl) : 
+                                      projectData.sceneImageUrl
+                                    } 
+                                    alt="صورة المشهد" 
+                                    className="w-full h-48 object-cover rounded-lg border border-border"
+                                  />
+                                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                    <div className="flex gap-2">
+                                      <Button
+                                        onClick={() => setShowSceneSelector(true)}
+                                        className="bg-primary/90 hover:bg-primary text-white"
+                                        size="sm"
+                                        data-testid="change-scene-button"
+                                      >
+                                        <Sparkles className="ml-2 h-4 w-4" />
+                                        تغيير المشهد
+                                      </Button>
+                                      <Button
+                                        onClick={() => {
+                                          setProjectData(prev => ({ 
+                                            ...prev, 
+                                            sceneImageUrl: "", 
+                                            sceneVideoUrl: "" 
+                                          }));
+                                          setIsSceneImageUploaded(false);
+                                          setResetKey(Date.now().toString());
+                                        }}
+                                        variant="outline"
+                                        className="bg-background/90 hover:bg-background text-foreground border-white/20"
+                                        size="sm"
+                                        data-testid="remove-scene-button"
+                                      >
+                                        <Camera className="ml-2 h-4 w-4" />
+                                        رفع مخصوص
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="relative flex justify-center text-sm">
-                                <span className="bg-background px-4 text-muted-foreground font-medium">أو</span>
-                              </div>
-                            </div>
-
-                            {/* Custom Upload Zone */}
-                            <div className="space-y-2">
-                              <UploadZone
-                                onFileUpload={handleSceneUpload}
-                                isUploading={uploadSceneMutation.isPending}
-                                previewUrl={projectData.contentType === "video" ? 
-                                  (projectData.sceneVideoUrl || projectData.sceneImageUrl) : 
-                                  projectData.sceneImageUrl
-                                }
-                                label={projectData.contentType === "video" ? 
-                                  "اسحب وأفلت صورة أو فيديو المشهد الخاص بك هنا" : 
-                                  "اسحب وأفلت صورة المشهد الخاص بك هنا"
-                                }
-                                sublabel={projectData.contentType === "video" ? 
-                                  "أو انقر للتصفح - صور حتى 10MB، فيديو حتى 50MB" : 
-                                  "أو انقر للتصفح - PNG, JPG حتى 10MB"
-                                }
-                                testId="scene-upload-zone"
-                                resetKey={resetKey}
-                                acceptedTypes={projectData.contentType === "video" ? "both" : "image"}
-                              />
-                            </div>
+                            )}
                           </div>
                         </div>
                       )}
