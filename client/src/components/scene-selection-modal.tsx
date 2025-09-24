@@ -114,7 +114,7 @@ export default function SceneSelectionModal({
       
       return data;
     },
-    enabled: isOpen && activeTab === 'default',
+    enabled: isOpen,
     retry: 1,
     staleTime: 0,
     gcTime: 0
