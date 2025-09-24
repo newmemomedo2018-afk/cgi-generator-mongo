@@ -1,0 +1,168 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2024-12-24",
+  "categories": {
+    "living_room": {
+      "name": "غرفة المعيشة",
+      "description": "مشاهد غرف معيشة عصرية ومريحة",
+      "scenes": [
+        {
+          "id": "living_modern_1",
+          "name": "غرفة معيشة عصرية",
+          "description": "تصميم مينيمال عصري بألوان فاتحة",
+          "imageUrl": "/assets/default_scenes/living_room/modern_1.jpg",
+          "category": "living_room",
+          "style": "modern",
+          "keywords": ["أثاث", "أريكة", "طاولة قهوة", "تلفزيون", "إضاءة"],
+          "lighting": "natural_bright",
+          "colors": ["أبيض", "رمادي", "خشبي"]
+        },
+        {
+          "id": "living_cozy_1", 
+          "name": "غرفة معيشة مريحة",
+          "description": "أجواء دافئة ومريحة مع إضاءة ناعمة",
+          "imageUrl": "/assets/default_scenes/living_room/cozy_1.jpg",
+          "category": "living_room",
+          "style": "cozy",
+          "keywords": ["أثاث", "كنب", "وسائد", "إضاءة دافئة", "سجادة"],
+          "lighting": "warm_ambient",
+          "colors": ["بيج", "بني", "ذهبي"]
+        },
+        {
+          "id": "living_scandinavian_1",
+          "name": "غرفة معيشة اسكندنافية", 
+          "description": "تصميم اسكندنافي بسيط مع خشب طبيعي",
+          "imageUrl": "/assets/default_scenes/living_room/scandinavian_1.jpg",
+          "category": "living_room",
+          "style": "scandinavian",
+          "keywords": ["خشب", "أثاث", "بساطة", "نباتات", "إضاءة طبيعية"],
+          "lighting": "natural_soft",
+          "colors": ["أبيض", "خشب فاتح", "أخضر"]
+        }
+      ]
+    },
+    "bedroom": {
+      "name": "غرفة النوم",
+      "description": "غرف نوم هادئة ومريحة",
+      "scenes": [
+        {
+          "id": "bedroom_master_1",
+          "name": "غرفة نوم رئيسية",
+          "description": "غرفة نوم رئيسية فاخرة ومريحة",
+          "imageUrl": "/assets/default_scenes/bedroom/master_1.jpg",
+          "category": "bedroom", 
+          "style": "luxury",
+          "keywords": ["سرير", "خزانة", "إضاءة", "مرايا", "ستائر"],
+          "lighting": "soft_romantic",
+          "colors": ["أبيض", "كريمي", "ذهبي"]
+        },
+        {
+          "id": "bedroom_modern_1",
+          "name": "غرفة نوم عصرية",
+          "description": "تصميم عصري بسيط وأنيق",
+          "imageUrl": "/assets/default_scenes/bedroom/modern_1.jpg", 
+          "category": "bedroom",
+          "style": "modern",
+          "keywords": ["سرير", "كمودينو", "إضاءة", "أثاث", "بساطة"],
+          "lighting": "natural_clean",
+          "colors": ["رمادي", "أبيض", "أسود"]
+        },
+        {
+          "id": "bedroom_kids_1",
+          "name": "غرفة أطفال",
+          "description": "غرفة أطفال مرحة وملونة",
+          "imageUrl": "/assets/default_scenes/bedroom/kids_1.jpg",
+          "category": "bedroom",
+          "style": "playful", 
+          "keywords": ["سرير أطفال", "ألعاب", "ألوان", "تخزين", "مكتب"],
+          "lighting": "bright_cheerful",
+          "colors": ["أزرق", "وردي", "أصفر", "أخضر"]
+        }
+      ]
+    },
+    "kitchen": {
+      "name": "المطبخ",
+      "description": "مطابخ عملية وأنيقة",
+      "scenes": [
+        {
+          "id": "kitchen_modern_1",
+          "name": "مطبخ عصري",
+          "description": "مطبخ عصري مع جزيرة وإضاءة ممتازة",
+          "imageUrl": "/assets/default_scenes/kitchen/modern_1.jpg",
+          "category": "kitchen",
+          "style": "modern",
+          "keywords": ["خزائن", "جزيرة", "أجهزة", "إضاءة", "رخام"],
+          "lighting": "bright_functional",
+          "colors": ["أبيض", "رمادي", "فضي"]
+        },
+        {
+          "id": "kitchen_classic_1",
+          "name": "مطبخ كلاسيكي",
+          "description": "مطبخ كلاسيكي دافئ مع خشب طبيعي",
+          "imageUrl": "/assets/default_scenes/kitchen/classic_1.jpg",
+          "category": "kitchen", 
+          "style": "classic",
+          "keywords": ["خشب", "خزائن", "أجهزة", "إضاءة دافئة", "تفاصيل"],
+          "lighting": "warm_cozy",
+          "colors": ["خشب", "كريمي", "نحاسي"]
+        },
+        {
+          "id": "kitchen_small_1",
+          "name": "مطبخ صغير",
+          "description": "حلول ذكية للمطابخ الصغيرة",
+          "imageUrl": "/assets/default_scenes/kitchen/small_1.jpg",
+          "category": "kitchen",
+          "style": "compact",
+          "keywords": ["توفير مساحة", "تخزين ذكي", "أجهزة صغيرة", "إضاءة"],
+          "lighting": "bright_efficient", 
+          "colors": ["أبيض", "خشب فاتح", "ألوان فاتحة"]
+        }
+      ]
+    },
+    "office": {
+      "name": "المكتب",
+      "description": "مساحات عمل محفزة ومريحة",
+      "scenes": [
+        {
+          "id": "office_home_1", 
+          "name": "مكتب منزلي",
+          "description": "مكتب منزلي مريح وعملي",
+          "imageUrl": "/assets/default_scenes/office/home_1.jpg",
+          "category": "office",
+          "style": "home_office",
+          "keywords": ["مكتب", "كرسي", "رفوف", "إضاءة", "تنظيم"],
+          "lighting": "focused_productive",
+          "colors": ["خشب", "أبيض", "أخضر"]
+        },
+        {
+          "id": "office_corporate_1",
+          "name": "مكتب شركة",
+          "description": "بيئة عمل احترافية وأنيقة", 
+          "imageUrl": "/assets/default_scenes/office/corporate_1.jpg",
+          "category": "office",
+          "style": "corporate",
+          "keywords": ["مكاتب", "اجتماعات", "تكنولوجيا", "احترافية", "إضاءة"],
+          "lighting": "professional_bright",
+          "colors": ["رمادي", "أسود", "أبيض", "أزرق"]
+        },
+        {
+          "id": "office_creative_1",
+          "name": "مكتب إبداعي",
+          "description": "مساحة عمل إبداعية ومرنة",
+          "imageUrl": "/assets/default_scenes/office/creative_1.jpg", 
+          "category": "office",
+          "style": "creative",
+          "keywords": ["إبداع", "ألوان", "مرونة", "تصميم", "إلهام"],
+          "lighting": "inspiring_varied",
+          "colors": ["متنوع", "مشرق", "ملهم"]
+        }
+      ]
+    }
+  },
+  "totalScenes": 12,
+  "searchableKeywords": [
+    "أثاث", "أريكة", "سرير", "مكتب", "مطبخ", "خزانة", "طاولة", "كرسي",
+    "إضاءة", "نباتات", "ديكور", "ألوان", "خشب", "رخام", "زجاج", "معدن",
+    "عصري", "كلاسيكي", "مينيمال", "فاخر", "بسيط", "مريح", "احترافي"
+  ]
+}

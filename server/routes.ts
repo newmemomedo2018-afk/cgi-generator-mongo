@@ -842,6 +842,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Scene Selection APIs
+  // Default Scenes API
+  app.get('/api/scenes/default', isAuthenticated, async (req: any, res) => {
+    try {
+      const { getAllDefaultScenes, suggestScenesForProduct } = await import('./services/default-scenes');
+      const { productType } = req.query;
+
+      let scenes;
+      if (productType) {
+        console.log('🎯 Getting suggested scenes for product type:', productType);
+        scenes = await suggestScenesForProduct(productType, 'modern', []);
+      } else {
+        console.log('📚 Getting all default scenes');
+        scenes = await getAllDefaultScenes();
+      }
+
+      res.json(scenes);
+    } catch (error) {
+      console.error('❌ Error fetching default scenes:', error);
+      res.status(500).json({ error: 'Failed to fetch default scenes' });
+    }
+  });
+
+  // Pinterest Scenes API  
+  app.get('/api/scenes/pinterest', isAuthenticated, async (req: any, res) => {
+    try {
+      const { searchPinterestForProduct } = await import('./services/pinterest-scraper');
+      const { q: searchQuery, productType = 'أثاث', maxResults = 20 } = req.query;
+
+      if (!searchQuery) {
+        return res.status(400).json({ error: 'Search query is required' });
+      }
+
+      console.log('🔍 Pinterest search request:', {
+        searchQuery,
+        productType,
+        maxResults: parseInt(maxResults)
+      });
+
+      const scenes = await searchPinterestForProduct(
+        productType,
+        'modern',
+        [searchQuery],
+        { maxResults: parseInt(maxResults) }
+      );
+
+      res.json(scenes);
+    } catch (error) {
+      console.error('❌ Pinterest search failed:', error);
+      res.status(500).json({ error: 'Pinterest search failed' });
+    }
+  });
+
+  // Product Analysis API
+  app.post('/api/analyze-product', isAuthenticated, async (req: any, res) => {
+    try {
+      const { analyzeProductForScenes } = await import('./services/product-analyzer');
+      const { imageUrl } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'Image URL is required' });
+      }
+
+      console.log('🔍 Product analysis request for:', imageUrl.substring(0, 50) + '...');
+
+      const analysis = await analyzeProductForScenes(imageUrl);
+
+      res.json(analysis);
+    } catch (error) {
+      console.error('❌ Product analysis failed:', error);
+      res.status(500).json({ error: 'Product analysis failed' });
+    }
+  });
+
   // 🚨 RECOVERY SYSTEM: Endpoint to recover "failed" projects that actually completed on Kling's side
   app.post("/api/projects/recover", isAuthenticated, async (req: any, res: any) => {
     try {
