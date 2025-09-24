@@ -480,13 +480,13 @@ export default function Dashboard() {
                         />
                       </div>
 
-                      {/* Scene Upload (Image or Video based on content type) */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label className="text-sm font-medium">
-                            {projectData.contentType === "video" ? "صورة أو فيديو المشهد" : "صورة المشهد"}
-                          </Label>
-                          {projectData.productImageUrl && (
+                      {/* Scene Upload (Only show after product image is uploaded) */}
+                      {projectData.productImageUrl ? (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <Label className="text-sm font-medium">
+                              {projectData.contentType === "video" ? "صورة أو فيديو المشهد" : "صورة المشهد"}
+                            </Label>
                             <Button 
                               variant="outline" 
                               size="sm" 
@@ -497,33 +497,40 @@ export default function Dashboard() {
                               <Sparkles className="ml-2 h-3 w-3" />
                               اختيار مشهد جاهز
                             </Button>
-                          )}
-                        </div>
-                        <UploadZone
-                          onFileUpload={handleSceneUpload}
-                          isUploading={uploadSceneMutation.isPending}
-                          previewUrl={projectData.contentType === "video" ? 
-                            (projectData.sceneVideoUrl || projectData.sceneImageUrl) : 
-                            projectData.sceneImageUrl
-                          }
-                          label={projectData.contentType === "video" ? 
-                            "اسحب وأفلت صورة أو فيديو المشهد هنا" : 
-                            "اسحب وأفلت صورة المشهد هنا"
-                          }
-                          sublabel={projectData.contentType === "video" ? 
-                            "أو انقر للتصفح - صور حتى 10MB، فيديو حتى 50MB" : 
-                            "أو انقر للتصفح - PNG, JPG حتى 10MB"
-                          }
-                          testId="scene-upload-zone"
-                          resetKey={resetKey}
-                          acceptedTypes={projectData.contentType === "video" ? "both" : "image"}
-                        />
-                        {projectData.productImageUrl && (
+                          </div>
+                          <UploadZone
+                            onFileUpload={handleSceneUpload}
+                            isUploading={uploadSceneMutation.isPending}
+                            previewUrl={projectData.contentType === "video" ? 
+                              (projectData.sceneVideoUrl || projectData.sceneImageUrl) : 
+                              projectData.sceneImageUrl
+                            }
+                            label={projectData.contentType === "video" ? 
+                              "اسحب وأفلت صورة أو فيديو المشهد هنا" : 
+                              "اسحب وأفلت صورة المشهد هنا"
+                            }
+                            sublabel={projectData.contentType === "video" ? 
+                              "أو انقر للتصفح - صور حتى 10MB، فيديو حتى 50MB" : 
+                              "أو انقر للتصفح - PNG, JPG حتى 10MB"
+                            }
+                            testId="scene-upload-zone"
+                            resetKey={resetKey}
+                            acceptedTypes={projectData.contentType === "video" ? "both" : "image"}
+                          />
                           <p className="text-xs text-muted-foreground mt-2">
                             💡 نصيحة: يمكنك اختيار مشهد جاهز بناء على تحليل منتجك تلقائياً
                           </p>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                          <div className="text-muted-foreground mb-2">
+                            📸 يجب رفع صورة المنتج أولاً
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            سنقوم بتحليل المنتج واقتراح المشاهد المناسبة
+                          </p>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
 
