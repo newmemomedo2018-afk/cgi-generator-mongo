@@ -106,7 +106,10 @@ export default function SceneSelectionModal({
         count: data.length,
         firstScene: data[0]?.name,
         categories: Array.from(new Set(data.map((s: SceneData) => s.category))),
-        scenes: data.map((s: SceneData) => ({ id: s.id, name: s.name }))
+        scenes: data.map((s: SceneData) => ({ id: s.id, name: s.name })),
+        hasImageUrls: data.filter((s: SceneData) => s.imageUrl).length,
+        imageUrls: data.slice(0, 3).map((s: SceneData) => ({ id: s.id, imageUrl: s.imageUrl })),
+        fullData: data[0] // Show first complete scene for debugging
       });
       
       return data;
