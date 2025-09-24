@@ -79,8 +79,33 @@ export async function searchPinterestForProduct(
     "https://images.unsplash.com/photo-1595515106969-1ce29566ff3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   ];
 
-  const styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial", "Scandinavian", "Rustic"];
-  const themes = ["CGI Visualization", "3D Rendering", "Interior Scene", "Design Render", "Photorealistic Render", "Studio Setup"];
+  // Dynamic themes based on search query
+  let styles, themes, productSpecificImages;
+  
+  const searchText = keywords.join(' ').toLowerCase();
+  
+  if (searchText.includes('energy drink') || searchText.includes('beverage') || searchText.includes('drink')) {
+    styles = ["Dynamic", "Modern", "Commercial", "Sporty", "Vibrant", "Professional"];
+    themes = ["Energy Drink CGI", "Beverage Advertisement", "Product Visualization", "Commercial Render", "Studio Photography", "Marketing Scene"];
+    productSpecificImages = [
+      "https://images.unsplash.com/photo-1544145945-f90425340c7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // energy drink
+      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // studio setup
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // drink advertising
+      "https://images.unsplash.com/photo-1594736797933-d0d3131a27de?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // beverage
+      "https://images.unsplash.com/photo-1585647347483-22b66260dfff?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // energy drink can
+      "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" // product photography
+    ];
+  } else if (searchText.includes('furniture') || searchText.includes('chair') || searchText.includes('table')) {
+    styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial"];
+    themes = ["Furniture CGI", "Interior Design", "Product Visualization", "3D Furniture Render", "Home Decor", "Design Showcase"];
+    productSpecificImages = baseImages.slice(0, 6);
+  } else {
+    styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial", "Scandinavian", "Rustic"];
+    themes = ["CGI Visualization", "3D Rendering", "Interior Scene", "Design Render", "Photorealistic Render", "Studio Setup"];
+    productSpecificImages = baseImages.slice(0, 6);
+  }
+  
+  const finalImages = productSpecificImages.length > 0 ? productSpecificImages : baseImages;
   
   const mockCGIScenes: PinterestScene[] = [];
   
@@ -88,7 +113,7 @@ export async function searchPinterestForProduct(
   for (let i = 0; i < Math.min(maxResults, 30); i++) {
     const style = styles[i % styles.length];
     const theme = themes[i % themes.length];
-    const imageUrl = baseImages[i % baseImages.length];
+    const imageUrl = finalImages[i % finalImages.length];
     
     mockCGIScenes.push({
       id: `pinterest_cgi_${Date.now()}_${i + 1}`,
