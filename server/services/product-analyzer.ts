@@ -126,7 +126,7 @@ EXTRACT THE FOLLOWING IN JSON FORMAT:
   "productStyle": "string (modern, classic, minimalist, luxury, cozy, industrial)",
   "productKeywords": ["array of 5-7 relevant keywords in Arabic/English"],
   "suggestedCategories": ["array of suitable room categories: living_room, bedroom, kitchen, office, bathroom"],
-  "pinterestSearchTerms": ["array of exactly 2 search terms for Pinterest CGI scenes - one must be 'cgi'"],
+  "pinterestSearchTerms": ["array of exactly 2 English search terms - ALWAYS combine product type + 'cgi' (example: 'energy drink cgi' NOT 'cgi', 'energy drink')"],
   "confidence": "number 0-100 (how confident are you in this analysis)"
 }
 
@@ -135,13 +135,17 @@ ANALYSIS RULES:
 2. Style: Choose ONE primary style that best matches the design
 3. Keywords: Mix Arabic and English, focus on visual characteristics
 4. Categories: List ALL suitable room types where this product could be placed
-5. Pinterest Terms: Create exactly 2 search terms - one MUST be "cgi" and the other should be the most relevant keyword for this product type
+5. Pinterest Terms: IMPORTANT - Create exactly 2 English search terms where EACH term combines product + "cgi" as ONE phrase (e.g., "energy drink cgi", "modern furniture cgi") - NEVER separate them!
 6. Confidence: Lower if image is unclear or product is ambiguous
 
 EXAMPLES:
-- Modern office chair → keywords: ["مكتب", "كرسي", "modern", "أثاث", "احترافي"]
-- Classic wooden table → keywords: ["طاولة", "خشب", "كلاسيك", "أثاث", "تقليدي"] 
-- LED ceiling lamp → keywords: ["إضاءة", "سقف", "LED", "مودرن", "أنيق"]
+- Modern office chair → keywords: ["مكتب", "كرسي", "modern", "أثاث", "احترافي"] → pinterestSearchTerms: ["office chair cgi", "modern furniture cgi"]
+- Classic wooden table → keywords: ["طاولة", "خشب", "كلاسيك", "أثاث", "تقليدي"] → pinterestSearchTerms: ["wooden table cgi", "classic furniture cgi"]
+- LED ceiling lamp → keywords: ["إضاءة", "سقف", "LED", "مودرن", "أنيق"] → pinterestSearchTerms: ["ceiling lamp cgi", "LED lighting cgi"]
+- Energy drink bottle → keywords: ["مشروب", "طاقة", "Sting", "energy drink", "red", "bottle"] → pinterestSearchTerms: ["energy drink cgi", "beverage bottle cgi"]
+
+WRONG EXAMPLE: ["cgi", "energy drink"] ❌ 
+CORRECT EXAMPLE: ["energy drink cgi", "beverage bottle cgi"] ✅
 
 Focus on visual characteristics, materials, and likely usage contexts.
 Return ONLY valid JSON, no additional text.

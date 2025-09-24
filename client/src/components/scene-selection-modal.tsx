@@ -51,7 +51,7 @@ export default function SceneSelectionModal({
   productImageUrl,
   productType = 'أثاث'
 }: SceneSelectionModalProps) {
-  const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('default');
+  const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('pinterest');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzedProductType, setAnalyzedProductType] = useState<string | null>(null);
@@ -284,13 +284,13 @@ export default function SceneSelectionModal({
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="pinterest" className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              المكتبة
+            </TabsTrigger>
             <TabsTrigger value="default" className="flex items-center gap-2">
               <ImageIcon className="h-4 w-4" />
               المشاهد الجاهزة
-            </TabsTrigger>
-            <TabsTrigger value="pinterest" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              استكشاف المزيد
             </TabsTrigger>
           </TabsList>
 
