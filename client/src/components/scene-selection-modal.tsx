@@ -58,20 +58,49 @@ export default function SceneSelectionModal({
   // جلب المشاهد الافتراضية
   const { data: defaultScenes = [], isLoading: defaultLoading, error: defaultError } = useQuery<SceneData[]>({
     queryKey: ['/api/scenes/default', productType],
-    queryFn: () => {
+    queryFn: async () => {
       const params = new URLSearchParams();
       if (productType) params.append('productType', productType);
-      return fetch(`/api/scenes/default?${params}`, {
+      
+      console.log('🔍 Fetching default scenes:', {
+        url: `/api/scenes/default?${params}`,
+        productType,
+        isOpen,
+        activeTab
+      });
+      
+      const response = await fetch(`/api/scenes/default?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Cache-Control': 'no-cache'
         },
-      }).then(res => {
-        if (!res.ok) throw new Error('Failed to load default scenes');
-        return res.json();
       });
+      
+      console.log('📡 Default scenes response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Default scenes error:', errorText);
+        throw new Error(`Failed to load default scenes: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('✅ Default scenes loaded:', {
+        count: data.length,
+        firstScene: data[0]?.name,
+        categories: [...new Set(data.map((s: SceneData) => s.category))]
+      });
+      
+      return data;
     },
     enabled: isOpen && activeTab === 'default',
-    retry: 2
+    retry: 2,
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0 // Don't cache
   });
 
   // جلب مشاهد Pinterest

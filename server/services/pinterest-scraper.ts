@@ -107,7 +107,7 @@ function extractKeywords(title: string, description: string = ''): string[] {
  * Pinterest API search for CGI interior scenes
  */
 async function searchPinterestAPI(query: string, limit: number = 20): Promise<any[]> {
-  const searchUrl = `${PINTEREST_API_BASE}/pins/search`;
+  const searchUrl = `${PINTEREST_API_BASE}/search/pins`;
   
   const params = new URLSearchParams({
     query: query + ' CGI interior design 3D rendering',
