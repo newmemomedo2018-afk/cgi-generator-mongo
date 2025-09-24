@@ -59,15 +59,23 @@ export default function SceneSelectionModal({
 
   // جلب المشاهد الافتراضية
   const { data: defaultScenes = [], status: defaultStatus, error: defaultError, refetch: refetchDefault } = useQuery<SceneData[]>({
-    queryKey: ['/api/scenes/default', productType],
+    queryKey: ['/api/scenes/default', analyzedProductType, productType],
     queryFn: async () => {
+      const currentProductType = analyzedProductType || productType || 'أثاث';
+      console.log('🎯 Default scenes with analyzed product type:', { 
+        originalProductType: productType, 
+        analyzedProductType,
+        finalProductType: currentProductType 
+      });
       const params = new URLSearchParams();
-      if (productType) params.append('productType', productType);
+      if (currentProductType) params.append('productType', currentProductType);
       
       const token = localStorage.getItem('auth_token');
       console.log('🔍 Fetching default scenes:', {
         url: `/api/scenes/default?${params}`,
-        productType,
+        originalProductType: productType,
+        analyzedProductType,
+        finalProductType: currentProductType,
         isOpen,
         activeTab,
         hasToken: !!token,
@@ -196,14 +204,17 @@ export default function SceneSelectionModal({
         setAnalyzedProductType(analysis.productType);
         setSearchQuery(optimizedQuery);
         
-        console.log('✅ Analysis completed, updating Pinterest search:', {
+        console.log('✅ Analysis completed, updating both default and Pinterest scenes:', {
           analyzedProductType: analysis.productType,
           searchQuery: optimizedQuery,
           pinterestSearchTerms: analysis.pinterestSearchTerms
         });
         
-        // البحث التلقائي بناء على التحليل
-        setTimeout(() => refetchPinterest(), 100);
+        // تحديث المشاهد الافتراضية والـ Pinterest بناء على التحليل الجديد
+        setTimeout(() => {
+          refetchDefault();  // إعادة جلب المشاهد الافتراضية بنوع المنتج الجديد
+          refetchPinterest(); // إعادة جلب مشاهد Pinterest
+        }, 100);
       } else {
         throw new Error(`Analysis failed: ${analysisResponse.status}`);
       }

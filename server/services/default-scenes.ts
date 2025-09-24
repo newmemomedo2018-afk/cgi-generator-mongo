@@ -167,7 +167,32 @@ export async function suggestScenesForProduct(
     'نباتات': ['living_room', 'office'],
     'تلفزيون': ['living_room', 'bedroom'],
     'كمبيوتر': ['office', 'bedroom'],
-    'لابتوب': ['office', 'bedroom']
+    'لابتوب': ['office', 'bedroom'],
+    // Food and beverages
+    'مشروب': ['kitchen', 'dining_room'],
+    'مشروب طاقة': ['kitchen', 'office'], // Energy drinks for workout/office scenarios
+    'مشروب الطاقة': ['kitchen', 'office'], // Alternative form with "الطاقة"
+    'طاقة': ['kitchen', 'office'],
+    'عصير': ['kitchen', 'dining_room'],
+    'قهوة': ['kitchen', 'office'],
+    'شاي': ['kitchen', 'living_room'],
+    'ماء': ['kitchen', 'office'],
+    'طعام': ['kitchen', 'dining_room'],
+    'أكل': ['kitchen', 'dining_room'],
+    // Electronics and tech
+    'إلكترونيات': ['office', 'living_room'],
+    'هاتف': ['office', 'bedroom'],
+    'تقنية': ['office'],
+    // Personal care and cosmetics
+    'تجميل': ['bedroom', 'bathroom'],
+    'عطر': ['bedroom', 'bathroom'],
+    'مكياج': ['bedroom', 'bathroom'],
+    'شامبو': ['bathroom'],
+    // Clothing and fashion
+    'ملابس': ['bedroom'],
+    'أزياء': ['bedroom'],
+    'حقيبة': ['bedroom', 'office'],
+    'حذاء': ['bedroom']
   };
   
   // تحديد الفئات المناسبة

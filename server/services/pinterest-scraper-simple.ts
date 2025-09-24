@@ -138,7 +138,8 @@ export async function searchPinterestForProduct(
 function getCategoryFromProductType(productType: string): string {
   const type = productType.toLowerCase();
   
-  if (type.includes('أريكة') || type.includes('sofa') || type.includes('معيشة')) {
+  // Furniture and living room items
+  if (type.includes('أريكة') || type.includes('sofa') || type.includes('معيشة') || type.includes('أثاث')) {
     return 'living_room';
   }
   if (type.includes('سرير') || type.includes('bed') || type.includes('نوم')) {
@@ -147,8 +148,34 @@ function getCategoryFromProductType(productType: string): string {
   if (type.includes('مكتب') || type.includes('office') || type.includes('كرسي')) {
     return 'office';
   }
+  // Food and beverages -> kitchen setting
+  if (type.includes('مشروب') || type.includes('drink') || type.includes('طاقة') || type.includes('energy') || 
+      type.includes('عصير') || type.includes('ماء') || type.includes('coca') || type.includes('pepsi') || 
+      type.includes('sting') || type.includes('coffee') || type.includes('tea') || type.includes('قهوة') ||
+      type.includes('الطاقة')) { // Added for "مشروب الطاقة" variant
+    return 'kitchen';
+  }
+  if (type.includes('طعام') || type.includes('food') || type.includes('أكل') || type.includes('وجبة')) {
+    return 'dining_room';
+  }
+  // Lighting and electrical
   if (type.includes('إضاءة') || type.includes('ثريا') || type.includes('lighting') || type.includes('lamp')) {
     return 'dining_room'; // Chandeliers usually go in dining rooms
+  }
+  // Electronics and tech
+  if (type.includes('إلكترونيات') || type.includes('electronics') || type.includes('هاتف') || type.includes('phone') || 
+      type.includes('حاسوب') || type.includes('computer') || type.includes('تقنية')) {
+    return 'office';
+  }
+  // Personal care and cosmetics
+  if (type.includes('تجميل') || type.includes('cosmetics') || type.includes('عطر') || type.includes('perfume') || 
+      type.includes('مكياج') || type.includes('makeup') || type.includes('شامبو')) {
+    return 'bathroom';
+  }
+  // Clothing and fashion  
+  if (type.includes('ملابس') || type.includes('clothing') || type.includes('أزياء') || type.includes('fashion') || 
+      type.includes('حقيبة') || type.includes('bag') || type.includes('حذاء')) {
+    return 'bedroom';
   }
   if (type.includes('مطبخ') || type.includes('kitchen')) {
     return 'kitchen';
@@ -157,5 +184,5 @@ function getCategoryFromProductType(productType: string): string {
     return 'bathroom';
   }
   
-  return 'living_room'; // Default
+  return 'studio'; // Default to studio for generic products
 }
