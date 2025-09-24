@@ -352,10 +352,40 @@ export class PostgreSQLStorage implements IStorage {
         ORDER BY created_at DESC
       `);
       
-      return (result.rows || []) as Project[];
+      // Transform snake_case DB columns to camelCase for frontend compatibility
+      const projects = (result.rows || []).map((row: any) => ({
+        id: row.id,
+        userId: row.user_id,
+        title: row.title,
+        description: row.description,
+        productImageUrl: row.product_image_url,
+        sceneImageUrl: row.scene_image_url,
+        sceneVideoUrl: row.scene_video_url,
+        contentType: row.content_type,
+        videoDurationSeconds: row.video_duration_seconds,
+        status: row.status,
+        progress: row.progress,
+        enhancedPrompt: row.enhanced_prompt,
+        outputImageUrl: row.output_image_url,
+        outputVideoUrl: row.output_video_url,
+        creditsUsed: row.credits_used,
+        actualCost: row.actual_cost,
+        resolution: row.resolution,
+        quality: row.quality,
+        productSize: row.product_size || 'normal',
+        errorMessage: row.error_message,
+        klingVideoTaskId: row.kling_video_task_id,
+        klingSoundTaskId: row.kling_sound_task_id,
+        includeAudio: row.include_audio,
+        fullTaskDetails: row.full_task_details,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at
+      }));
+      
+      return projects as Project[];
     } catch (error) {
       console.error('Failed to get user projects:', error);
-      // Fallback to basic schema-agnostic query
+      // Fallback to basic schema-agnostic query using Drizzle (returns camelCase)
       const result = await db.select()
         .from(projects)
         .where(eq(projects.userId, userId))

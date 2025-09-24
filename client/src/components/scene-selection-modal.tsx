@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Search, Sparkles, ImageIcon, ExternalLink, Scale, Zap } from 'lucide-react';
+import { Loader2, Search, Sparkles, ImageIcon, ExternalLink, Scale, Zap, RefreshCw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 /**
@@ -147,16 +147,18 @@ export default function SceneSelectionModal({
   // تحليل المنتج تلقائياً عند فتح المودال  
   useEffect(() => {
     if (isOpen && activeTab === 'pinterest') {
+      console.log('🔄 Auto-loading Pinterest scenes...', { productImageUrl: !!productImageUrl });
       if (productImageUrl) {
         // إذا توفرت صورة المنتج، قم بالتحليل والبحث الذكي
         analyzeProductAndSearch();
       } else {
-        // إذا لم تتوفر صورة المنتج، اعرض مشاهد افتراضية
+        // إذا لم تتوفر صورة المنتج، ابدأ بحث عام فوراً
+        console.log('🎯 No product image, starting general CGI search...');
         setSearchQuery('CGI interior design');
-        refetchPinterest();
+        setTimeout(() => refetchPinterest(), 100); // Small delay to ensure state is set
       }
     }
-  }, [isOpen, productImageUrl, activeTab]);
+  }, [isOpen, activeTab]); // Remove productImageUrl dependency to prevent re-triggering
 
   const analyzeProductAndSearch = async () => {
     if (!productImageUrl) {
@@ -406,8 +408,17 @@ export default function SceneSelectionModal({
                 </div>
               ) : pinterestScenes.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">
-                    وُجد {pinterestScenes.length} مشهد CGI مناسب من Pinterest
+                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                    <span>وُجد {pinterestScenes.length} مشهد CGI مناسب من Pinterest</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => refetchPinterest()}
+                      disabled={pinterestLoading}
+                    >
+                      <RefreshCw className={`h-4 w-4 ml-1 ${pinterestLoading ? 'animate-spin' : ''}`} />
+                      تحديث
+                    </Button>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto">
                     {pinterestScenes.map((scene: PinterestScene) => (
