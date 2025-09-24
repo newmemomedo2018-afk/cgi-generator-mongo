@@ -868,11 +868,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Pinterest Scenes API  
   app.get('/api/scenes/pinterest', isAuthenticated, async (req: any, res) => {
     try {
+      console.log('🎯 Pinterest API endpoint HIT!');
+      console.log('📋 Query params:', req.query);
+      
       const { searchPinterestForProduct } = await import('./services/pinterest-scraper');
       const { q: searchQuery, productType = 'أثاث', maxResults = 20 } = req.query;
 
-      if (!searchQuery) {
-        return res.status(400).json({ error: 'Search query is required' });
+      console.log('🔍 Extracted params:', { searchQuery, productType, maxResults });
+
+      if (!searchQuery || searchQuery.trim() === '') {
+        console.log('⚠️ Empty/missing search query');
+        return res.json([]); // Return empty array instead of error for frontend
       }
 
       console.log('🔍 Pinterest search request:', {
@@ -881,6 +887,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxResults: parseInt(maxResults)
       });
 
+      console.log('🚀 About to call searchPinterestForProduct...');
       const scenes = await searchPinterestForProduct(
         productType,
         'modern',
@@ -888,10 +895,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { maxResults: parseInt(maxResults) }
       );
 
+      console.log('✅ Pinterest search completed, returning:', scenes.length, 'scenes');
       res.json(scenes);
     } catch (error) {
       console.error('❌ Pinterest search failed:', error);
-      res.status(500).json({ error: 'Pinterest search failed' });
+      console.error('📊 Error details:', error.stack);
+      res.json([]); // Return empty array instead of error for frontend
     }
   });
 

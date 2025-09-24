@@ -114,6 +114,7 @@ function extractKeywords(title: string, description: string = ''): string[] {
  */
 async function scrapePinterestWeb(query: string, limit: number = 20): Promise<any[]> {
   console.log('🕷️ Starting Pinterest web scraping:', { query, limit });
+  console.log('🚀 Scraper function called successfully - Puppeteer will start now!');
 
   let browser = null;
   try {
