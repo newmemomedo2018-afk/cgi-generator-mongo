@@ -16,7 +16,7 @@ import UploadZone from "@/components/upload-zone";
 import ProjectCard from "@/components/project-card";
 import ProgressModal from "@/components/progress-modal";
 import SceneSelectionModal from "@/components/scene-selection-modal";
-import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles } from "lucide-react";
+import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera } from "lucide-react";
 import type { User as UserType, Project } from "@shared/schema";
 
 export default function Dashboard() {
@@ -477,70 +477,135 @@ export default function Dashboard() {
                     <CardHeader>
                       <CardTitle className="text-2xl">رفع الصور</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-6">
-                      {/* Product Image Upload */}
-                      <div>
-                        <Label className="block text-sm font-medium mb-2">صورة المنتج</Label>
-                        <UploadZone
-                          onFileUpload={handleProductImageUpload}
-                          isUploading={uploadProductImageMutation.isPending}
-                          previewUrl={projectData.productImageUrl}
-                          label="اسحب وأفلت صورة المنتج هنا"
-                          sublabel="أو انقر للتصفح - PNG, JPG حتى 10MB"
-                          testId="product-upload-zone"
-                          resetKey={resetKey}
-                        />
+                    <CardContent className="space-y-8">
+                      {/* Product Image Section */}
+                      <div className="space-y-4">
+                        <Label className="block text-lg font-semibold text-primary mb-4">
+                          📸 صورة المنتج
+                        </Label>
+                        
+                        {!projectData.productImageUrl ? (
+                          <UploadZone
+                            onFileUpload={handleProductImageUpload}
+                            isUploading={uploadProductImageMutation.isPending}
+                            previewUrl={projectData.productImageUrl}
+                            label="اسحب وأفلت صورة المنتج هنا"
+                            sublabel="أو انقر للتصفح - PNG, JPG حتى 10MB"
+                            testId="product-upload-zone"
+                            resetKey={resetKey}
+                          />
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="relative group">
+                              <img 
+                                src={projectData.productImageUrl} 
+                                alt="صورة المنتج" 
+                                className="w-full h-40 object-cover rounded-lg border border-border"
+                              />
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg flex items-center justify-center">
+                                <Button
+                                  onClick={() => {
+                                    setProjectData(prev => ({ ...prev, productImageUrl: "" }));
+                                    setIsProductImageUploaded(false);
+                                    setResetKey(Date.now().toString());
+                                  }}
+                                  className="bg-primary/90 hover:bg-primary text-white"
+                                  size="sm"
+                                  data-testid="edit-product-image"
+                                >
+                                  <Edit className="ml-2 h-4 w-4" />
+                                  تعديل الصورة
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {/* Scene Upload (Only show after product image is uploaded) */}
-                      {projectData.productImageUrl ? (
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <Label className="text-sm font-medium">
-                              {projectData.contentType === "video" ? "صورة أو فيديو المشهد" : "صورة المشهد"}
-                            </Label>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
+                      {/* Scene Image Section - Only show after product image is uploaded */}
+                      {projectData.productImageUrl && (
+                        <div className="space-y-6 pt-6 border-t border-border/20">
+                          <Label className="block text-lg font-semibold text-primary mb-4">
+                            🎬 صورة المشهد
+                          </Label>
+                          
+                          {/* Library Selection Button */}
+                          <div className="space-y-4">
+                            <div 
                               onClick={() => setShowSceneSelector(true)}
-                              className="text-xs"
-                              data-testid="scene-selector-button"
+                              className="cursor-pointer group relative overflow-hidden rounded-xl border-2 border-dashed border-primary/30 hover:border-primary/60 bg-gradient-to-br from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 transition-all duration-300 p-6"
+                              data-testid="scene-library-button"
                             >
-                              <Sparkles className="ml-2 h-3 w-3" />
-                              اختيار مشهد جاهز
-                            </Button>
+                              <div className="text-center space-y-3">
+                                <div className="relative mx-auto w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                                  <Sparkles className="h-8 w-8 text-white" />
+                                </div>
+                                <div>
+                                  <h3 className="text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
+                                    اختيار من المكتبة
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground mt-2">
+                                    مجموعة مذهلة من المشاهد الجاهزة المصممة خصيصاً لمنتجك
+                                  </p>
+                                </div>
+                                <Badge className="bg-primary/20 text-primary border-0 px-4 py-1 text-sm font-medium">
+                                  مدعوم بالذكاء الاصطناعي ✨
+                                </Badge>
+                              </div>
+                            </div>
+
+                            {/* OR Divider */}
+                            <div className="relative py-4">
+                              <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-border/40"></span>
+                              </div>
+                              <div className="relative flex justify-center text-sm">
+                                <span className="bg-background px-4 text-muted-foreground font-medium">أو</span>
+                              </div>
+                            </div>
+
+                            {/* Custom Upload Zone */}
+                            <div className="space-y-2">
+                              <UploadZone
+                                onFileUpload={handleSceneUpload}
+                                isUploading={uploadSceneMutation.isPending}
+                                previewUrl={projectData.contentType === "video" ? 
+                                  (projectData.sceneVideoUrl || projectData.sceneImageUrl) : 
+                                  projectData.sceneImageUrl
+                                }
+                                label={projectData.contentType === "video" ? 
+                                  "اسحب وأفلت صورة أو فيديو المشهد الخاص بك هنا" : 
+                                  "اسحب وأفلت صورة المشهد الخاص بك هنا"
+                                }
+                                sublabel={projectData.contentType === "video" ? 
+                                  "أو انقر للتصفح - صور حتى 10MB، فيديو حتى 50MB" : 
+                                  "أو انقر للتصفح - PNG, JPG حتى 10MB"
+                                }
+                                testId="scene-upload-zone"
+                                resetKey={resetKey}
+                                acceptedTypes={projectData.contentType === "video" ? "both" : "image"}
+                              />
+                            </div>
                           </div>
-                          <UploadZone
-                            onFileUpload={handleSceneUpload}
-                            isUploading={uploadSceneMutation.isPending}
-                            previewUrl={projectData.contentType === "video" ? 
-                              (projectData.sceneVideoUrl || projectData.sceneImageUrl) : 
-                              projectData.sceneImageUrl
-                            }
-                            label={projectData.contentType === "video" ? 
-                              "اسحب وأفلت صورة أو فيديو المشهد هنا" : 
-                              "اسحب وأفلت صورة المشهد هنا"
-                            }
-                            sublabel={projectData.contentType === "video" ? 
-                              "أو انقر للتصفح - صور حتى 10MB، فيديو حتى 50MB" : 
-                              "أو انقر للتصفح - PNG, JPG حتى 10MB"
-                            }
-                            testId="scene-upload-zone"
-                            resetKey={resetKey}
-                            acceptedTypes={projectData.contentType === "video" ? "both" : "image"}
-                          />
-                          <p className="text-xs text-muted-foreground mt-2">
-                            💡 نصيحة: يمكنك اختيار مشهد جاهز بناء على تحليل منتجك تلقائياً
-                          </p>
                         </div>
-                      ) : (
-                        <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
-                          <div className="text-muted-foreground mb-2">
-                            📸 يجب رفع صورة المنتج أولاً
+                      )}
+
+                      {/* Helper message when no product image */}
+                      {!projectData.productImageUrl && (
+                        <div className="text-center py-8 border border-dashed border-muted-foreground/30 rounded-xl bg-muted/20">
+                          <div className="space-y-3">
+                            <div className="w-16 h-16 mx-auto bg-muted-foreground/10 rounded-full flex items-center justify-center">
+                              <Camera className="h-8 w-8 text-muted-foreground/60" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-medium text-muted-foreground mb-2">
+                                ابدأ برفع صورة المنتج
+                              </h3>
+                              <p className="text-sm text-muted-foreground">
+                                سنقوم بتحليل المنتج واقتراح المشاهد المناسبة تلقائياً
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            سنقوم بتحليل المنتج واقتراح المشاهد المناسبة
-                          </p>
                         </div>
                       )}
                     </CardContent>
