@@ -1,7 +1,13 @@
 /**
- * Pinterest API Service  
- * سحب مشاهد CGI احترافية من Pinterest باستخدام الـ API الرسمي
+ * Pinterest Web Scraper Service  
+ * سحب مشاهد CGI احترافية من Pinterest باستخدام Web Scraping مع Puppeteer
  */
+
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+// إعداد puppeteer مع stealth plugin
+puppeteer.use(StealthPlugin());
 
 export interface PinterestScene {
   id: string;
@@ -104,7 +110,126 @@ function extractKeywords(title: string, description: string = ''): string[] {
 }
 
 /**
- * Pinterest API search for CGI interior scenes
+ * Pinterest Web Scraping للحصول على CGI scenes
+ */
+async function scrapePinterestWeb(query: string, limit: number = 20): Promise<any[]> {
+  console.log('🕷️ Starting Pinterest web scraping:', { query, limit });
+
+  let browser = null;
+  try {
+    // تشغيل المتصفح مع إعدادات مخفية
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-web-security',
+        '--disable-features=VizDisplayCompositor',
+        '--disable-dev-shm-usage',
+        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      ]
+    });
+
+    const page = await browser.newPage();
+    
+    // إعداد viewport وheaders
+    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+    
+    // URL البحث في Pinterest
+    const searchUrl = `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}&rs=typed`;
+    console.log('🔍 Scraping Pinterest URL:', searchUrl);
+    
+    await page.goto(searchUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+    
+    // انتظار تحميل النتائج
+    await page.waitForSelector('[data-test-id="pin"]', { timeout: 15000 });
+    
+    // استخراج بيانات الـ pins
+    const pins = await page.evaluate((maxPins) => {
+      const pinElements = document.querySelectorAll('[data-test-id="pin"]');
+      const results = [];
+      
+      for (let i = 0; i < Math.min(pinElements.length, maxPins); i++) {
+        const pin = pinElements[i];
+        
+        try {
+          // استخراج الصورة
+          const imgElement = pin.querySelector('img');
+          const imageUrl = imgElement?.src || imgElement?.getAttribute('data-src') || '';
+          
+          // استخراج العنوان
+          const titleElement = pin.querySelector('[data-test-id="pinTitle"]') || 
+                                pin.querySelector('[data-test-id="pin-closeup-title"]') ||
+                                pin.querySelector('h1') ||
+                                pin.querySelector('.pinTitle');
+          const title = titleElement?.textContent?.trim() || `CGI Scene ${i + 1}`;
+          
+          // استخراج الوصف
+          const descElement = pin.querySelector('[data-test-id="pin-closeup-description"]') ||
+                              pin.querySelector('.pinDescription') ||
+                              pin.querySelector('[data-test-id="pinDescription"]');
+          const description = descElement?.textContent?.trim() || '';
+          
+          // استخراج الرابط
+          const linkElement = pin.querySelector('a[href*="/pin/"]');
+          const pinterestUrl = linkElement ? `https://pinterest.com${linkElement.getAttribute('href')}` : '';
+          
+          // فلترة الصور عالية الجودة
+          if (imageUrl && !imageUrl.includes('236x') && title.length > 5) {
+            results.push({
+              id: `scrapped_${Date.now()}_${i}`,
+              title: title,
+              description: description,
+              imageUrl: imageUrl.replace('236x', '736x').replace('474x', '736x'), // تحسين جودة الصورة
+              pinterestUrl: pinterestUrl,
+              boardName: 'Pinterest Search',
+              userName: 'pinterest_user',
+              isCGI: true, // سيتم فلترتها لاحقاً
+              category: 'unknown',
+              extractedKeywords: [],
+              scrapedAt: new Date()
+            });
+          }
+        } catch (error) {
+          console.log('Error extracting pin data:', error);
+        }
+      }
+      
+      return results;
+    }, limit);
+    
+    console.log(`📌 Scraped ${pins.length} pins from Pinterest`);
+    
+    // فلترة النتائج للـ CGI فقط
+    const cgiPins = pins.filter(pin => {
+      const text = `${pin.title} ${pin.description}`.toLowerCase();
+      return CGI_KEYWORDS.some(keyword => text.includes(keyword));
+    });
+    
+    // تصنيف المشاهد
+    const categorizedPins = cgiPins.map(pin => ({
+      ...pin,
+      category: categorizeScene(pin.title, pin.description),
+      extractedKeywords: extractKeywords(pin.title, pin.description)
+    }));
+    
+    console.log(`✅ Pinterest scraping completed: ${categorizedPins.length} CGI scenes found`);
+    
+    return categorizedPins;
+    
+  } catch (error) {
+    console.error('❌ Pinterest scraping failed:', error);
+    return [];
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+}
+
+/**
+ * Pinterest API search for CGI interior scenes (DEPRECATED - using scraper instead)
  */
 async function searchPinterestAPI(query: string, limit: number = 20): Promise<any[]> {
   const searchUrl = `${PINTEREST_API_BASE}/search/pins`;
@@ -230,55 +355,24 @@ export async function scrapePinterestScenes(
     maxResults = 20
   } = options;
 
-  console.log('🔍 Starting Pinterest API search:', {
+  console.log('🕷️ Starting Pinterest web scraping:', {
     searchKeywords,
     maxResults
   });
 
   try {
-    const pinterestResults = await searchPinterestAPI(searchKeywords, maxResults);
+    const pinterestResults = await scrapePinterestWeb(searchKeywords, maxResults);
 
-    console.log(`📌 Retrieved ${pinterestResults.length} pins from Pinterest API`);
+    console.log(`🕷️ Scraped ${pinterestResults.length} pins from Pinterest web`);
 
-    // معالجة النتائج وفلترة CGI
-    const processedScenes: PinterestScene[] = [];
-
-    for (const pin of pinterestResults) {
-      try {
-        const title = pin.title || '';
-        const description = pin.description || '';
-        
-        // فحص إذا كان المشهد CGI
-        const isCGI = isCGIScene(title, description);
-        
-        if (isCGI && pin.media?.images?.['600x']) {
-          const scene: PinterestScene = {
-            id: `pinterest_api_${pin.id}`,
-            title: title,
-            description: description,
-            imageUrl: pin.media.images['600x'].url,
-            pinterestUrl: `https://www.pinterest.com/pin/${pin.id}/`,
-            userName: pin.creator?.username || '',
-            isCGI: true,
-            category: categorizeScene(title, description),
-            extractedKeywords: extractKeywords(title, description),
-            scrapedAt: new Date()
-          };
-          
-          processedScenes.push(scene);
-        }
-      } catch (error) {
-        console.warn('Error processing pin:', error);
-      }
-    }
-
-    console.log('✅ Pinterest API search completed:', {
+    // النتائج جاهزة من الـ scraper - لا نحتاج معالجة إضافية
+    console.log('✅ Pinterest web scraping completed:', {
       totalPinsFound: pinterestResults.length,
-      cgiScenesFiltered: processedScenes.length,
-      categories: Array.from(new Set(processedScenes.map(s => s.category)))
+      cgiScenesFiltered: pinterestResults.length, // كلها CGI لأنها مفلترة
+      categories: Array.from(new Set(pinterestResults.map(s => s.category)))
     });
 
-    return processedScenes;
+    return pinterestResults;
 
   } catch (error) {
     console.error('❌ Pinterest API search failed:', error);
