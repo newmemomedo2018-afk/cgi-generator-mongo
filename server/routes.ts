@@ -871,7 +871,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('🎯 Pinterest API endpoint HIT!');
       console.log('📋 Query params:', req.query);
       
-      const { searchPinterestForProduct } = await import('./services/pinterest-scraper');
+      const { searchPinterestForProduct } = await import('./services/pinterest-scraper-simple');
       const { q: searchQuery, productType = 'أثاث', maxResults = 20 } = req.query;
 
       console.log('🔍 Extracted params:', { searchQuery, productType, maxResults });
