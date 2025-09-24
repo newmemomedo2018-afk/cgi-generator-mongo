@@ -897,7 +897,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('✅ Pinterest search completed, returning:', scenes.length, 'scenes');
       res.json(scenes);
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Pinterest search failed:', error);
       console.error('📊 Error details:', error.stack);
       res.json([]); // Return empty array instead of error for frontend
