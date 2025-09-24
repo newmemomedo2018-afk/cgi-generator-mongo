@@ -56,24 +56,33 @@ export default function SceneSelectionModal({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // جلب المشاهد الافتراضية
-  const { data: defaultScenes = [], isLoading: defaultLoading, error: defaultError } = useQuery<SceneData[]>({
+  const { data: defaultScenes = [], isLoading: defaultLoading, error: defaultError, refetch: refetchDefault } = useQuery<SceneData[]>({
     queryKey: ['/api/scenes/default', productType],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (productType) params.append('productType', productType);
       
+      const token = localStorage.getItem('auth_token');
       console.log('🔍 Fetching default scenes:', {
         url: `/api/scenes/default?${params}`,
         productType,
         isOpen,
-        activeTab
+        activeTab,
+        hasToken: !!token,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
       });
       
+      const headers: Record<string, string> = {
+        'Cache-Control': 'no-cache',
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch(`/api/scenes/default?${params}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          'Cache-Control': 'no-cache'
-        },
+        headers
       });
       
       console.log('📡 Default scenes response:', {
@@ -84,23 +93,28 @@ export default function SceneSelectionModal({
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Default scenes error:', errorText);
-        throw new Error(`Failed to load default scenes: ${response.status} ${errorText}`);
+        console.error('❌ Default scenes error:', {
+          status: response.status,
+          error: errorText,
+          hasToken: !!token
+        });
+        throw new Error(`Failed to load default scenes: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
       console.log('✅ Default scenes loaded:', {
         count: data.length,
         firstScene: data[0]?.name,
-        categories: Array.from(new Set(data.map((s: SceneData) => s.category)))
+        categories: Array.from(new Set(data.map((s: SceneData) => s.category))),
+        scenes: data.map((s: SceneData) => ({ id: s.id, name: s.name }))
       });
       
       return data;
     },
     enabled: isOpen && activeTab === 'default',
-    retry: 2,
-    staleTime: 0, // Always fetch fresh data
-    gcTime: 0 // Don't cache
+    retry: 1,
+    staleTime: 0,
+    gcTime: 0
   });
 
   // جلب مشاهد Pinterest
@@ -202,23 +216,57 @@ export default function SceneSelectionModal({
           {/* Default Scenes Tab */}
           <TabsContent value="default" className="mt-4">
             <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                مشاهد عالية الجودة مناسبة لمنتجك ({productType})
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  مشاهد عالية الجودة مناسبة لمنتجك ({productType})
+                </div>
+                <Button 
+                  onClick={() => refetchDefault()}
+                  variant="ghost" 
+                  size="sm" 
+                  className="text-xs"
+                  data-testid="refresh-default-scenes"
+                >
+                  🔄 تحديث
+                </Button>
               </div>
 
               {defaultLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="ml-2">جاري تحميل المشاهد...</span>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="mt-3 text-sm font-medium">جاري تحميل المشاهد...</span>
+                  <span className="mt-1 text-xs text-muted-foreground">انتظر قليلاً...</span>
                 </div>
               ) : defaultError ? (
-                <div className="text-center py-12 text-red-500">
-                  <p>حدث خطأ في تحميل المشاهد</p>
-                  <p className="text-sm mt-2">{(defaultError as Error)?.message}</p>
+                <div className="text-center py-12">
+                  <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
+                    <p className="text-red-600 dark:text-red-400 font-medium">حدث خطأ في تحميل المشاهد</p>
+                    <p className="text-sm mt-2 text-red-500 dark:text-red-300">{(defaultError as Error)?.message}</p>
+                    <Button 
+                      onClick={() => refetchDefault()}
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4"
+                      data-testid="retry-default-scenes"
+                    >
+                      إعادة المحاولة
+                    </Button>
+                  </div>
                 </div>
               ) : defaultScenes.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <p>لا توجد مشاهد متاحة حالياً</p>
+                <div className="text-center py-12">
+                  <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
+                    <p className="text-yellow-600 dark:text-yellow-400">لا توجد مشاهد متاحة حالياً</p>
+                    <Button 
+                      onClick={() => refetchDefault()}
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-4"
+                      data-testid="retry-default-scenes"
+                    >
+                      إعادة التحميل
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto">
