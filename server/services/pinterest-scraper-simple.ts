@@ -45,88 +45,81 @@ export async function searchPinterestForProduct(
     keywords
   });
 
-  const { maxResults = 20 } = options;
+  const { maxResults = 24 } = options;
   
-  // Generate realistic CGI scenes based on the product type and keywords
-  const mockCGIScenes: PinterestScene[] = [
-    {
-      id: `pinterest_cgi_${Date.now()}_1`,
-      title: `Modern ${productType} CGI Visualization`,
-      description: `3D rendered ${productType} in ${productStyle} style with professional lighting`,
-      imageUrl: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      pinterestUrl: `https://pinterest.com/pin/cgi-${productType}`,
-      boardName: "CGI Interior Design",
-      userName: "ArchViz Studio",
-      isCGI: true,
-      category: getCategoryFromProductType(productType),
-      extractedKeywords: ["cgi", "3d", "render", productStyle, productType.toLowerCase()],
-      scrapedAt: new Date()
-    },
-    {
-      id: `pinterest_cgi_${Date.now()}_2`,
-      title: `Luxury ${productType} 3D Rendering`,
-      description: `Photorealistic CGI ${productType} with elegant design and professional setup`,
-      imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      pinterestUrl: `https://pinterest.com/pin/cgi-luxury-${productType}`,
-      boardName: "3D Interior Renders",
-      userName: "CGI Designer",
-      isCGI: true,
-      category: getCategoryFromProductType(productType),
-      extractedKeywords: ["luxury", productType.toLowerCase(), "3d", "photorealistic", "cgi"],
-      scrapedAt: new Date()
-    },
-    {
-      id: `pinterest_cgi_${Date.now()}_3`,
-      title: `Contemporary ${productType} Scene`,
-      description: `3D visualization of ${productType} in modern interior setting`,
-      imageUrl: "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      pinterestUrl: `https://pinterest.com/pin/cgi-contemporary-${productType}`,
-      boardName: `${productType} CGI Renders`,
-      userName: "Interior 3D",
-      isCGI: true,
-      category: getCategoryFromProductType(productType),
-      extractedKeywords: ["contemporary", productType.toLowerCase(), "cgi", "modern", "3d"],
-      scrapedAt: new Date()
-    },
-    {
-      id: `pinterest_cgi_${Date.now()}_4`,
-      title: `${productType} CGI Interior Scene`,
-      description: `3D rendered room featuring ${productType} with professional lighting`,
-      imageUrl: "https://images.unsplash.com/photo-1582582494787-1b76cb3d9ad2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      pinterestUrl: `https://pinterest.com/pin/cgi-interior-${productType}`,
-      boardName: `${productType} Lighting CGI`,
-      userName: "3D Lighting Pro",
-      isCGI: true,
-      category: getCategoryFromProductType(productType),
-      extractedKeywords: [productType.toLowerCase(), "interior", "cgi", "professional", "3d"],
-      scrapedAt: new Date()
-    },
-    {
-      id: `pinterest_cgi_${Date.now()}_5`,
-      title: `Minimalist ${productType} Render`,
-      description: `Clean and modern ${productType} CGI visualization with natural lighting`,
-      imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      pinterestUrl: `https://pinterest.com/pin/cgi-minimalist-${productType}`,
-      boardName: `${productType} CGI Designs`,
-      userName: "Modern CGI",
-      isCGI: true,
-      category: getCategoryFromProductType(productType),
-      extractedKeywords: ["minimalist", productType.toLowerCase(), "3d", "render", "modern"],
-      scrapedAt: new Date()
-    }
+  // Generate comprehensive CGI scenes (24+ results for better browsing)
+  const baseImages = [
+    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1582582494787-1b76cb3d9ad2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1519947486511-46149fa0a254?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1549497538-303791108f95?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1493663284031-b7e3aaa4c4a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1503174971373-b1f69850bded?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1540932239986-30128078f3c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1556228720-195a672e8a03?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1595515106969-1ce29566ff3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   ];
+
+  const styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial", "Scandinavian", "Rustic"];
+  const themes = ["CGI Visualization", "3D Rendering", "Interior Scene", "Design Render", "Photorealistic Render", "Studio Setup"];
   
-  // Filter based on keywords
-  const searchQuery = keywords.join(' ').toLowerCase();
-  const relevantScenes = mockCGIScenes.filter(scene => {
-    const searchText = `${scene.title} ${scene.description} ${scene.extractedKeywords.join(' ')}`.toLowerCase();
+  const mockCGIScenes: PinterestScene[] = [];
+  
+  // Generate scenes dynamically based on maxResults (up to 30)
+  for (let i = 0; i < Math.min(maxResults, 30); i++) {
+    const style = styles[i % styles.length];
+    const theme = themes[i % themes.length];
+    const imageUrl = baseImages[i % baseImages.length];
     
-    // Check if any keyword appears in the scene
-    return keywords.some(keyword => 
-      searchText.includes(keyword.toLowerCase()) || 
-      searchText.includes(productType.toLowerCase())
-    );
-  });
+    mockCGIScenes.push({
+      id: `pinterest_cgi_${Date.now()}_${i + 1}`,
+      title: `${style} ${productType} ${theme}`,
+      description: `3D rendered ${productType} in ${style.toLowerCase()} style with professional lighting and composition`,
+      imageUrl: imageUrl,
+      pinterestUrl: `https://pinterest.com/pin/cgi-${style.toLowerCase()}-${productType}-${i}`,
+      boardName: `${style} CGI ${productType}`,
+      userName: `CGI Artist ${Math.floor(i / 3) + 1}`,
+      isCGI: true,
+      category: getCategoryFromProductType(productType),
+      extractedKeywords: [style.toLowerCase(), productType.toLowerCase(), "cgi", "3d", "render", productStyle],
+      scrapedAt: new Date()
+    });
+  }
+  
+  // Filter based on keywords (if provided), otherwise return all scenes
+  const searchQuery = keywords.join(' ').toLowerCase();
+  let relevantScenes = mockCGIScenes;
+  
+  if (keywords.length > 0 && searchQuery.trim()) {
+    relevantScenes = mockCGIScenes.filter(scene => {
+      const searchText = `${scene.title} ${scene.description} ${scene.extractedKeywords.join(' ')}`.toLowerCase();
+      
+      // Check if any keyword appears in the scene
+      return keywords.some(keyword => 
+        searchText.includes(keyword.toLowerCase()) || 
+        searchText.includes(productType.toLowerCase())
+      );
+    });
+  }
   
   const limitedResults = relevantScenes.slice(0, Math.min(maxResults, relevantScenes.length));
   

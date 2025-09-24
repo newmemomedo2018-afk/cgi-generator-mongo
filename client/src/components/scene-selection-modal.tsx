@@ -129,7 +129,7 @@ export default function SceneSelectionModal({
       const params = new URLSearchParams({
         q: searchQuery,
         productType: productType || 'أثاث',
-        maxResults: '20'
+        maxResults: '24'
       });
       return fetch(`/api/scenes/pinterest?${params}`, {
         headers: {
@@ -146,13 +146,25 @@ export default function SceneSelectionModal({
 
   // تحليل المنتج تلقائياً عند فتح المودال  
   useEffect(() => {
-    if (isOpen && productImageUrl && activeTab === 'pinterest') {
-      analyzeProductAndSearch();
+    if (isOpen && activeTab === 'pinterest') {
+      if (productImageUrl) {
+        // إذا توفرت صورة المنتج، قم بالتحليل والبحث الذكي
+        analyzeProductAndSearch();
+      } else {
+        // إذا لم تتوفر صورة المنتج، اعرض مشاهد افتراضية
+        setSearchQuery('CGI interior design');
+        refetchPinterest();
+      }
     }
   }, [isOpen, productImageUrl, activeTab]);
 
   const analyzeProductAndSearch = async () => {
-    if (!productImageUrl) return;
+    if (!productImageUrl) {
+      // إذا لم تتوفر صورة منتج، ابدأ بـ search عام
+      setSearchQuery('CGI interior design');
+      refetchPinterest();
+      return;
+    }
 
     setIsAnalyzing(true);
     try {
@@ -180,6 +192,7 @@ export default function SceneSelectionModal({
       console.error('Product analysis failed:', error);
       // Set a fallback search query  
       setSearchQuery('CGI interior design');
+      refetchPinterest();
     } finally {
       setIsAnalyzing(false);
     }
@@ -394,7 +407,7 @@ export default function SceneSelectionModal({
               ) : pinterestScenes.length > 0 ? (
                 <div className="space-y-2">
                   <div className="text-sm text-muted-foreground">
-                    وُجد {pinterestScenes.length} مشهد CGI مناسب
+                    وُجد {pinterestScenes.length} مشهد CGI مناسب من Pinterest
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto">
                     {pinterestScenes.map((scene: PinterestScene) => (
@@ -464,6 +477,24 @@ export default function SceneSelectionModal({
                   <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>لم يتم العثور على مشاهد مناسبة</p>
                   <p className="text-sm mt-2">جرب كلمات بحث مختلفة</p>
+                </div>
+              ) : !pinterestLoading && !isAnalyzing && pinterestScenes.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>استكشف مشاهد CGI متنوعة</p>
+                  <p className="text-sm mt-2">ابحث عن مشاهد مناسبة لمنتجك</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-4"
+                    onClick={() => {
+                      setSearchQuery('CGI interior design');
+                      refetchPinterest();
+                    }}
+                  >
+                    <Sparkles className="h-4 w-4 ml-2" />
+                    استكشاف المزيد
+                  </Button>
                 </div>
               ) : null}
             </div>
