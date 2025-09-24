@@ -918,6 +918,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysis = await analyzeProductForScenes(imageUrl);
 
+      console.log('🔧 FULL Analysis Object for debugging:', JSON.stringify(analysis, null, 2));
+
       res.json(analysis);
     } catch (error) {
       console.error('❌ Product analysis failed:', error);
