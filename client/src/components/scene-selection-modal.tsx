@@ -38,6 +38,8 @@ export default function SceneSelectionModal({
 }: SceneSelectionModalProps) {
   const [pinterestUrl, setPinterestUrl] = useState('');
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
+  const [extractedImageUrl, setExtractedImageUrl] = useState<string | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
 
   const handleUsePinterestImage = async () => {
     if (!pinterestUrl.trim()) {
@@ -54,8 +56,8 @@ export default function SceneSelectionModal({
     }
 
     try {
-      // Show loading state
-      const loadingToast = { id: 'pinterest-loading', message: 'جاري استخراج الصورة من Pinterest...' };
+      setIsExtracting(true);
+      setExtractedImageUrl(null);
       
       // Extract real image URL from Pinterest post
       const response = await fetch('/api/extract-pinterest-image', {
@@ -74,27 +76,36 @@ export default function SceneSelectionModal({
       const { imageUrl } = await response.json();
       
       console.log('✅ Pinterest image extracted:', { original: pinterestUrl, extracted: imageUrl });
-
-      const customScene: SceneData = {
-        id: `pinterest_${Date.now()}`,
-        name: 'مشهد Pinterest',
-        description: 'مشهد تم اختياره من Pinterest',
-        imageUrl: imageUrl, // Use the extracted image URL
-        category: 'pinterest',
-        style: 'user-selected',
-        keywords: ['pinterest'],
-        lighting: 'natural',
-        colors: ['متنوع']
-      };
       
-      onSceneSelect(customScene, productSize);
-      onClose();
+      // Show preview of extracted image
+      setExtractedImageUrl(imageUrl);
+      setIsExtracting(false);
       
     } catch (error) {
       console.error('Pinterest image extraction failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
       alert(`فشل في استخراج الصورة: ${errorMessage}`);
+      setIsExtracting(false);
     }
+  };
+
+  const handleConfirmSelection = () => {
+    if (!extractedImageUrl) return;
+    
+    const customScene: SceneData = {
+      id: `pinterest_${Date.now()}`,
+      name: 'مشهد Pinterest',
+      description: 'مشهد تم اختياره من Pinterest',
+      imageUrl: extractedImageUrl,
+      category: 'pinterest',
+      style: 'user-selected',
+      keywords: ['pinterest'],
+      lighting: 'natural',
+      colors: ['متنوع']
+    };
+    
+    onSceneSelect(customScene, productSize);
+    onClose();
   };
 
   const openPinterest = () => {
@@ -201,7 +212,7 @@ export default function SceneSelectionModal({
                 <div className="flex-1">
                   <Input
                     type="text"
-                    placeholder="https://i.pinimg.com/564x/..."
+                    placeholder="https://www.pinterest.com/pin/..."
                     className="h-12 text-lg"
                     value={pinterestUrl}
                     onChange={(e) => setPinterestUrl(e.target.value)}
@@ -210,13 +221,57 @@ export default function SceneSelectionModal({
                 </div>
                 <Button
                   onClick={handleUsePinterestImage}
-                  disabled={!pinterestUrl.trim()}
-                  className="h-12 px-8 text-lg font-bold bg-green-600 hover:bg-green-700 disabled:bg-gray-400"
-                  data-testid="button-use-image"
+                  disabled={!pinterestUrl.trim() || isExtracting}
+                  className="h-12 px-8 text-lg font-bold bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+                  data-testid="button-extract-image"
                 >
-                  ✅ استخدام الصورة
+                  {isExtracting ? '⏳ جاري الاستخراج...' : '🔍 استخراج الصورة'}
                 </Button>
               </div>
+              
+              {/* Preview Section */}
+              {extractedImageUrl && (
+                <div className="mt-6 p-4 border-2 border-green-200 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <h4 className="text-lg font-bold text-green-800 dark:text-green-200 mb-4 flex items-center gap-2">
+                    ✅ تم استخراج الصورة بنجاح!
+                  </h4>
+                  <div className="flex gap-4 items-start">
+                    <div className="flex-1">
+                      <img 
+                        src={extractedImageUrl} 
+                        alt="صورة Pinterest المستخرجة"
+                        className="w-full max-w-md h-48 object-cover rounded-lg shadow-lg border"
+                        data-testid="img-pinterest-preview"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-green-700 dark:text-green-300 mb-4">
+                        🎯 هذه هي الصورة التي تم استخراجها من Pinterest بجودة عالية. يمكنك الآن استخدامها كمشهد لمنتجك.
+                      </p>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={handleConfirmSelection}
+                          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg"
+                          data-testid="button-confirm-selection"
+                        >
+                          ✅ استخدام هذا المشهد
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setExtractedImageUrl(null);
+                            setPinterestUrl('');
+                          }}
+                          variant="outline"
+                          className="py-3 px-4 rounded-lg"
+                          data-testid="button-try-another"
+                        >
+                          🔄 جرب صورة أخرى
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

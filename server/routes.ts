@@ -106,12 +106,64 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
       })
       .filter(url => url.includes('.'));
 
+    // Group URLs by image hash to find the main pin image
+    const imageGroups: { [hash: string]: string[] } = {};
+    
+    validUrls.forEach(url => {
+      // Extract the image hash from URL (like "dc/e9/fa/dce9fab181c4011925f9e5b919415675")
+      const hashMatch = url.match(/\/([a-f0-9]{2}\/[a-f0-9]{2}\/[a-f0-9]{2}\/[a-f0-9]{32})/i);
+      if (hashMatch) {
+        const hash = hashMatch[1];
+        if (!imageGroups[hash]) {
+          imageGroups[hash] = [];
+        }
+        imageGroups[hash].push(url);
+      }
+    });
+
+    console.log('🔍 Found image groups:', Object.keys(imageGroups).map(hash => ({
+      hash: hash.substring(0, 20) + '...',
+      count: imageGroups[hash].length
+    })));
+
+    // Find the image with the most variations (likely the main pin image)
+    let mainImageHash = '';
+    let maxCount = 0;
+    
+    for (const [hash, urls] of Object.entries(imageGroups)) {
+      if (urls.length > maxCount) {
+        maxCount = urls.length;
+        mainImageHash = hash;
+      }
+    }
+
+    if (mainImageHash && imageGroups[mainImageHash]) {
+      // Prefer originals, then largest size
+      const mainImageUrls = imageGroups[mainImageHash];
+      const prioritizedUrls = mainImageUrls
+        .sort((a, b) => {
+          if (a.includes('/originals/') && !b.includes('/originals/')) return -1;
+          if (!a.includes('/originals/') && b.includes('/originals/')) return 1;
+          
+          // If both are not originals, prefer larger sizes
+          const sizeA = a.match(/\/(\d+)x/)?.[1] || '0';
+          const sizeB = b.match(/\/(\d+)x/)?.[1] || '0';
+          return parseInt(sizeB) - parseInt(sizeA);
+        });
+      
+      console.log('✅ Selected main pin image from group with', maxCount, 'variations');
+      return enhancePinterestImageQuality(prioritizedUrls[0]);
+    }
+
+    // Fallback to original logic if grouping fails
+    console.log('⚠️ Using fallback selection (grouping failed)');
+    
     if (validUrls.length === 0) {
       console.log('❌ No valid Pinterest images found in HTML');
       return null;
     }
 
-    // Prioritize higher resolution images
+    // Prioritize higher resolution images as fallback
     const prioritizedUrls = validUrls.sort((a, b) => {
       const aHasOriginal = a.includes('/originals/');
       const bHasOriginal = b.includes('/originals/');
@@ -127,9 +179,9 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
     });
 
     const bestImageUrl = prioritizedUrls[0];
-    console.log('✅ Selected best Pinterest image:', bestImageUrl);
+    console.log('✅ Selected fallback Pinterest image:', bestImageUrl);
     
-    return bestImageUrl;
+    return enhancePinterestImageQuality(bestImageUrl);
     
   } catch (error) {
     console.error('❌ Pinterest HTML extraction error:', error);
