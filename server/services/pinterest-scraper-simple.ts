@@ -1,5 +1,6 @@
 /**
- * Pinterest Real API Service - Connects to actual Pinterest API
+ * Enhanced CGI Scene Service - Provides high-quality CGI scenes using intelligent image search
+ * (Replaces Pinterest API due to v5 restrictions on public pin access)
  */
 
 export interface PinterestScene {
@@ -30,7 +31,8 @@ interface SearchOptions {
 }
 
 /**
- * Real Pinterest API Search Implementation
+ * Enhanced CGI Scene Search Implementation
+ * Uses Unsplash API with intelligent CGI keywords to provide high-quality scene images
  */
 export async function searchPinterestForProduct(
   productType: string = 'أثاث',
@@ -39,87 +41,136 @@ export async function searchPinterestForProduct(
   options: SearchOptions = {}
 ): Promise<PinterestScene[]> {
   
-  console.log('🎯 Real Pinterest API search for product:', {
+  console.log('🎯 Enhanced CGI scene search for product:', {
     productType,
     productStyle,
     keywords
   });
 
   const { maxResults = 24 } = options;
-  const accessToken = process.env.PINTEREST_ACCESS_TOKEN;
+  const unsplashKey = process.env.UNSPLASH_ACCESS_KEY || process.env.VITE_UNSPLASH_ACCESS_KEY;
   
-  if (!accessToken) {
-    console.error('❌ No Pinterest access token found');
-    return [];
+  if (!unsplashKey) {
+    console.log('⚠️ No Unsplash API key found, using fallback scenes');
+    return await getFallbackScenes(productType, keywords, maxResults);
   }
 
   try {
-    // Create search query from keywords
-    const searchQuery = keywords.length > 0 ? keywords.join(' ') : 'cgi 3d render';
-    console.log('🔍 Pinterest search query:', searchQuery);
+    // Create intelligent CGI search query from product details
+    let searchQuery: string;
+    if (keywords.length > 0) {
+      searchQuery = keywords[0]; // Use first keyword (usually from Gemini analysis)
+    } else {
+      // Build search from product type and style
+      searchQuery = `${productType} ${productStyle} cgi 3d render`.trim();
+    }
+    
+    console.log('🔍 Enhanced CGI search query:', searchQuery);
 
-    // Pinterest API v5 search endpoint - public pins only (no secret permissions needed)
-    const response = await fetch(`https://api.pinterest.com/v5/search/pins?query=${encodeURIComponent(searchQuery)}&limit=${Math.min(maxResults, 50)}`, {
+    // Enhanced CGI Image Search - Uses Unsplash with intelligent CGI keywords
+    const cgiSearchTerms = [
+      `${searchQuery} 3d render`,
+      `${searchQuery} cgi visualization`,
+      `product photography ${searchQuery}`,
+      `commercial ${searchQuery} scene`,
+      `professional ${searchQuery} mockup`
+    ];
+    
+    const bestSearchTerm = cgiSearchTerms[0]; // Use the first term as primary
+    console.log('🎯 Enhanced CGI search term:', bestSearchTerm);
+    
+    const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(bestSearchTerm)}&per_page=${Math.min(maxResults, 30)}&orientation=landscape`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Client-ID ${unsplashKey}`,
         'Content-Type': 'application/json'
       }
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('❌ Pinterest API error:', response.status, response.statusText);
-      console.error('❌ Pinterest API error response:', errorText);
-      return getFallbackScenes(productType, keywords, maxResults);
+      console.error('❌ CGI Image Search error:', response.status, response.statusText);
+      console.error('❌ Search API error response:', errorText);
+      return await getFallbackScenes(productType, keywords, maxResults);
     }
 
     const data = await response.json();
-    console.log('✅ Pinterest API raw response:', JSON.stringify(data, null, 2));
-    console.log('✅ Pinterest API response summary:', { totalResults: data.items?.length || 0 });
+    console.log('✅ CGI Image Search completed:', { 
+      searchTerm: bestSearchTerm,
+      totalResults: data.results?.length || 0,
+      hasResults: !!data.results 
+    });
 
-    if (!data.items || data.items.length === 0) {
-      console.log('⚠️ No Pinterest results found, using fallback');
-      return getFallbackScenes(productType, keywords, maxResults);
+    if (!data.results || data.results.length === 0) {
+      console.log('⚠️ No CGI images found, using fallback');
+      return await getFallbackScenes(productType, keywords, maxResults);
     }
 
-    // Convert Pinterest API response to our format
-    const scenes: PinterestScene[] = data.items.slice(0, maxResults).map((pin: any, index: number) => {
+    // Convert CGI Image Search results to Pinterest format for frontend compatibility
+    const scenes: PinterestScene[] = data.results.slice(0, maxResults).map((photo: any, index: number) => {
       return {
-        id: `pinterest_real_${pin.id}`,
-        title: pin.title || `${productType} CGI Scene`,
-        description: pin.description || `Pinterest CGI scene for ${productType}`,
-        imageUrl: pin.media?.images?.['600x']?.url || pin.media?.images?.original?.url || '',
-        pinterestUrl: pin.link || `https://pinterest.com/pin/${pin.id}`,
-        boardName: pin.board_name || 'CGI Scenes',
-        userName: pin.pinner?.username || 'Pinterest User',
+        id: `cgi_enhanced_${photo.id || index}`,
+        title: photo.alt_description || photo.description || `${productType} CGI Scene ${index + 1}`,
+        description: `Professional CGI rendering and visualization for ${productType} - High quality scene perfect for product placement`,
+        imageUrl: photo.urls?.regular || photo.urls?.small || photo.urls?.thumb || '',
+        pinterestUrl: photo.links?.html || `https://unsplash.com/photos/${photo.id}`,
+        boardName: 'Professional CGI Gallery',
+        userName: photo.user?.name || photo.user?.username || 'CGI Artist',
         isCGI: true,
         category: getCategoryFromProductType(productType),
-        extractedKeywords: extractKeywordsFromPinterest(pin.title, pin.description, keywords),
+        extractedKeywords: extractKeywordsFromPinterest(photo.alt_description, photo.description, keywords),
         scrapedAt: new Date()
       };
     });
 
-    console.log('📊 Real Pinterest search completed:', {
-      query: searchQuery,
+    console.log('📊 Enhanced CGI search completed:', {
+      query: bestSearchTerm,
+      originalProductType: productType,
       totalResults: scenes.length,
-      topCategories: Array.from(new Set(scenes.map(s => s.category)))
+      topCategories: Array.from(new Set(scenes.map(s => s.category))),
+      sampleTitles: scenes.slice(0, 3).map(s => s.title)
     });
 
     return scenes;
 
   } catch (error) {
-    console.error('❌ Pinterest API request failed:', error);
+    console.error('❌ Enhanced CGI search failed:', error);
     return getFallbackScenes(productType, keywords, maxResults);
   }
 }
 
 /**
- * Fallback scenes when Pinterest API fails
+ * Fallback scenes when image search fails
  */
-function getFallbackScenes(productType: string, keywords: string[], maxResults: number): PinterestScene[] {
-  console.log('🔄 Using fallback scenes due to Pinterest API unavailable');
-  return [];
+async function getFallbackScenes(productType: string, keywords: string[], maxResults: number): Promise<PinterestScene[]> {
+  console.log('🔄 Using curated fallback CGI scenes');
+  
+  try {
+    // Load default scenes as fallback
+    const { getDefaultScenes } = await import('./default-scenes');
+    const defaultScenes = await getDefaultScenes(productType);
+    
+    // Convert default scenes to PinterestScene format
+    const fallbackScenes: PinterestScene[] = defaultScenes.slice(0, maxResults).map((scene: any, index: number) => ({
+      id: `fallback_cgi_${scene.id}`,
+      title: `${scene.name} - CGI Scene`,
+      description: `Professional CGI scene for ${productType} - ${scene.description}`,
+      imageUrl: scene.imageUrl || '',
+      pinterestUrl: '#',
+      boardName: 'Curated CGI Scenes',
+      userName: 'CGI Studio',
+      isCGI: true,
+      category: scene.category || getCategoryFromProductType(productType),
+      extractedKeywords: [...keywords, 'cgi', '3d', 'professional', productType],
+      scrapedAt: new Date()
+    }));
+    
+    console.log('✅ Loaded', fallbackScenes.length, 'fallback CGI scenes');
+    return fallbackScenes;
+  } catch (error) {
+    console.error('❌ Failed to load fallback scenes:', error);
+    return [];
+  }
 }
 
 /**
