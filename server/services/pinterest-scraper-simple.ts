@@ -68,12 +68,15 @@ export async function searchPinterestForProduct(
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
       console.error('❌ Pinterest API error:', response.status, response.statusText);
+      console.error('❌ Pinterest API error response:', errorText);
       return getFallbackScenes(productType, keywords, maxResults);
     }
 
     const data = await response.json();
-    console.log('✅ Pinterest API response:', { totalResults: data.items?.length || 0 });
+    console.log('✅ Pinterest API raw response:', JSON.stringify(data, null, 2));
+    console.log('✅ Pinterest API response summary:', { totalResults: data.items?.length || 0 });
 
     if (!data.items || data.items.length === 0) {
       console.log('⚠️ No Pinterest results found, using fallback');
