@@ -168,58 +168,125 @@
         // جعل الـ overlay قابل للسحب
         makeDraggable(overlay);
         
-        // وظيفة نسخ URL من صورة Pinterest
+        // وظيفة نسخ URL من صورة Pinterest - Enhanced Version
         function copyImageUrl(img) {
             let imageUrl = '';
+            let highestQualityUrl = '';
             
-            // البحث عن رابط الصورة الأصلية
-            if (img.src && img.src.includes('pinimg.com')) {
-                imageUrl = img.src;
-            } else if (img.dataset && img.dataset.src && img.dataset.src.includes('pinimg.com')) {
-                imageUrl = img.dataset.src;
-            } else {
-                // البحث في الـ srcset
-                if (img.srcset) {
-                    const srcsetUrls = img.srcset.split(',');
-                    for (let srcUrl of srcsetUrls) {
-                        const url = srcUrl.trim().split(' ')[0];
-                        if (url.includes('pinimg.com')) {
-                            imageUrl = url;
-                            break;
-                        }
+            // البحث عن رابط الصورة الأصلية - الطرق المتعددة
+            const possibleSources = [
+                img.src,
+                img.dataset?.src,
+                img.getAttribute('data-src'),
+                img.getAttribute('data-original'),
+                img.getAttribute('data-pin-media'),
+                img.closest('[data-test-id="pin-media"]')?.querySelector('img')?.src
+            ];
+            
+            // البحث في الـ srcset للحصول على أعلى جودة
+            if (img.srcset) {
+                const srcsetUrls = img.srcset.split(',');
+                let maxWidth = 0;
+                
+                for (let srcUrl of srcsetUrls) {
+                    const parts = srcUrl.trim().split(' ');
+                    const url = parts[0];
+                    const width = parts[1] ? parseInt(parts[1].replace('w', '')) : 0;
+                    
+                    if (url.includes('pinimg.com') && width > maxWidth) {
+                        highestQualityUrl = url;
+                        maxWidth = width;
                     }
                 }
             }
             
+            // اختيار أفضل مصدر متاح
+            for (let source of possibleSources) {
+                if (source && source.includes('pinimg.com')) {
+                    imageUrl = source;
+                    break;
+                }
+            }
+            
+            // استخدام أعلى جودة من srcset إذا متاحة
+            if (highestQualityUrl) {
+                imageUrl = highestQualityUrl;
+            }
+            
             if (imageUrl) {
-                // تحسين جودة الصورة - محاولة الحصول على أعلى جودة
-                imageUrl = imageUrl.replace(/\d+x\d+/, '1920x1080')
-                                 .replace('/236x/', '/1920x/')
-                                 .replace('/474x/', '/1920x/')
-                                 .replace('/736x/', '/1920x/');
+                // تحسين جودة الصورة المتطور - Full HD & 4K Support
+                let enhancedUrl = imageUrl;
                 
-                // نسخ للحافظة
-                copyToClipboard(imageUrl);
-                lastCopiedUrl = imageUrl;
-                copiedUrls.push(imageUrl);
+                // إزالة معاملات الجودة المنخفضة
+                enhancedUrl = enhancedUrl.replace(/[?&]resize=\d+[^\s&]*/g, '');
+                enhancedUrl = enhancedUrl.replace(/[?&]quality=\d+/g, '');
                 
-                // تحديث الواجهة
-                statusDiv.innerHTML = `✅ تم نسخ رابط الصورة بنجاح!`;
-                statusDiv.style.background = 'rgba(76, 175, 80, 0.2)';
+                // استبدال أبعاد الجودة المنخفضة بـ Full HD أو 4K
+                const qualityMappings = [
+                    { from: /\/236x\d+\//, to: '/1920x1080/' },
+                    { from: /\/474x\d+\//, to: '/1920x1080/' },
+                    { from: /\/736x\d+\//, to: '/1920x1080/' },
+                    { from: /\/564x\d+\//, to: '/1920x1080/' },
+                    { from: /\/_\d+x\d+_/, to: '_1920x1080_' },
+                    { from: /\d+x\d+\.jpg/, to: '1920x1080.jpg' },
+                    { from: /\d+x\d+\.webp/, to: '1920x1080.webp' },
+                    // 4K للصور الكبيرة
+                    { from: /1200x\d+/, to: '3840x2160' },
+                    { from: /1920x\d+/, to: '3840x2160' }
+                ];
                 
-                copiedUrlDiv.textContent = imageUrl;
-                copiedUrlDiv.style.display = 'block';
+                for (let mapping of qualityMappings) {
+                    enhancedUrl = enhancedUrl.replace(mapping.from, mapping.to);
+                }
                 
-                // محاولة إرسال للتطبيق تلقائياً
-                setTimeout(() => {
-                    sendUrlToApp(imageUrl);
-                }, 500);
+                // إضافة معاملات جودة عالية إذا لم تكن موجودة
+                if (!enhancedUrl.includes('quality=') && !enhancedUrl.includes('q=')) {
+                    enhancedUrl += (enhancedUrl.includes('?') ? '&' : '?') + 'quality=95';
+                }
                 
-                console.log('📋 Pinterest Helper: Copied URL ->', imageUrl);
+                // التحقق من صحة الرابط المحسن
+                const testImg = new Image();
+                testImg.onload = function() {
+                    console.log('✅ Enhanced URL validated:', enhancedUrl);
+                    finalizeImageCopy(enhancedUrl);
+                };
+                testImg.onerror = function() {
+                    console.log('⚠️ Enhanced URL failed, using original:', imageUrl);
+                    finalizeImageCopy(imageUrl);
+                };
+                testImg.src = enhancedUrl;
+                
             } else {
                 statusDiv.innerHTML = '❌ لم يتم العثور على رابط صورة صالح';
                 statusDiv.style.background = 'rgba(244, 67, 54, 0.2)';
             }
+        }
+        
+        // وظيفة إنهاء نسخ الرابط
+        function finalizeImageCopy(finalUrl) {
+            // نسخ للحافظة
+            copyToClipboard(finalUrl);
+            lastCopiedUrl = finalUrl;
+            copiedUrls.push(finalUrl);
+            
+            // تحديث الواجهة
+            statusDiv.innerHTML = `✅ تم نسخ رابط الصورة بجودة عالية!`;
+            statusDiv.style.background = 'rgba(76, 175, 80, 0.2)';
+            
+            copiedUrlDiv.textContent = finalUrl;
+            copiedUrlDiv.style.display = 'block';
+            
+            // محاولة إرسال للتطبيق تلقائياً
+            setTimeout(() => {
+                sendUrlToApp(finalUrl);
+            }, 500);
+            
+            console.log('📋 Pinterest Helper: Copied Enhanced URL ->', {
+                originalLength: finalUrl.length,
+                url: finalUrl,
+                qualityEnhanced: finalUrl.includes('1920x') || finalUrl.includes('3840x'),
+                timestamp: new Date().toISOString()
+            });
         }
         
         // نسخ للحافظة
