@@ -53,6 +53,9 @@ export default function SceneSelectionModal({
 }: SceneSelectionModalProps) {
   const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('default');
   const [searchQuery, setSearchQuery] = useState('');
+  const [lastDetectedUrl, setLastDetectedUrl] = useState('');
+  const [urlDetectionStatus, setUrlDetectionStatus] = useState('🤖 جاهز للاستقبال التلقائي');
+  const [isAutoDetecting, setIsAutoDetecting] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzedProductType, setAnalyzedProductType] = useState<string | null>(null);
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
@@ -175,6 +178,119 @@ export default function SceneSelectionModal({
       }
     }
   }, [isOpen, activeTab]); // Remove productImageUrl dependency to prevent re-triggering
+
+  // Auto-Detection System للروابط من Pinterest
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let pollInterval: NodeJS.Timeout;
+    let lastCheckedTimestamp = Date.now() - 1000; // Check for URLs from 1 second ago
+
+    // مراقبة الـ postMessage من Pinterest popup
+    const handleMessage = (event: MessageEvent) => {
+      // تحقق من المصدر - Pinterest فقط
+      if (event.origin !== 'https://pinterest.com' && !event.data?.type?.includes('PINTEREST')) {
+        return;
+      }
+
+      if (event.data?.type === 'PINTEREST_IMAGE_URL' && event.data?.url) {
+        console.log('📨 Received Pinterest URL via postMessage:', event.data.url);
+        handleDetectedUrl(event.data.url, 'PostMessage');
+      }
+    };
+
+    // مراقبة الـ localStorage للروابط الجديدة
+    const checkLocalStorage = () => {
+      try {
+        const storedUrl = localStorage.getItem('pinterest_copied_url');
+        const storedTimestamp = parseInt(localStorage.getItem('pinterest_copied_timestamp') || '0');
+        
+        if (storedUrl && storedTimestamp > lastCheckedTimestamp) {
+          console.log('📦 Detected Pinterest URL from localStorage:', storedUrl);
+          handleDetectedUrl(storedUrl, 'LocalStorage');
+          lastCheckedTimestamp = storedTimestamp;
+        }
+      } catch (e) {
+        console.log('⚠️ LocalStorage check failed:', e);
+      }
+    };
+
+    // مراقبة الحافظة (إذا أُمكن)
+    const checkClipboard = async () => {
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          const clipboardText = await navigator.clipboard.readText();
+          if (clipboardText && 
+              (clipboardText.includes('pinimg.com') || clipboardText.includes('pinterest.com')) &&
+              clipboardText.startsWith('http') &&
+              clipboardText !== lastDetectedUrl) {
+            console.log('📋 Detected Pinterest URL from clipboard:', clipboardText);
+            handleDetectedUrl(clipboardText, 'Clipboard');
+          }
+        }
+      } catch (e) {
+        // Clipboard access denied - normal behavior
+      }
+    };
+
+    const handleDetectedUrl = (url: string, source: string) => {
+      if (url === lastDetectedUrl) return; // تجنب التكرار
+
+      setLastDetectedUrl(url);
+      setSearchQuery(url);
+      setUrlDetectionStatus(`🎉 تم اكتشاف رابط من ${source}!`);
+      
+      // تأثير بصري
+      setTimeout(() => {
+        setUrlDetectionStatus('🤖 جاري مراقبة روابط جديدة...');
+      }, 3000);
+
+      // تطبيق الرابط تلقائياً إذا كان صحيحاً
+      if (url.includes('pinimg.com') || url.includes('pinterest.com')) {
+        setTimeout(() => {
+          const customScene: SceneData = {
+            id: `pinterest_auto_${Date.now()}`,
+            name: 'مشهد Pinterest - تلقائي',
+            description: `تم اختياره تلقائياً من ${source}`,
+            imageUrl: url,
+            category: 'pinterest-auto',
+            style: 'auto-detected',
+            keywords: ['pinterest', 'auto', source.toLowerCase()],
+            lighting: 'natural',
+            colors: ['متنوع']
+          };
+          
+          if (isAutoDetecting) {
+            setUrlDetectionStatus('✅ تم تطبيق المشهد تلقائياً!');
+            onSceneSelect(customScene, productSize);
+            onClose();
+          }
+        }, 1000);
+      }
+    };
+
+    // بدء المراقبة
+    window.addEventListener('message', handleMessage);
+    
+    // فحص دوري للـ localStorage والحافظة
+    pollInterval = setInterval(() => {
+      checkLocalStorage();
+      checkClipboard();
+    }, 1000); // كل ثانية
+
+    // فحص فوري
+    checkLocalStorage();
+    checkClipboard();
+
+    console.log('🤖 Pinterest Auto-Detection started');
+
+    // تنظيف عند الإغلاق
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      if (pollInterval) clearInterval(pollInterval);
+      console.log('🛑 Pinterest Auto-Detection stopped');
+    };
+  }, [isOpen, isAutoDetecting, lastDetectedUrl, productSize, onSceneSelect, onClose]);
 
   const analyzeProductAndSearch = async () => {
     if (!productImageUrl) {
@@ -345,13 +461,65 @@ export default function SceneSelectionModal({
               </div>
               
               {/* Status indicator */}
-              <div className="flex items-center justify-center gap-2 text-white/80 text-sm">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span>جاهز للاستقبال التلقائي للروابط من Pinterest</span>
+              <div className="flex items-center justify-between gap-3 text-white/80 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${isAutoDetecting ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span>{urlDetectionStatus}</span>
+                </div>
+                <button
+                  onClick={() => setIsAutoDetecting(!isAutoDetecting)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    isAutoDetecting 
+                      ? 'bg-green-500/20 text-green-300 border border-green-400/30' 
+                      : 'bg-red-500/20 text-red-300 border border-red-400/30'
+                  }`}
+                >
+                  {isAutoDetecting ? '🔄 مُفعل' : '⏹ مُوقف'}
+                </button>
               </div>
             </div>
           </div>
           
+          {/* Pinterest Helper Instructions */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-blue-500 text-white p-2 rounded-full flex-shrink-0">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h4 className="font-bold text-blue-900 dark:text-blue-100 mb-2">💡 استخدم Pinterest Helper للنسخ السريع!</h4>
+                <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+                  انسخ الكود التالي وحفظه كـ bookmark في متصفحك، ثم استخدمه على أي صفحة Pinterest:
+                </p>
+                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 mb-3">
+                  <code className="text-xs font-mono text-gray-700 dark:text-gray-300 break-all select-all">
+                    {`javascript:(function(){var s=document.createElement("script");s.src="/pinterest-helper.js";document.head.appendChild(s);})()`}
+                  </code>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      const bookmarkletCode = `javascript:(function(){var s=document.createElement("script");s.src="/pinterest-helper.js";document.head.appendChild(s);})();`;
+                      navigator.clipboard?.writeText(bookmarkletCode);
+                      alert('تم نسخ كود Pinterest Helper! الصقه كـ bookmark في متصفحك');
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition-colors"
+                  >
+                    📋 نسخ الكود
+                  </button>
+                  <button
+                    onClick={() => window.open('/pinterest-helper.js', '_blank')}
+                    className="bg-gray-600 hover:bg-gray-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition-colors"
+                  >
+                    📄 عرض الكود كاملاً
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Pinterest Embedded Browser */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden shadow-xl">
             <div className="bg-gray-100 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
