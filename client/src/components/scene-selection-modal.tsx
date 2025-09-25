@@ -39,7 +39,7 @@ export default function SceneSelectionModal({
   const [pinterestUrl, setPinterestUrl] = useState('');
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
 
-  const handleUsePinterestImage = () => {
+  const handleUsePinterestImage = async () => {
     if (!pinterestUrl.trim()) {
       alert('يرجى إدخال رابط الصورة من Pinterest');
       return;
@@ -53,20 +53,48 @@ export default function SceneSelectionModal({
       return;
     }
 
-    const customScene: SceneData = {
-      id: `pinterest_${Date.now()}`,
-      name: 'مشهد Pinterest',
-      description: 'مشهد تم اختياره من Pinterest',
-      imageUrl: pinterestUrl,
-      category: 'pinterest',
-      style: 'user-selected',
-      keywords: ['pinterest'],
-      lighting: 'natural',
-      colors: ['متنوع']
-    };
-    
-    onSceneSelect(customScene, productSize);
-    onClose();
+    try {
+      // Show loading state
+      const loadingToast = { id: 'pinterest-loading', message: 'جاري استخراج الصورة من Pinterest...' };
+      
+      // Extract real image URL from Pinterest post
+      const response = await fetch('/api/extract-pinterest-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ pinterestUrl })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'فشل في استخراج الصورة');
+      }
+
+      const { imageUrl } = await response.json();
+      
+      console.log('✅ Pinterest image extracted:', { original: pinterestUrl, extracted: imageUrl });
+
+      const customScene: SceneData = {
+        id: `pinterest_${Date.now()}`,
+        name: 'مشهد Pinterest',
+        description: 'مشهد تم اختياره من Pinterest',
+        imageUrl: imageUrl, // Use the extracted image URL
+        category: 'pinterest',
+        style: 'user-selected',
+        keywords: ['pinterest'],
+        lighting: 'natural',
+        colors: ['متنوع']
+      };
+      
+      onSceneSelect(customScene, productSize);
+      onClose();
+      
+    } catch (error) {
+      console.error('Pinterest image extraction failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
+      alert(`فشل في استخراج الصورة: ${errorMessage}`);
+    }
   };
 
   const openPinterest = () => {

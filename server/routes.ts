@@ -15,6 +15,132 @@ import multer from 'multer';
 import { COSTS, CREDIT_PACKAGES } from '@shared/constants';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
+import puppeteer from 'puppeteer';
+
+/**
+ * Extract image URL from Pinterest post URL
+ */
+async function extractImageFromPinterestPost(pinterestUrl: string): Promise<string | null> {
+  let browser = null;
+  try {
+    console.log('🔍 Launching browser for Pinterest extraction...');
+    
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu'
+      ]
+    });
+    
+    const page = await browser.newPage();
+    
+    // Set user agent to avoid detection
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
+    
+    console.log('🌐 Navigating to Pinterest URL:', pinterestUrl);
+    await page.goto(pinterestUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+    
+    // Extract the main image URL
+    const imageUrl = await page.evaluate(() => {
+      // Look for the main Pinterest image
+      const img = document.querySelector('img[src*="pinimg.com"]') as HTMLImageElement || 
+                 document.querySelector('img[data-src*="pinimg.com"]') as HTMLImageElement;
+      
+      if (img) {
+        if (img.src && img.src.includes('pinimg.com')) {
+          return img.src;
+        }
+        if (img.dataset && img.dataset.src && img.dataset.src.includes('pinimg.com')) {
+          return img.dataset.src;
+        }
+      }
+      
+      // Look for background-image style elements
+      const styleElements = document.querySelectorAll('[style*="pinimg.com"]');
+      for (let i = 0; i < styleElements.length; i++) {
+        const element = styleElements[i] as HTMLElement;
+        const style = window.getComputedStyle(element);
+        const backgroundImage = style.backgroundImage;
+        if (backgroundImage && backgroundImage.includes('pinimg.com')) {
+          const match = backgroundImage.match(/url\("([^"]+)"\)/);
+          if (match) return match[1];
+        }
+      }
+      
+      // Fallback: look for any pinimg.com URL in the page
+      const allImages = document.querySelectorAll('img');
+      for (let i = 0; i < allImages.length; i++) {
+        const image = allImages[i] as HTMLImageElement;
+        if (image.src && image.src.includes('pinimg.com')) {
+          return image.src;
+        }
+      }
+      
+      return null;
+    });
+    
+    await browser.close();
+    
+    if (imageUrl) {
+      console.log('✅ Successfully extracted Pinterest image URL:', imageUrl);
+      return imageUrl;
+    } else {
+      console.log('❌ No Pinterest image found in the page');
+      return null;
+    }
+    
+  } catch (error) {
+    console.error('❌ Pinterest extraction error:', error);
+    if (browser) {
+      await browser.close();
+    }
+    return null;
+  }
+}
+
+/**
+ * Enhance Pinterest image URL to higher quality
+ */
+function enhancePinterestImageQuality(imageUrl: string): string {
+  if (!imageUrl || !imageUrl.includes('pinimg.com')) {
+    return imageUrl;
+  }
+  
+  let enhancedUrl = imageUrl;
+  
+  // Remove low quality parameters
+  enhancedUrl = enhancedUrl.replace(/[?&]resize=\d+[^\s&]*/g, '');
+  enhancedUrl = enhancedUrl.replace(/[?&]quality=\d+/g, '');
+  
+  // Replace low quality dimensions with Full HD
+  const qualityMappings = [
+    { from: /\/236x\d+\//, to: '/1920x1080/' },
+    { from: /\/474x\d+\//, to: '/1920x1080/' },
+    { from: /\/736x\d+\//, to: '/1920x1080/' },
+    { from: /\/564x\d+\//, to: '/1920x1080/' },
+    { from: /\/_\d+x\d+_/, to: '_1920x1080_' },
+    { from: /\d+x\d+\.jpg/, to: '1920x1080.jpg' },
+    { from: /\d+x\d+\.webp/, to: '1920x1080.webp' }
+  ];
+  
+  for (let mapping of qualityMappings) {
+    enhancedUrl = enhancedUrl.replace(mapping.from, mapping.to);
+  }
+  
+  // Add high quality parameters if not present
+  if (!enhancedUrl.includes('quality=') && !enhancedUrl.includes('q=')) {
+    enhancedUrl += (enhancedUrl.includes('?') ? '&' : '?') + 'quality=95';
+  }
+  
+  console.log('🎯 Enhanced Pinterest URL quality:', enhancedUrl);
+  return enhancedUrl;
+}
 
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -65,6 +191,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error uploading file:", error);
       res.status(500).json({ error: "Failed to upload file" });
+    }
+  });
+
+  // Pinterest image URL extraction endpoint
+  app.post('/api/extract-pinterest-image', async (req: any, res) => {
+    try {
+      const { pinterestUrl } = req.body;
+      
+      if (!pinterestUrl) {
+        return res.status(400).json({ error: 'Pinterest URL is required' });
+      }
+
+      console.log('🔗 Extracting image from Pinterest URL:', pinterestUrl);
+
+      // Validate Pinterest URL
+      const isValidPinterestUrl = pinterestUrl.includes('pinterest.com') || pinterestUrl.includes('pinimg.com');
+      if (!isValidPinterestUrl) {
+        return res.status(400).json({ error: 'Invalid Pinterest URL' });
+      }
+
+      // If it's already a direct image URL, return it
+      if (pinterestUrl.includes('pinimg.com')) {
+        const optimizedUrl = enhancePinterestImageQuality(pinterestUrl);
+        return res.json({ imageUrl: optimizedUrl });
+      }
+
+      // Extract image URL from Pinterest post URL using puppeteer
+      const imageUrl = await extractImageFromPinterestPost(pinterestUrl);
+      
+      if (!imageUrl) {
+        return res.status(404).json({ error: 'Could not extract image from Pinterest post' });
+      }
+
+      const optimizedUrl = enhancePinterestImageQuality(imageUrl);
+      console.log('✅ Extracted and optimized Pinterest image URL:', optimizedUrl);
+      
+      res.json({ imageUrl: optimizedUrl });
+    } catch (error) {
+      console.error('❌ Pinterest image extraction failed:', error);
+      res.status(500).json({ error: 'Failed to extract Pinterest image' });
     }
   });
 
