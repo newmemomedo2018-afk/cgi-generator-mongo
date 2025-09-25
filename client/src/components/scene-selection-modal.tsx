@@ -296,7 +296,68 @@ export default function SceneSelectionModal({
 
           {/* Default Scenes Tab */}
           <TabsContent value="default" className="mt-4">
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Custom Pinterest Scene URL Input */}
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-700 rounded-xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl flex-shrink-0">📎</div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                      🖼️ الصق رابط الصورة من Pinterest هنا!
+                    </h3>
+                    <p className="text-gray-700 dark:text-gray-300 mb-4">
+                      نسخت رابط الصورة من Pinterest؟ الصقه هنا واضغط "استخدام المشهد"
+                    </p>
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <input
+                          type="text"
+                          placeholder="الصق رابط صورة Pinterest هنا... (https://i.pinimg.com/...)"
+                          className="w-full px-4 py-3 border-2 border-green-300 dark:border-green-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          data-testid="pinterest-url-input"
+                        />
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (searchQuery && (searchQuery.includes('pinimg.com') || searchQuery.includes('pinterest.com') || searchQuery.startsWith('http'))) {
+                            // Create a custom scene from the URL
+                            const customScene: SceneData = {
+                              id: `custom_pinterest_${Date.now()}`,
+                              name: 'مشهد من Pinterest',
+                              description: 'مشهد مخصص تم اختياره من Pinterest',
+                              imageUrl: searchQuery,
+                              category: 'custom',
+                              style: 'pinterest',
+                              keywords: ['pinterest', 'custom'],
+                              lighting: 'natural',
+                              colors: ['متنوع']
+                            };
+                            onSceneSelect(customScene, productSize);
+                            onClose();
+                          } else {
+                            alert('يرجى إدخال رابط صحيح لصورة من Pinterest');
+                          }
+                        }}
+                        disabled={!searchQuery || searchQuery.trim().length === 0}
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
+                        data-testid="use-pinterest-url-button"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        ✨ استخدام المشهد
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      💡 نصيحة: تأكد من أن الرابط يبدأ بـ https:// ويحتوي على عنوان صورة Pinterest
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Default Scenes Header */}
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                   مشاهد عالية الجودة مناسبة لمنتجك ({productType})
