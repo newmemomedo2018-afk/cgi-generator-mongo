@@ -448,58 +448,43 @@ export default function SceneSelectionModal({
                 </div>
               </div>
 
-              {/* Pinterest Live Instructions */}
-              <div className="bg-gradient-to-r from-blue-50 to-pink-50 dark:from-blue-900/20 dark:to-pink-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 text-center">
-                <div className="flex items-center justify-center mb-4">
-                  <div className="bg-red-500 p-3 rounded-full">
-                    <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
-                    </svg>
-                  </div>
+              {/* Pinterest Embedded Viewer */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden" style={{height: '600px'}}>
+                <div className="h-full">
+                  <iframe
+                    src={`https://pinterest.com/search/pins/?q=${encodeURIComponent(searchQuery || 'energy drink cgi')}`}
+                    className="w-full h-full border-0"
+                    title="Pinterest Search Results"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                    loading="lazy"
+                    onError={() => {
+                      console.log('Pinterest iframe blocked - showing fallback');
+                    }}
+                    onLoad={() => {
+                      console.log('Pinterest iframe loaded successfully');
+                    }}
+                  />
                 </div>
                 
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                  🚀 Pinterest الحقيقي داخل تطبيقك!
-                </h3>
-                
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  ابحث عن أي مشهد CGI تحتاجه واضغط على "فتح Pinterest" عشان يفتحلك موقع Pinterest الرسمي في نافذة جديدة
-                </p>
-                
-                <div className="flex flex-wrap justify-center gap-2 mb-6">
-                  {[
-                    'energy drink cgi',
-                    'product photography', 
-                    'modern interior',
-                    'lifestyle scene',
-                    'commercial photography'
-                  ].map((term) => (
+                {/* Fallback message if iframe is blocked */}
+                <div className="absolute inset-0 flex items-center justify-center bg-white/95 dark:bg-gray-800/95" style={{display: 'none'}} id="pinterest-fallback">
+                  <div className="text-center p-6">
+                    <div className="bg-red-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold mb-2">Pinterest محجوب!</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">Pinterest لا يسمح بالعرض داخل التطبيقات</p>
                     <button
-                      key={term}
-                      onClick={() => setSearchQuery(term)}
-                      className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      onClick={() => {
+                        const pinterestUrl = `https://pinterest.com/search/pins/?q=${encodeURIComponent(searchQuery || 'energy drink cgi')}`;
+                        window.open(pinterestUrl, '_blank');
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-medium transition-colors"
                     >
-                      {term}
+                      فتح Pinterest في نافذة جديدة
                     </button>
-                  ))}
-                </div>
-                
-                <div className="flex justify-center items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                    <span>متصل بPinterest.com</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>مجاني 100%</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span>سريع جداً</span>
                   </div>
                 </div>
               </div>
