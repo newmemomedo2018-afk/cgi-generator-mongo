@@ -395,29 +395,56 @@ export default function SceneSelectionModal({
             </div>
           </TabsContent>
 
-          {/* Pinterest Scenes Tab */}
+          {/* Pinterest Browser Tab */}
           <TabsContent value="pinterest" className="mt-4">
             <div className="space-y-4">
-              {/* Search Bar */}
-              <div className="flex gap-2">
-                <Input
-                  placeholder="ابحث عن مشاهد CGI (مثل: modern living room 3D)"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handlePinterestSearch()}
-                  data-testid="pinterest-search-input"
-                />
-                <Button 
-                  onClick={handlePinterestSearch}
-                  disabled={pinterestLoading || isAnalyzing}
-                  data-testid="pinterest-search-button"
-                >
-                  {pinterestLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Search className="h-4 w-4" />
-                  )}
-                </Button>
+              {/* CGI Explorer Header */}
+              <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-white/20 p-2 rounded-full">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg">متصفح المشاهد</h3>
+                    <p className="text-sm opacity-90">استكشف مشاهد CGI احترافية عالية الجودة</p>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs bg-white/20 px-2 py-1 rounded-full">
+                    <div className={`w-2 h-2 rounded-full ${pinterestLoading ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
+                    <span>{pinterestLoading ? 'يحمل' : 'جاهز'}</span>
+                  </div>
+                </div>
+                
+                {/* Pinterest Search Bar */}
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10">
+                    <Search className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder={`ابحث عن "${searchQuery || 'مشاهد المنتجات'}"...`}
+                    className="w-full pl-11 pr-12 py-3 rounded-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 shadow-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handlePinterestSearch()}
+                    data-testid="pinterest-search-input"
+                  />
+                  <button
+                    onClick={handlePinterestSearch}
+                    disabled={pinterestLoading || isAnalyzing}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors"
+                    data-testid="pinterest-search-button"
+                  >
+                    {pinterestLoading ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               {/* Auto Analysis Status */}
@@ -437,7 +464,7 @@ export default function SceneSelectionModal({
               ) : pinterestScenes.length > 0 ? (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                    <span>وُجد {pinterestScenes.length} مشهد CGI مناسب من Pinterest</span>
+                    <span>وُجد {pinterestScenes.length} مشهد CGI احترافي</span>
                     <Button 
                       variant="outline" 
                       size="sm"
@@ -467,8 +494,8 @@ export default function SceneSelectionModal({
                               }}
                             />
                             <div className="absolute top-2 left-2">
-                              <Badge className="text-xs bg-red-500">
-                                Pinterest
+                              <Badge className="text-xs bg-purple-500">
+                                CGI
                               </Badge>
                             </div>
                             <div className="absolute top-2 right-2">
@@ -502,7 +529,7 @@ export default function SceneSelectionModal({
                                 }}
                               >
                                 <ExternalLink className="h-3 w-3 ml-1" />
-                                عرض في Pinterest
+                                عرض في المصدر
                               </Button>
                             </div>
                           </div>

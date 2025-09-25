@@ -147,8 +147,8 @@ async function getFallbackScenes(productType: string, keywords: string[], maxRes
   
   try {
     // Load default scenes as fallback
-    const { getDefaultScenes } = await import('./default-scenes');
-    const defaultScenes = await getDefaultScenes(productType);
+    const { getAllDefaultScenes } = await import('./default-scenes');
+    const defaultScenes = await getAllDefaultScenes();
     
     // Convert default scenes to PinterestScene format
     const fallbackScenes: PinterestScene[] = defaultScenes.slice(0, maxResults).map((scene: any, index: number) => ({
