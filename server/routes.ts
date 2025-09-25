@@ -18,83 +18,121 @@ import { sql } from 'drizzle-orm';
 import puppeteer from 'puppeteer';
 
 /**
- * Extract image URL from Pinterest post URL using pattern matching
- * Much faster and more reliable than browser automation
+ * Extract image URL from Pinterest post URL by parsing HTML
+ * Simple and reliable approach without browser automation
  */
 async function extractImageFromPinterestPost(pinterestUrl: string): Promise<string | null> {
   try {
-    console.log('🔍 Extracting Pinterest image using smart pattern matching...');
+    console.log('🔍 Extracting Pinterest image from HTML...');
     
-    // Extract PIN ID from Pinterest URL
-    const pinMatch = pinterestUrl.match(/\/pin\/(\d+)/);
-    if (!pinMatch) {
-      console.log('❌ Could not extract PIN ID from URL:', pinterestUrl);
+    // Fetch Pinterest page HTML
+    const response = await fetch(pinterestUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      }
+    });
+
+    if (!response.ok) {
+      console.log('❌ Failed to fetch Pinterest page:', response.status);
       return null;
     }
+
+    const html = await response.text();
+    console.log('✅ Successfully fetched Pinterest HTML');
+
+    // Extract all possible image URLs from HTML
+    const imageUrls: string[] = [];
     
-    const pinId = pinMatch[1];
-    console.log('📌 Extracted PIN ID:', pinId);
-    
-    // Try to fetch Pinterest API endpoint (sometimes works)
-    try {
-      const apiUrl = `https://www.pinterest.com/resource/PinResource/get/?data=%7B%22options%22%3A%7B%22field_set_key%22%3A%22detailed%22%2C%22id%22%3A%22${pinId}%22%7D%7D`;
-      
-      const response = await fetch(apiUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'application/json',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+    // Method 1: Look for pinimg.com URLs in the HTML
+    const pinimgMatches = html.match(/https?:\/\/i\.pinimg\.com\/[^"'>\s}),]+/g);
+    if (pinimgMatches) {
+      // Clean each URL to remove any trailing CSS or HTML
+      const cleanUrls = pinimgMatches.map(url => {
+        // Remove anything after common image extensions
+        return url.replace(/(\.(?:jpg|jpeg|png|webp|gif)).*$/, '$1');
       });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const imageUrl = data?.resource_response?.data?.images?.orig?.url;
-        
-        if (imageUrl && imageUrl.includes('pinimg.com')) {
-          console.log('✅ Successfully extracted image from Pinterest API:', imageUrl);
-          return imageUrl;
-        }
-      }
-    } catch (apiError) {
-      console.log('⚠️ Pinterest API approach failed, trying pattern generation');
+      imageUrls.push(...cleanUrls);
     }
-    
-    // Fallback: Generate likely pinimg.com URLs based on PIN ID
-    // Pinterest images follow specific patterns
-    const imagePatterns = [
-      `https://i.pinimg.com/564x/${generateImagePath(pinId)}.jpg`,
-      `https://i.pinimg.com/736x/${generateImagePath(pinId)}.jpg`,
-      `https://i.pinimg.com/474x/${generateImagePath(pinId)}.jpg`,
-      `https://i.pinimg.com/1200x/${generateImagePath(pinId)}.jpg`,
-      `https://i.pinimg.com/originals/${generateImagePath(pinId)}.jpg`,
-      `https://i.pinimg.com/564x/${generateImagePath(pinId)}.webp`,
-      `https://i.pinimg.com/736x/${generateImagePath(pinId)}.webp`
-    ];
-    
-    // Test each pattern to see if image exists
-    for (const imageUrl of imagePatterns) {
+
+    // Method 2: Look for images in JSON-LD structured data
+    const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([^<]+)<\/script>/);
+    if (jsonLdMatch) {
       try {
-        const testResponse = await fetch(imageUrl, { 
-          method: 'HEAD',
-          signal: AbortSignal.timeout(5000) // 5 second timeout
-        });
-        if (testResponse.ok && testResponse.headers.get('content-type')?.startsWith('image/')) {
-          console.log('✅ Found working Pinterest image:', imageUrl);
-          return imageUrl;
+        const jsonLd = JSON.parse(jsonLdMatch[1]);
+        if (jsonLd.image && typeof jsonLd.image === 'string') {
+          imageUrls.push(jsonLd.image);
         }
-      } catch (testError) {
-        // Continue to next pattern
+      } catch (e) {
+        // Continue if JSON parsing fails
       }
     }
+
+    // Method 3: Look for og:image meta tags
+    const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/);
+    if (ogImageMatch && ogImageMatch[1]) {
+      imageUrls.push(ogImageMatch[1]);
+    }
+
+    // Method 4: Look for data-src attributes with pinimg.com
+    const dataSrcMatches = html.match(/data-src=["']([^"']*pinimg\.com[^"']*)["']/g);
+    if (dataSrcMatches) {
+      for (const match of dataSrcMatches) {
+        const urlMatch = match.match(/data-src=["']([^"']+)["']/);
+        if (urlMatch && urlMatch[1]) {
+          imageUrls.push(urlMatch[1]);
+        }
+      }
+    }
+
+    console.log('🎯 Found potential image URLs:', imageUrls.length);
+
+    // Filter, clean and prioritize pinimg.com URLs
+    const validUrls = imageUrls
+      .filter(url => 
+        url && 
+        url.includes('pinimg.com') && 
+        (url.includes('.jpg') || url.includes('.jpeg') || url.includes('.png') || url.includes('.webp'))
+      )
+      .map(url => {
+        // Extract clean URL using regex - everything before the first character that shouldn't be in an image URL
+        const match = url.match(/(https?:\/\/i\.pinimg\.com\/[^"'\s}),;]+\.(?:jpg|jpeg|png|webp|gif))/i);
+        return match ? match[1] : url;
+      })
+      .filter(url => url.includes('.'));
+
+    if (validUrls.length === 0) {
+      console.log('❌ No valid Pinterest images found in HTML');
+      return null;
+    }
+
+    // Prioritize higher resolution images
+    const prioritizedUrls = validUrls.sort((a, b) => {
+      const aHasOriginal = a.includes('/originals/');
+      const bHasOriginal = b.includes('/originals/');
+      if (aHasOriginal && !bHasOriginal) return -1;
+      if (!aHasOriginal && bHasOriginal) return 1;
+      
+      const aHas736 = a.includes('/736x');
+      const bHas736 = b.includes('/736x');
+      if (aHas736 && !bHas736) return -1;
+      if (!aHas736 && bHas736) return 1;
+      
+      return 0;
+    });
+
+    const bestImageUrl = prioritizedUrls[0];
+    console.log('✅ Selected best Pinterest image:', bestImageUrl);
     
-    console.log('❌ Could not find valid Pinterest image for PIN:', pinId);
-    return null;
+    return bestImageUrl;
     
   } catch (error) {
-    console.error('❌ Pinterest extraction error:', error);
+    console.error('❌ Pinterest HTML extraction error:', error);
     return null;
   }
 }
@@ -125,30 +163,39 @@ function enhancePinterestImageQuality(imageUrl: string): string {
     return imageUrl;
   }
   
-  let enhancedUrl = imageUrl;
+  // First, clean the URL to remove any trailing CSS or HTML
+  let cleanUrl = imageUrl;
+  
+  // Extract clean URL using regex - everything before any non-URL characters
+  const match = cleanUrl.match(/(https?:\/\/i\.pinimg\.com\/[^"'\s}),;]+\.(?:jpg|jpeg|png|webp|gif))/i);
+  if (match) {
+    cleanUrl = match[1];
+  }
+  
+  let enhancedUrl = cleanUrl;
   
   // Remove low quality parameters
   enhancedUrl = enhancedUrl.replace(/[?&]resize=\d+[^\s&]*/g, '');
   enhancedUrl = enhancedUrl.replace(/[?&]quality=\d+/g, '');
   
-  // Replace low quality dimensions with Full HD
-  const qualityMappings = [
-    { from: /\/236x\d+\//, to: '/1920x1080/' },
-    { from: /\/474x\d+\//, to: '/1920x1080/' },
-    { from: /\/736x\d+\//, to: '/1920x1080/' },
-    { from: /\/564x\d+\//, to: '/1920x1080/' },
-    { from: /\/_\d+x\d+_/, to: '_1920x1080_' },
-    { from: /\d+x\d+\.jpg/, to: '1920x1080.jpg' },
-    { from: /\d+x\d+\.webp/, to: '1920x1080.webp' }
-  ];
-  
-  for (let mapping of qualityMappings) {
-    enhancedUrl = enhancedUrl.replace(mapping.from, mapping.to);
+  // Replace low quality dimensions with Full HD (keep originals as they are highest quality)
+  if (!enhancedUrl.includes('/originals/')) {
+    const qualityMappings = [
+      { from: /\/236x\d+\//, to: '/736x/' },
+      { from: /\/474x\d+\//, to: '/736x/' },
+      { from: /\/564x\d+\//, to: '/736x/' }
+    ];
+    
+    for (let mapping of qualityMappings) {
+      enhancedUrl = enhancedUrl.replace(mapping.from, mapping.to);
+    }
   }
   
-  // Add high quality parameters if not present
-  if (!enhancedUrl.includes('quality=') && !enhancedUrl.includes('q=')) {
-    enhancedUrl += (enhancedUrl.includes('?') ? '&' : '?') + 'quality=95';
+  // Add quality parameter only if the URL is clean and valid
+  if (enhancedUrl.match(/^https?:\/\/i\.pinimg\.com\/[^"'\s]+\.(?:jpg|jpeg|png|webp|gif)$/i)) {
+    if (!enhancedUrl.includes('quality=') && !enhancedUrl.includes('q=')) {
+      enhancedUrl += '?quality=95';
+    }
   }
   
   console.log('🎯 Enhanced Pinterest URL quality:', enhancedUrl);
