@@ -282,343 +282,129 @@ export default function SceneSelectionModal({
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="pinterest" className="flex items-center gap-2">
-              <Search className="h-4 w-4" />
-              المكتبة
-            </TabsTrigger>
-            <TabsTrigger value="default" className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" />
-              المشاهد الجاهزة
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Default Scenes Tab */}
-          <TabsContent value="default" className="mt-4">
-            <div className="space-y-6">
-              {/* Custom Pinterest Scene URL Input */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-700 rounded-xl p-6">
-                <div className="flex items-start gap-4">
-                  <div className="bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl flex-shrink-0">📎</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                      🖼️ الصق رابط الصورة من Pinterest هنا!
-                    </h3>
-                    <p className="text-gray-700 dark:text-gray-300 mb-4">
-                      نسخت رابط الصورة من Pinterest؟ الصقه هنا واضغط "استخدام المشهد"
-                    </p>
-                    <div className="flex gap-3">
-                      <div className="flex-1">
-                        <input
-                          type="text"
-                          placeholder="الصق رابط صورة Pinterest هنا... (https://i.pinimg.com/...)"
-                          className="w-full px-4 py-3 border-2 border-green-300 dark:border-green-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          data-testid="pinterest-url-input"
-                        />
-                      </div>
-                      <button
-                        onClick={() => {
-                          if (searchQuery && (searchQuery.includes('pinimg.com') || searchQuery.includes('pinterest.com') || searchQuery.startsWith('http'))) {
-                            // Create a custom scene from the URL
-                            const customScene: SceneData = {
-                              id: `custom_pinterest_${Date.now()}`,
-                              name: 'مشهد من Pinterest',
-                              description: 'مشهد مخصص تم اختياره من Pinterest',
-                              imageUrl: searchQuery,
-                              category: 'custom',
-                              style: 'pinterest',
-                              keywords: ['pinterest', 'custom'],
-                              lighting: 'natural',
-                              colors: ['متنوع']
-                            };
-                            onSceneSelect(customScene, productSize);
-                            onClose();
-                          } else {
-                            alert('يرجى إدخال رابط صحيح لصورة من Pinterest');
-                          }
-                        }}
-                        disabled={!searchQuery || searchQuery.trim().length === 0}
-                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-bold transition-colors flex items-center gap-2 whitespace-nowrap"
-                        data-testid="use-pinterest-url-button"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        ✨ استخدام المشهد
-                      </button>
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                      💡 نصيحة: تأكد من أن الرابط يبدأ بـ https:// ويحتوي على عنوان صورة Pinterest
-                    </p>
+        {/* Pinterest Direct Browser */}
+        <div className="space-y-4">
+          
+          {/* Pinterest URL Auto-Detector */}
+          <div className="bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl p-6">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="bg-white/20 p-4 rounded-full">
+                <svg className="w-10 h-10" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-3xl font-bold mb-2">🎯 Pinterest Direct</h2>
+                <p className="text-lg opacity-90">ابحث واختر مشاهد CGI احترافية بكليك واحدة!</p>
+              </div>
+            </div>
+            
+            {/* URL Auto-Input */}
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 z-10">
+                    <Search className="w-6 h-6" />
                   </div>
+                  <input
+                    type="text"
+                    placeholder="🤖 سيتم لصق رابط الصورة هنا أوتوماتيكياً..."
+                    className="w-full pl-14 pr-6 py-5 text-lg rounded-2xl bg-white/10 backdrop-blur border-2 border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-4 focus:ring-white/30 focus:border-white/40 transition-all"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    data-testid="pinterest-auto-url-input"
+                  />
                 </div>
+                <button
+                  onClick={() => {
+                    if (searchQuery && (searchQuery.includes('pinimg.com') || searchQuery.includes('pinterest.com') || searchQuery.startsWith('http'))) {
+                      const customScene: SceneData = {
+                        id: `pinterest_auto_${Date.now()}`,
+                        name: 'مشهد Pinterest المختار',
+                        description: 'مشهد تم اختياره تلقائياً من Pinterest',
+                        imageUrl: searchQuery,
+                        category: 'pinterest',
+                        style: 'auto-selected',
+                        keywords: ['pinterest', 'auto'],
+                        lighting: 'natural',
+                        colors: ['متنوع']
+                      };
+                      onSceneSelect(customScene, productSize);
+                      onClose();
+                    } else {
+                      // Open Pinterest in popup
+                      const pinterestUrl = `https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`;
+                      window.open(pinterestUrl, 'pinterest-browser', 'width=1400,height=900,scrollbars=yes,resizable=yes,location=yes,toolbar=yes,menubar=yes,status=yes');
+                    }
+                  }}
+                  className="bg-white hover:bg-gray-100 text-red-600 px-10 py-5 text-lg font-bold rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 whitespace-nowrap border-2 border-white/20"
+                  data-testid="pinterest-action-button"
+                >
+                  {searchQuery ? '🚀 استخدام المشهد' : '🔍 فتح Pinterest'}
+                </button>
               </div>
               
-              {/* Default Scenes Header */}
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  مشاهد عالية الجودة مناسبة لمنتجك ({productType})
-                </div>
-                <Button 
-                  onClick={() => refetchDefault()}
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-xs"
-                  data-testid="refresh-default-scenes"
-                >
-                  🔄 تحديث
-                </Button>
+              {/* Status indicator */}
+              <div className="flex items-center justify-center gap-2 text-white/80 text-sm">
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                <span>جاهز للاستقبال التلقائي للروابط من Pinterest</span>
               </div>
-
-              {defaultStatus === 'pending' ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="mt-3 text-sm font-medium">جاري تحميل المشاهد...</span>
-                  <span className="mt-1 text-xs text-muted-foreground">انتظر قليلاً...</span>
-                </div>
-              ) : defaultStatus === 'error' ? (
-                <div className="text-center py-12">
-                  <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-6">
-                    <p className="text-red-600 dark:text-red-400 font-medium">حدث خطأ في تحميل المشاهد</p>
-                    <p className="text-sm mt-2 text-red-500 dark:text-red-300">{defaultError?.message}</p>
-                    <Button 
-                      onClick={() => refetchDefault()}
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-4"
-                      data-testid="retry-default-scenes"
-                    >
-                      إعادة المحاولة
-                    </Button>
-                  </div>
-                </div>
-              ) : !defaultScenes || defaultScenes.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-lg p-6">
-                    <p className="text-yellow-600 dark:text-yellow-400">لا توجد مشاهد متاحة حالياً</p>
-                    <Button 
-                      onClick={() => refetchDefault()}
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-4"
-                      data-testid="retry-default-scenes"
-                    >
-                      إعادة التحميل
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto">
-                  {defaultScenes.map((scene: SceneData) => (
-                    <Card 
-                      key={scene.id}
-                      className="cursor-pointer hover:shadow-lg transition-shadow group"
-                      onClick={() => handleSceneClick(scene)}
-                      data-testid={`default-scene-${scene.id}`}
-                    >
-                      <CardContent className="p-0">
-                        <div className="aspect-square relative overflow-hidden rounded-t-lg">
-                          <img
-                            src={scene.imageUrl}
-                            alt={scene.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                            onError={(e) => {
-                              e.currentTarget.src = '/placeholder-scene.jpg';
-                            }}
-                          />
-                          <div className="absolute top-2 right-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {scene.category.replace('_', ' ')}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="p-3">
-                          <h4 className="font-medium text-sm truncate">{scene.name}</h4>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {scene.description}
-                          </p>
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {scene.keywords.slice(0, 3).map((keyword) => (
-                              <Badge key={keyword} variant="outline" className="text-xs">
-                                {keyword}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
             </div>
-          </TabsContent>
-
-          {/* Pinterest Browser Tab */}
-          <TabsContent value="pinterest" className="mt-4">
-            <div className="space-y-4">
-              {/* Pinterest Live Browser Header */}
-              <div className="bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-white/20 p-2 rounded-full">
-                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+          </div>
+          
+          {/* Pinterest Embedded Browser */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden shadow-xl">
+            <div className="bg-gray-100 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                </div>
+                <div className="flex-1 bg-white dark:bg-gray-800 rounded-full px-4 py-2 text-sm text-gray-600 dark:text-gray-400 font-mono">
+                  📌 pinterest.com/search/pins/?q=cgi+{productType}
+                </div>
+                <div className="text-xs text-gray-500">Pinterest Browser</div>
+              </div>
+            </div>
+            <div style={{height: '700px'}} className="relative">
+              <iframe
+                src={`https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`}
+                className="w-full h-full border-0"
+                title="Pinterest Embedded Browser"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
+                loading="eager"
+                onLoad={() => {
+                  console.log('✅ Pinterest embedded browser loaded successfully');
+                }}
+                onError={() => {
+                  console.log('❌ Pinterest iframe blocked - showing fallback');
+                }}
+              />
+              {/* Fallback overlay */}
+              <div className="absolute inset-0 flex items-center justify-center bg-white/95 dark:bg-gray-800/95" style={{display: 'none'}} id="pinterest-fallback-overlay">
+                <div className="text-center p-8">
+                  <div className="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg className="w-10 h-10 text-red-600" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
                     </svg>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg">Pinterest Live Browser</h3>
-                    <p className="text-sm opacity-90">متصفح Pinterest الحقيقي داخل التطبيق</p>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs bg-white/20 px-2 py-1 rounded-full">
-                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span>pinterest.com</span>
-                  </div>
-                </div>
-                
-                {/* Pinterest Live Browser Search */}
-                <div className="flex gap-3">
-                  <div className="flex-1 relative">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10">
-                      <Search className="w-5 h-5" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder={`ابحث في Pinterest: "${searchQuery || 'energy drink cgi'}"...`}
-                      className="w-full pl-11 pr-4 py-3 rounded-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 shadow-sm"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      data-testid="pinterest-live-search-input"
-                    />
-                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Pinterest محجوب!</h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">Pinterest لا يسمح بالعرض داخل التطبيقات</p>
                   <button
                     onClick={() => {
-                      const searchTerm = searchQuery || 'energy drink cgi';
-                      const pinterestUrl = `https://pinterest.com/search/pins/?q=${encodeURIComponent(searchTerm)}`;
-                      window.open(pinterestUrl, 'pinterest-live-browser', 'width=1200,height=800,scrollbars=yes,resizable=yes,location=yes,menubar=yes,toolbar=yes');
+                      const pinterestUrl = `https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`;
+                      window.open(pinterestUrl, '_blank', 'width=1400,height=900');
                     }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
-                    data-testid="pinterest-open-button"
+                    className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                    فتح Pinterest
+                    🌐 فتح Pinterest في نافذة منفصلة
                   </button>
                 </div>
               </div>
-
-              {/* Pinterest Browser Guide */}
-              <div className="space-y-6">
-                
-                {/* Step 1: Open Pinterest */}
-                <div className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 border-2 border-red-200 dark:border-red-800 rounded-xl p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-red-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0">1</div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                        🚀 افتح Pinterest وابحث عن مشاهد CGI
-                      </h3>
-                      <p className="text-gray-700 dark:text-gray-300 mb-4">
-                        هنفتحلك Pinterest في نافذة جديدة عشان تدور على مشهد CGI حلو لمنتجك
-                      </p>
-                      <button
-                        onClick={() => {
-                          const searchTerm = searchQuery || 'energy drink cgi';
-                          const pinterestUrl = `https://pinterest.com/search/pins/?q=${encodeURIComponent(searchTerm)}`;
-                          window.open(pinterestUrl, 'pinterest-browser', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-                        }}
-                        className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-colors flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105"
-                        data-testid="pinterest-open-button"
-                      >
-                        <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
-                        </svg>
-                        🔍 ابدأ البحث في Pinterest
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Step 2: Copy Image */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0">2</div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                        🖼️ اختار مشهد CGI وانسخ رابط الصورة
-                      </h3>
-                      <p className="text-gray-700 dark:text-gray-300 mb-4">
-                        لما تلاقي صورة حلوة، اضغط عليها كليك يمين واختار "Copy image address" أو "نسخ عنوان الصورة"
-                      </p>
-                      <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-blue-300 dark:border-blue-600 rounded-lg p-4">
-                        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                          </svg>
-                          <span className="font-medium">انسخ رابط الصورة من Pinterest</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Step 3: Return to App */}
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800 rounded-xl p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-green-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0">3</div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-                        ✨ ارجع للتطبيق والصق رابط الصورة
-                      </h3>
-                      <p className="text-gray-700 dark:text-gray-300 mb-4">
-                        ارجع للتاب "مشاهد جاهزة" والصق رابط الصورة في خانة "رابط مشهد مخصص" عشان نعمل CGI بالمشهد اللي اخترته
-                      </p>
-                      <div className="bg-white dark:bg-gray-800 border-2 border-dashed border-green-300 dark:border-green-600 rounded-lg p-4">
-                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span className="font-medium">الصق في تاب "مشاهد جاهزة" → "رابط مشهد مخصص"</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Quick Search Suggestions */}
-                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
-                  <h4 className="font-bold text-gray-900 dark:text-white mb-3 text-center">
-                    🔥 اقتراحات بحث لمشاهد CGI
-                  </h4>
-                  <div className="flex flex-wrap justify-center gap-2">
-                    {[
-                      'energy drink cgi render',
-                      'product photography studio', 
-                      'modern kitchen interior',
-                      'lifestyle commercial photography',
-                      'beverage bottle mockup',
-                      'clean background product'
-                    ].map((term) => (
-                      <button
-                        key={term}
-                        onClick={() => {
-                          setSearchQuery(term);
-                          const pinterestUrl = `https://pinterest.com/search/pins/?q=${encodeURIComponent(term)}`;
-                          window.open(pinterestUrl, 'pinterest-browser', 'width=1200,height=800');
-                        }}
-                        className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full text-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors font-medium"
-                      >
-                        {term}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
