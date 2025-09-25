@@ -44,6 +44,15 @@ export default function SceneSelectionModal({
   const [smartSearchTerms, setSmartSearchTerms] = useState<string[]>([]);
   const [isAnalyzingProduct, setIsAnalyzingProduct] = useState(false);
 
+  // Debug logging for state changes
+  console.log('🔄 Modal state:', { 
+    isOpen, 
+    productImageUrl: productImageUrl?.substring(0, 50) + '...', 
+    extractedImageUrl: extractedImageUrl?.substring(0, 50) + '...', 
+    isExtracting,
+    smartSearchTerms 
+  });
+
   // Analyze product when modal opens and productImageUrl is available
   useEffect(() => {
     if (isOpen && productImageUrl && !smartSearchTerms.length) {
@@ -114,12 +123,20 @@ export default function SceneSelectionModal({
         throw new Error(error.error || 'فشل في استخراج الصورة');
       }
 
-      const { imageUrl } = await response.json();
+      const result = await response.json();
+      console.log('🔍 Full API response:', result);
       
+      const { imageUrl } = result;
       console.log('✅ Pinterest image extracted:', { original: pinterestUrl, extracted: imageUrl });
       
+      if (!imageUrl) {
+        throw new Error('لم يتم العثور على رابط صورة صالح');
+      }
+      
       // Show preview of extracted image
+      console.log('🎯 Setting extracted image URL:', imageUrl);
       setExtractedImageUrl(imageUrl);
+      console.log('✅ State updated with extracted URL');
       setIsExtracting(false);
       
     } catch (error) {
@@ -288,11 +305,16 @@ export default function SceneSelectionModal({
               </div>
               
               {/* Preview Section */}
-              {extractedImageUrl && (
+              {extractedImageUrl ? (
                 <div className="mt-6 p-4 border-2 border-green-200 bg-green-50 dark:bg-green-900/20 rounded-lg">
                   <h4 className="text-lg font-bold text-green-800 dark:text-green-200 mb-4 flex items-center gap-2">
                     ✅ تم استخراج الصورة بنجاح!
                   </h4>
+                  
+                  {/* Debug info */}
+                  <div className="text-xs text-gray-600 mb-2">
+                    🔍 Debug: {extractedImageUrl.substring(0, 80)}...
+                  </div>
                   <div className="flex gap-4 items-start">
                     <div className="flex-1">
                       <img 
@@ -329,7 +351,7 @@ export default function SceneSelectionModal({
                     </div>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
