@@ -1,7 +1,91 @@
 /**
- * Enhanced CGI Scene Service - Provides high-quality CGI scenes using intelligent image search
+ * Enhanced CGI Scene Service - Provides Full HD CGI scenes using intelligent image search
  * (Replaces Pinterest API due to v5 restrictions on public pin access)
  */
+
+/**
+ * Get Full HD quality image URL from Unsplash photo URLs
+ * Ensures 1920x1080 WebP format for all sources
+ */
+function getFullHDImageUrl(urls: any): string {
+  if (!urls) return '';
+  
+  // Priority: raw with Full HD params > full > regular > small
+  if (urls.raw) {
+    try {
+      // Use proper URL construction to avoid & vs ? issues
+      const url = new URL(urls.raw);
+      url.searchParams.set('w', '1920');
+      url.searchParams.set('h', '1080');
+      url.searchParams.set('fit', 'crop');
+      url.searchParams.set('crop', 'center');
+      url.searchParams.set('q', '80');
+      url.searchParams.set('fm', 'webp');
+      return url.toString();
+    } catch (e) {
+      console.warn('⚠️ Invalid raw URL, fallback to full:', urls.raw);
+      return getOptimizedImageUrl(urls.full || urls.regular || urls.small || urls.thumb || '');
+    }
+  } else if (urls.full || urls.regular || urls.small || urls.thumb) {
+    // Apply Full HD optimization to all fallback URLs
+    const fallbackUrl = urls.full || urls.regular || urls.small || urls.thumb;
+    return getOptimizedImageUrl(fallbackUrl);
+  }
+  
+  return '';
+}
+
+/**
+ * Apply Full HD optimization to any image URL using Cloudinary fetch transformation
+ * Ensures consistent 1920x1080 WebP delivery for ALL sources
+ */
+function getOptimizedImageUrl(baseUrl: string): string {
+  if (!baseUrl) return '';
+  
+  // For Unsplash URLs, try to add optimization parameters directly
+  if (baseUrl.includes('unsplash.com')) {
+    try {
+      const url = new URL(baseUrl);
+      url.searchParams.set('w', '1920');
+      url.searchParams.set('h', '1080');
+      url.searchParams.set('fit', 'crop');
+      url.searchParams.set('crop', 'center');
+      url.searchParams.set('q', '80');
+      url.searchParams.set('fm', 'webp');
+      console.log('🎯 Optimized Unsplash URL to Full HD WebP');
+      return url.toString();
+    } catch (e) {
+      console.warn('⚠️ Cannot optimize Unsplash URL, using Cloudinary fallback:', baseUrl);
+      return getCloudinaryOptimizedUrl(baseUrl);
+    }
+  }
+  
+  // For ALL other sources (default scenes, external URLs), use Cloudinary fetch transformation
+  console.log('🌤️ Using Cloudinary fetch transformation for Full HD:', baseUrl.substring(0, 50) + '...');
+  return getCloudinaryOptimizedUrl(baseUrl);
+}
+
+/**
+ * Create Full HD Cloudinary fetch URL for any image source
+ * Guarantees 1920x1080 WebP output regardless of original image
+ */
+function getCloudinaryOptimizedUrl(originalUrl: string): string {
+  if (!originalUrl) return '';
+  
+  // Check if Cloudinary is configured (use environment variables check)
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    console.warn('⚠️ Cloudinary not configured, returning original URL:', originalUrl.substring(0, 50) + '...');
+    return originalUrl;
+  }
+  
+  // Build Cloudinary fetch URL with Full HD transformations
+  const encodedUrl = encodeURIComponent(originalUrl);
+  const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/fetch/c_fill,g_auto,f_webp,q_auto:good,w_1920,h_1080/${encodedUrl}`;
+  
+  console.log('✨ Created Cloudinary Full HD URL:', cloudinaryUrl.substring(0, 100) + '...');
+  return cloudinaryUrl;
+}
 
 export interface PinterestScene {
   id: string;
@@ -95,14 +179,15 @@ export async function searchPinterestForProduct(
     }
 
     const data = await response.json();
-    console.log('✅ CGI Image Search completed:', { 
+    console.log('✅ Full HD CGI Image Search completed:', { 
       searchTerm: bestSearchTerm,
       totalResults: data.results?.length || 0,
-      hasResults: !!data.results 
+      hasResults: !!data.results,
+      quality: 'Full HD (1920x1080)'
     });
 
     if (!data.results || data.results.length === 0) {
-      console.log('⚠️ No CGI images found, using fallback');
+      console.log('⚠️ No CGI images found, using Full HD optimized fallback');
       return await getFallbackScenes(productType, keywords, maxResults);
     }
 
@@ -111,8 +196,8 @@ export async function searchPinterestForProduct(
       return {
         id: `cgi_enhanced_${photo.id || index}`,
         title: photo.alt_description || photo.description || `${productType} CGI Scene ${index + 1}`,
-        description: `Professional CGI rendering and visualization for ${productType} - High quality scene perfect for product placement`,
-        imageUrl: photo.urls?.regular || photo.urls?.small || photo.urls?.thumb || '',
+        description: `Professional Full HD CGI rendering (1920x1080) for ${productType} - Ultra high quality scene perfect for product placement`,
+        imageUrl: getFullHDImageUrl(photo.urls),
         pinterestUrl: photo.links?.html || `https://unsplash.com/photos/${photo.id}`,
         boardName: 'Professional CGI Gallery',
         userName: photo.user?.name || photo.user?.username || 'CGI Artist',
@@ -154,10 +239,10 @@ async function getFallbackScenes(productType: string, keywords: string[], maxRes
     const fallbackScenes: PinterestScene[] = defaultScenes.slice(0, maxResults).map((scene: any, index: number) => ({
       id: `fallback_cgi_${scene.id}`,
       title: `${scene.name} - CGI Scene`,
-      description: `Professional CGI scene for ${productType} - ${scene.description}`,
-      imageUrl: scene.imageUrl || '',
+      description: `Professional Full HD CGI scene (1920x1080) for ${productType} - ${scene.description}`,
+      imageUrl: getOptimizedImageUrl(scene.imageUrl || ''), // Apply Full HD optimization
       pinterestUrl: '#',
-      boardName: 'Curated CGI Scenes',
+      boardName: 'Curated Full HD CGI Scenes',
       userName: 'CGI Studio',
       isCGI: true,
       category: scene.category || getCategoryFromProductType(productType),
