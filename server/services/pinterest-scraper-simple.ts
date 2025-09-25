@@ -79,21 +79,23 @@ export async function searchPinterestForProduct(
     "https://images.unsplash.com/photo-1595515106969-1ce29566ff3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   ];
 
-  // Dynamic themes based on search query
+  // Dynamic themes based on search query AND product type
   let styles, themes, productSpecificImages;
   
   const searchText = keywords.join(' ').toLowerCase();
+  const productTypeText = productType.toLowerCase();
   
-  if (searchText.includes('energy drink') || searchText.includes('beverage') || searchText.includes('drink')) {
+  if (searchText.includes('energy drink') || searchText.includes('beverage') || searchText.includes('drink') || 
+      productTypeText.includes('مشروب') || productTypeText.includes('طاقة')) {
     styles = ["Dynamic", "Modern", "Commercial", "Sporty", "Vibrant", "Professional"];
     themes = ["Energy Drink CGI", "Beverage Advertisement", "Product Visualization", "Commercial Render", "Studio Photography", "Marketing Scene"];
     productSpecificImages = [
-      "https://images.unsplash.com/photo-1544145945-f90425340c7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // energy drink
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // studio setup
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // drink advertising
-      "https://images.unsplash.com/photo-1594736797933-d0d3131a27de?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // beverage
-      "https://images.unsplash.com/photo-1585647347483-22b66260dfff?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // energy drink can
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" // product photography
+      "https://images.unsplash.com/photo-1581636625402-29b2a704ef13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // energy drink bottle
+      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // studio background
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern kitchen
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern interior
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // workspace
+      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" // office space
     ];
   } else if (searchText.includes('furniture') || searchText.includes('chair') || searchText.includes('table')) {
     styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial"];
@@ -158,10 +160,15 @@ export async function searchPinterestForProduct(
 }
 
 /**
- * Get room category based on product type
+ * Get category based on product type
  */
 function getCategoryFromProductType(productType: string): string {
   const type = productType.toLowerCase();
+  
+  // Energy drinks and beverages - prioritize this check
+  if (type.includes('مشروب') || type.includes('طاقة') || type.includes('energy') || type.includes('drink') || type.includes('beverage') || type.includes('sting')) {
+    return 'commercial';
+  }
   
   // Furniture and living room items
   if (type.includes('أريكة') || type.includes('sofa') || type.includes('معيشة') || type.includes('أثاث')) {
