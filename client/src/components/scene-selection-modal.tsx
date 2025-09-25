@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +40,45 @@ export default function SceneSelectionModal({
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
   const [extractedImageUrl, setExtractedImageUrl] = useState<string | null>(null);
   const [isExtracting, setIsExtracting] = useState(false);
+  const [smartSearchTerms, setSmartSearchTerms] = useState<string[]>([]);
+  const [isAnalyzingProduct, setIsAnalyzingProduct] = useState(false);
+
+  // Analyze product when modal opens and productImageUrl is available
+  useEffect(() => {
+    if (isOpen && productImageUrl && !smartSearchTerms.length) {
+      analyzeProductForSearch();
+    }
+  }, [isOpen, productImageUrl]);
+
+  const analyzeProductForSearch = async () => {
+    if (!productImageUrl) return;
+
+    try {
+      setIsAnalyzingProduct(true);
+      
+      const response = await fetch('/api/analyze-product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ imageUrl: productImageUrl })
+      });
+
+      if (response.ok) {
+        const analysis = await response.json();
+        if (analysis.pinterestSearchTerms && analysis.pinterestSearchTerms.length > 0) {
+          setSmartSearchTerms(analysis.pinterestSearchTerms);
+          console.log('🎯 Smart Pinterest search terms:', analysis.pinterestSearchTerms);
+        }
+      }
+    } catch (error) {
+      console.error('Product analysis failed:', error);
+      // Fallback to default terms
+      setSmartSearchTerms([`${productType} cgi`]);
+    } finally {
+      setIsAnalyzingProduct(false);
+    }
+  };
 
   const handleUsePinterestImage = async () => {
     if (!pinterestUrl.trim()) {
@@ -109,8 +148,18 @@ export default function SceneSelectionModal({
   };
 
   const openPinterest = () => {
-    const searchQuery = `cgi product scene ${productType}`;
+    // Use smart search terms if available, otherwise fallback to default
+    let searchQuery;
+    if (smartSearchTerms.length > 0) {
+      // Use the first smart search term
+      searchQuery = smartSearchTerms[0];
+    } else {
+      // Fallback to basic search
+      searchQuery = `${productType} cgi scene`;
+    }
+    
     const pinterestUrl = `https://pinterest.com/search/pins/?q=${encodeURIComponent(searchQuery)}`;
+    console.log('🔍 Opening Pinterest with search query:', searchQuery);
     window.open(pinterestUrl, '_blank');
   };
 
@@ -175,15 +224,22 @@ export default function SceneSelectionModal({
             
             {/* Step 1: Open Pinterest */}
             <div className="space-y-4">
-              <div className="text-center">
+              <div className="text-center space-y-3">
                 <button
                   onClick={openPinterest}
-                  className="bg-white hover:bg-gray-100 text-red-600 px-12 py-6 text-xl font-bold rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center gap-3"
+                  disabled={isAnalyzingProduct}
+                  className="bg-white hover:bg-gray-100 text-red-600 px-12 py-6 text-xl font-bold rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 inline-flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   data-testid="button-open-pinterest"
                 >
                   <ExternalLink className="w-6 h-6" />
-                  🔍 فتح Pinterest للبحث
+                  {isAnalyzingProduct ? '🔍 جاري تحليل المنتج...' : '🔍 فتح Pinterest للبحث'}
                 </button>
+                
+                {smartSearchTerms.length > 0 && (
+                  <div className="text-sm text-white/80 bg-white/10 rounded-lg p-2 max-w-md mx-auto">
+                    💡 سيتم البحث عن: "{smartSearchTerms[0]}"
+                  </div>
+                )}
               </div>
             </div>
           </div>
