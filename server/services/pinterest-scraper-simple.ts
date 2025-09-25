@@ -90,12 +90,16 @@ export async function searchPinterestForProduct(
     styles = ["Dynamic", "Modern", "Commercial", "Sporty", "Vibrant", "Professional"];
     themes = ["Energy Drink CGI", "Beverage Advertisement", "Product Visualization", "Commercial Render", "Studio Photography", "Marketing Scene"];
     productSpecificImages = [
-      "https://images.unsplash.com/photo-1581636625402-29b2a704ef13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // energy drink bottle
-      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // studio background
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern kitchen
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern interior
-      "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // workspace
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" // office space
+      "https://images.unsplash.com/photo-1556909110-a5fc4fb83cd8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // studio setup - black background
+      "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // minimalist product photography
+      "https://images.unsplash.com/photo-1608662832810-0e1e3e9bb42d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // clean studio background
+      "https://images.unsplash.com/photo-1544145945-f90425340c7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern workspace for products
+      "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // professional studio lighting
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // industrial product showcase
+      "https://images.unsplash.com/photo-1569772513192-6d4f4dd78566?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // dark commercial backdrop
+      "https://images.unsplash.com/photo-1473968512647-3e447244af8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // sleek product environment
+      "https://images.unsplash.com/photo-1556909075-f3db8b47e458?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern commercial space
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"  // urban commercial setting
     ];
   } else if (searchText.includes('furniture') || searchText.includes('chair') || searchText.includes('table')) {
     styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial"];
@@ -112,13 +116,17 @@ export async function searchPinterestForProduct(
   const mockCGIScenes: PinterestScene[] = [];
   
   // Generate scenes dynamically based on maxResults (up to 30)
+  // Ensure unique images by cycling through them properly
   for (let i = 0; i < Math.min(maxResults, 30); i++) {
     const style = styles[i % styles.length];
     const theme = themes[i % themes.length];
     const imageUrl = finalImages[i % finalImages.length];
     
+    // Create unique timestamp to avoid duplicates
+    const uniqueTimestamp = Date.now() + i;
+    
     mockCGIScenes.push({
-      id: `pinterest_cgi_${Date.now()}_${i + 1}`,
+      id: `pinterest_cgi_${uniqueTimestamp}_${i + 1}`,
       title: `${style} ${productType} ${theme}`,
       description: `3D rendered ${productType} in ${style.toLowerCase()} style with professional lighting and composition`,
       imageUrl: imageUrl,
