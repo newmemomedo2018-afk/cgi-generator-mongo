@@ -58,8 +58,8 @@ export async function searchPinterestForProduct(
     const searchQuery = keywords.length > 0 ? keywords.join(' ') : 'cgi 3d render';
     console.log('🔍 Pinterest search query:', searchQuery);
 
-    // Pinterest API v5 search endpoint
-    const response = await fetch(`https://api.pinterest.com/v5/search/pins/?query=${encodeURIComponent(searchQuery)}&limit=${Math.min(maxResults, 50)}`, {
+    // Pinterest API v5 search endpoint - public pins only (no secret permissions needed)
+    const response = await fetch(`https://api.pinterest.com/v5/search/pins?query=${encodeURIComponent(searchQuery)}&limit=${Math.min(maxResults, 50)}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`,
