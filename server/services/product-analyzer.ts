@@ -72,7 +72,7 @@ export async function analyzeProductForScenes(imageUrl: string): Promise<Product
       imageUrl: imageUrl.substring(0, 50) + '...'
     });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     // تحميل الصورة مع timeout وsize limits
     const controller = new AbortController();
@@ -180,7 +180,7 @@ Return ONLY valid JSON, no additional text.
         productStyle: 'modern',
         productKeywords: ['أثاث', 'تصميم', 'منزل'],
         suggestedCategories: ['living_room', 'bedroom'],
-        pinterestSearchTerms: ['cgi', 'furniture'],
+        pinterestSearchTerms: ['furniture cgi', 'modern design cgi'],
         confidence: 30
       };
     }
@@ -191,7 +191,7 @@ Return ONLY valid JSON, no additional text.
       productStyle: analysisJson.productStyle || 'modern', 
       productKeywords: Array.isArray(analysisJson.productKeywords) ? analysisJson.productKeywords : ['أثاث'],
       suggestedCategories: Array.isArray(analysisJson.suggestedCategories) ? analysisJson.suggestedCategories : ['living_room'],
-      pinterestSearchTerms: Array.isArray(analysisJson.pinterestSearchTerms) ? analysisJson.pinterestSearchTerms : ['cgi', 'interior'],
+      pinterestSearchTerms: Array.isArray(analysisJson.pinterestSearchTerms) ? analysisJson.pinterestSearchTerms : ['product cgi', 'interior design cgi'],
       confidence: typeof analysisJson.confidence === 'number' ? analysisJson.confidence : 50
     };
 
@@ -214,7 +214,7 @@ Return ONLY valid JSON, no additional text.
       productStyle: 'modern',
       productKeywords: ['أثاث', 'تصميم'],
       suggestedCategories: ['living_room'],
-      pinterestSearchTerms: ['CGI interior design'],
+      pinterestSearchTerms: ['product cgi', 'modern interior cgi'],
       confidence: 20
     };
   }
