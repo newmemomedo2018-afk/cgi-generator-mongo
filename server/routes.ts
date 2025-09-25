@@ -46,6 +46,19 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
     const html = await response.text();
     console.log('✅ Successfully fetched Pinterest HTML');
 
+    // Check if this is a video post
+    const isVideoPost = html.includes('"contentType":"video"') || 
+                       html.includes('"type":"video"') || 
+                       html.includes('video-snippet') ||
+                       html.includes('"isVideo":true') ||
+                       html.includes('"videoUrl"');
+    
+    if (isVideoPost) {
+      console.log('🎬 Detected Pinterest video post - extracting video thumbnail');
+    } else {
+      console.log('🖼️ Detected Pinterest image post - extracting image');
+    }
+
     // Extract all possible image URLs from HTML
     const imageUrls: string[] = [];
     
@@ -137,7 +150,10 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
       }
     }
 
-    if (mainImageHash && imageGroups[mainImageHash]) {
+    // For video posts, use lower threshold since they have fewer variations
+    const minVariationsThreshold = isVideoPost ? 1 : 3;
+
+    if (mainImageHash && imageGroups[mainImageHash] && maxCount >= minVariationsThreshold) {
       // Prefer originals, then largest size
       const mainImageUrls = imageGroups[mainImageHash];
       const prioritizedUrls = mainImageUrls
@@ -151,7 +167,11 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
           return parseInt(sizeB) - parseInt(sizeA);
         });
       
-      console.log('✅ Selected main pin image from group with', maxCount, 'variations');
+      if (isVideoPost) {
+        console.log('✅ Selected video thumbnail from group with', maxCount, 'variations');
+      } else {
+        console.log('✅ Selected main pin image from group with', maxCount, 'variations');
+      }
       return enhancePinterestImageQuality(prioritizedUrls[0]);
     }
 
