@@ -398,171 +398,111 @@ export default function SceneSelectionModal({
           {/* Pinterest Browser Tab */}
           <TabsContent value="pinterest" className="mt-4">
             <div className="space-y-4">
-              {/* CGI Explorer Header */}
-              <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg p-4">
+              {/* Pinterest Live Browser Header */}
+              <div className="bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="bg-white/20 p-2 rounded-full">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-lg">متصفح المشاهد</h3>
-                    <p className="text-sm opacity-90">استكشف مشاهد CGI احترافية عالية الجودة</p>
+                    <h3 className="font-bold text-lg">Pinterest Live Browser</h3>
+                    <p className="text-sm opacity-90">متصفح Pinterest الحقيقي داخل التطبيق</p>
                   </div>
                   <div className="flex items-center gap-1 text-xs bg-white/20 px-2 py-1 rounded-full">
-                    <div className={`w-2 h-2 rounded-full ${pinterestLoading ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
-                    <span>{pinterestLoading ? 'يحمل' : 'جاهز'}</span>
+                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span>pinterest.com</span>
                   </div>
                 </div>
                 
-                {/* Pinterest Search Bar */}
-                <div className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10">
-                    <Search className="w-5 h-5" />
+                {/* Pinterest Live Browser Search */}
+                <div className="flex gap-3">
+                  <div className="flex-1 relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-10">
+                      <Search className="w-5 h-5" />
+                    </div>
+                    <input
+                      type="text"
+                      placeholder={`ابحث في Pinterest: "${searchQuery || 'energy drink cgi'}"...`}
+                      className="w-full pl-11 pr-4 py-3 rounded-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 shadow-sm"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      data-testid="pinterest-live-search-input"
+                    />
                   </div>
-                  <input
-                    type="text"
-                    placeholder={`ابحث عن "${searchQuery || 'مشاهد المنتجات'}"...`}
-                    className="w-full pl-11 pr-12 py-3 rounded-full bg-white text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white/50 shadow-sm"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handlePinterestSearch()}
-                    data-testid="pinterest-search-input"
-                  />
                   <button
-                    onClick={handlePinterestSearch}
-                    disabled={pinterestLoading || isAnalyzing}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-2 rounded-full transition-colors"
-                    data-testid="pinterest-search-button"
+                    onClick={() => {
+                      const searchTerm = searchQuery || 'energy drink cgi';
+                      const pinterestUrl = `https://pinterest.com/search/pins/?q=${encodeURIComponent(searchTerm)}`;
+                      window.open(pinterestUrl, 'pinterest-live-browser', 'width=1200,height=800,scrollbars=yes,resizable=yes,location=yes,menubar=yes,toolbar=yes');
+                    }}
+                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                    data-testid="pinterest-open-button"
                   >
-                    {pinterestLoading ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    )}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    فتح Pinterest
                   </button>
                 </div>
               </div>
 
-              {/* Auto Analysis Status */}
-              {isAnalyzing && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  جاري تحليل المنتج واقتراح مشاهد مناسبة...
+              {/* Pinterest Live Instructions */}
+              <div className="bg-gradient-to-r from-blue-50 to-pink-50 dark:from-blue-900/20 dark:to-pink-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 text-center">
+                <div className="flex items-center justify-center mb-4">
+                  <div className="bg-red-500 p-3 rounded-full">
+                    <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
+                    </svg>
+                  </div>
                 </div>
-              )}
-
-              {/* Pinterest Results */}
-              {pinterestLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                  <span className="ml-2">جاري البحث في مشاهد CGI...</span>
-                </div>
-              ) : pinterestScenes.length > 0 ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                    <span>وُجد {pinterestScenes.length} مشهد CGI احترافي</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => refetchPinterest()}
-                      disabled={pinterestLoading}
+                
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                  🚀 Pinterest الحقيقي داخل تطبيقك!
+                </h3>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
+                  ابحث عن أي مشهد CGI تحتاجه واضغط على "فتح Pinterest" عشان يفتحلك موقع Pinterest الرسمي في نافذة جديدة
+                </p>
+                
+                <div className="flex flex-wrap justify-center gap-2 mb-6">
+                  {[
+                    'energy drink cgi',
+                    'product photography', 
+                    'modern interior',
+                    'lifestyle scene',
+                    'commercial photography'
+                  ].map((term) => (
+                    <button
+                      key={term}
+                      onClick={() => setSearchQuery(term)}
+                      className="px-3 py-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-full text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
-                      <RefreshCw className={`h-4 w-4 ml-1 ${pinterestLoading ? 'animate-spin' : ''}`} />
-                      تحديث
-                    </Button>
+                      {term}
+                    </button>
+                  ))}
+                </div>
+                
+                <div className="flex justify-center items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>متصل بPinterest.com</span>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-[500px] overflow-y-auto">
-                    {pinterestScenes.map((scene: PinterestScene) => (
-                      <Card 
-                        key={scene.id}
-                        className="cursor-pointer hover:shadow-lg transition-shadow group"
-                        onClick={() => handleSceneClick(scene)}
-                        data-testid={`pinterest-scene-${scene.id}`}
-                      >
-                        <CardContent className="p-0">
-                          <div className="aspect-square relative overflow-hidden rounded-t-lg">
-                            <img
-                              src={scene.imageUrl}
-                              alt={scene.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                              onError={(e) => {
-                                e.currentTarget.src = '/placeholder-scene.jpg';
-                              }}
-                            />
-                            <div className="absolute top-2 left-2">
-                              <Badge className="text-xs bg-purple-500">
-                                CGI
-                              </Badge>
-                            </div>
-                            <div className="absolute top-2 right-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {scene.category.replace('_', ' ')}
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="p-3">
-                            <h4 className="font-medium text-sm truncate">{scene.title}</h4>
-                            {scene.userName && (
-                              <p className="text-xs text-muted-foreground">
-                                بواسطة: {scene.userName}
-                              </p>
-                            )}
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {scene.extractedKeywords.slice(0, 3).map((keyword) => (
-                                <Badge key={keyword} variant="outline" className="text-xs">
-                                  {keyword}
-                                </Badge>
-                              ))}
-                            </div>
-                            <div className="mt-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="text-xs h-6 p-1"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  window.open(scene.pinterestUrl, '_blank');
-                                }}
-                              >
-                                <ExternalLink className="h-3 w-3 ml-1" />
-                                عرض في المصدر
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>مجاني 100%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>سريع جداً</span>
                   </div>
                 </div>
-              ) : searchQuery && !pinterestLoading && !isAnalyzing ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>لم يتم العثور على مشاهد مناسبة</p>
-                  <p className="text-sm mt-2">جرب كلمات بحث مختلفة</p>
-                </div>
-              ) : !pinterestLoading && !isAnalyzing && pinterestScenes.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>استكشف مشاهد CGI متنوعة</p>
-                  <p className="text-sm mt-2">ابحث عن مشاهد مناسبة لمنتجك</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-4"
-                    onClick={() => {
-                      setSearchQuery('CGI interior design');
-                      refetchPinterest();
-                    }}
-                  >
-                    <Sparkles className="h-4 w-4 ml-2" />
-                    استكشاف المزيد
-                  </Button>
-                </div>
-              ) : null}
+              </div>
             </div>
           </TabsContent>
         </Tabs>
