@@ -108,24 +108,21 @@ export default function SceneSelectionModal({
     }
   }, [isOpen]); // Pinterest direct only now
 
-  // فتح Pinterest في popup منفصل مع زرار نسخ مدمج
+  // فتح Pinterest في popup منفصل مع bookmarklet مبسط
   const openPinterestPopup = () => {
     const pinterestUrl = `https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`;
-    const popup = window.open(pinterestUrl, 'pinterest-popup', 'width=1400,height=900,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,status=no,location=no');
+    const popup = window.open(pinterestUrl, 'pinterest-popup', 'width=1400,height=900,scrollbars=yes,resizable=yes,toolbar=yes');
     
     if (popup) {
       console.log('📌 Pinterest popup opened successfully');
-      
-      // انتظار قليل ثم حقن زرار النسخ
-      setTimeout(() => {
-        injectCopyButtonIntoPopup(popup);
-      }, 3000); // 3 ثواني لتحميل Pinterest
+      setUrlDetectionStatus('📌 Pinterest مفتوح! استخدم الـ bookmarklet للنسخ السريع');
       
       // مراقبة إغلاق النافذة
       const checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
           console.log('📌 Pinterest popup closed');
+          setUrlDetectionStatus('🤖 جاهز للاستقبال التلقائي');
         }
       }, 1000);
     } else {
@@ -134,11 +131,47 @@ export default function SceneSelectionModal({
     }
   };
 
-  // حقن زرار النسخ في نافذة Pinterest
-  const injectCopyButtonIntoPopup = (popup: Window) => {
-    console.log('🔧 Attempting to inject copy button into Pinterest popup...');
-    // سنستخدم مراسلة من النافذة المنفصلة بدلاً من الحقن المباشر
-    // لأن Pinterest لا يسمح بالحقن المباشر (same-origin policy)
+  // نسخ bookmarklet مبسط للاستخدام في Pinterest
+  const copySimpleBookmarklet = () => {
+    const bookmarkletCode = `javascript:(function(){
+      var imgs = document.querySelectorAll('img[src*="pinimg.com"]');
+      if(imgs.length === 0) {
+        alert('❌ لم يتم العثور على صور Pinterest في هذه الصفحة');
+        return;
+      }
+      var overlay = document.createElement('div');
+      overlay.innerHTML = '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:99999;background:linear-gradient(135deg,#e60023,#ff4757);color:white;padding:30px;border-radius:20px;text-align:center;font-family:Arial;box-shadow:0 20px 40px rgba(0,0,0,0.3);"><h3 style="margin:0 0 20px 0;font-size:24px;">🎯 اختر صورة المشهد</h3><p style="margin:0 0 20px 0;">اضغط على أي صورة لنسخ رابطها وإرسالها للتطبيق</p><button onclick="this.parentElement.parentElement.remove()" style="background:rgba(255,255,255,0.2);border:none;color:white;padding:10px 20px;border-radius:10px;cursor:pointer;">❌ إلغاء</button></div>';
+      document.body.appendChild(overlay);
+      imgs.forEach(function(img) {
+        img.style.cursor = 'copy';
+        img.style.transition = 'transform 0.2s';
+        img.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var url = img.src.replace(/\\d+x\\d+/,'1920x1080').replace('/236x/','/1920x/').replace('/474x/','/1920x/');
+          if(window.opener) {
+            window.opener.postMessage({type:'PINTEREST_IMAGE_URL',url:url,source:'Popup Bookmarklet'},'*');
+            window.close();
+          } else {
+            navigator.clipboard.writeText(url);
+            alert('✅ تم نسخ الرابط: ' + url);
+            window.close();
+          }
+        });
+        img.addEventListener('mouseover', function() {
+          this.style.transform = 'scale(1.05)';
+          this.style.border = '3px solid #e60023';
+        });
+        img.addEventListener('mouseout', function() {
+          this.style.transform = 'scale(1)';
+          this.style.border = 'none';
+        });
+      });
+    })();`;
+    
+    navigator.clipboard?.writeText(bookmarkletCode);
+    setUrlDetectionStatus('✅ تم نسخ الـ Bookmarklet! الصقه في شريط العناوين في Pinterest');
+    alert('✅ تم نسخ الـ Bookmarklet!\n\n1. اذهب لنافذة Pinterest\n2. الصق الكود في شريط العناوين\n3. اضغط Enter\n4. اضغط على أي صورة لاختيارها');
   };
 
   // Auto-Detection System للروابط من Pinterest
@@ -530,15 +563,42 @@ export default function SceneSelectionModal({
               </div>
               <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">🚀 ابحث واختر من Pinterest</h3>
               <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
-                ستفتح نافذة Pinterest منفصلة مع زرار نسخ مدمج
+                ستفتح نافذة Pinterest منفصلة. استخدم الـ bookmarklet للنسخ السريع!
               </p>
-              <button
-                onClick={() => openPinterestPopup()}
-                className="bg-red-600 hover:bg-red-700 text-white px-12 py-6 rounded-full font-bold text-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
-                data-testid="open-pinterest-popup"
-              >
-                📌 فتح Pinterest مع زرار النسخ
-              </button>
+              <div className="space-y-4">
+                <button
+                  onClick={() => openPinterestPopup()}
+                  className="bg-red-600 hover:bg-red-700 text-white px-12 py-6 rounded-full font-bold text-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 w-full"
+                  data-testid="open-pinterest-popup"
+                >
+                  📌 فتح Pinterest للبحث
+                </button>
+                
+                <button
+                  onClick={() => copySimpleBookmarklet()}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105 w-full"
+                  data-testid="copy-bookmarklet"
+                >
+                  📋 نسخ أداة الاختيار السريع
+                </button>
+                
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-yellow-400 text-white p-2 rounded-full flex-shrink-0">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                      <strong>طريقة الاستخدام:</strong><br/>
+                      1. اضغط "فتح Pinterest" أولاً<br/>
+                      2. ثم اضغط "نسخ أداة الاختيار"<br/>
+                      3. في Pinterest، الصق الأداة في شريط العناوين<br/>
+                      4. اضغط Enter واختر أي صورة!
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
