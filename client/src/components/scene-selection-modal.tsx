@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sparkles, ExternalLink, Scale, Zap } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 
 /**
  * Scene Selection Modal - Pinterest Simple
@@ -56,25 +57,26 @@ export default function SceneSelectionModal({
     try {
       setIsAnalyzingProduct(true);
       
-      const response = await fetch('/api/analyze-product', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ imageUrl: productImageUrl })
+      // Use the built-in apiRequest function that handles authentication automatically
+      const response = await apiRequest('POST', '/api/analyze-product', {
+        imageUrl: productImageUrl
       });
 
-      if (response.ok) {
-        const analysis = await response.json();
-        if (analysis.pinterestSearchTerms && analysis.pinterestSearchTerms.length > 0) {
-          setSmartSearchTerms(analysis.pinterestSearchTerms);
-          console.log('🎯 Smart Pinterest search terms:', analysis.pinterestSearchTerms);
-        }
+      const analysis = await response.json();
+      console.log('✅ Product analysis result:', analysis);
+      
+      if (analysis.pinterestSearchTerms && analysis.pinterestSearchTerms.length > 0) {
+        setSmartSearchTerms(analysis.pinterestSearchTerms);
+        console.log('🎯 Smart Pinterest search terms:', analysis.pinterestSearchTerms);
+      } else {
+        // Fallback to default terms if no search terms found
+        setSmartSearchTerms([`${productType} cgi scene`]);
       }
+      
     } catch (error) {
       console.error('Product analysis failed:', error);
       // Fallback to default terms
-      setSmartSearchTerms([`${productType} cgi`]);
+      setSmartSearchTerms([`${productType} cgi scene`]);
     } finally {
       setIsAnalyzingProduct(false);
     }
