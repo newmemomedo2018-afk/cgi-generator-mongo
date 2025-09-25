@@ -197,24 +197,21 @@ export default function SceneSelectionModal({
     alert('✅ تم نسخ الـ Bookmarklet!\n\n1. اذهب لنافذة Pinterest\n2. الصق الكود في شريط العناوين\n3. اضغط Enter\n4. اضغط على أي صورة لاختيارها');
   };
 
-  // Auto-Detection System للروابط من Pinterest
+  // مراقبة postMessage فقط من Pinterest popup (بدون auto-detection)
   useEffect(() => {
     if (!isOpen) return;
 
-    let pollInterval: NodeJS.Timeout;
-    let lastCheckedTimestamp = Date.now() - 1000; // Check for URLs from 1 second ago
-
-    // مراقبة الـ postMessage من Pinterest popup
+    // مراقبة الـ postMessage من Pinterest popup فقط
     const handleMessage = (event: MessageEvent) => {
-      // تحقق أمني صارم - Pinterest domains فقط
-      const trustedOrigins = [
-        'https://www.pinterest.com',
-        'https://pinterest.com', 
-        'https://in.pinterest.com',
-        'https://br.pinterest.com'
+      // تحقق أمني صارم - Pinterest domains فقط أو نفس الموقع
+      const trustedHostnames = [
+        'pinterest.com',
+        'www.pinterest.com', 
+        'in.pinterest.com',
+        'br.pinterest.com',
+        'i.pinimg.com'
       ];
       
-      // Parse origin URL securely  
       let originHostname: string;
       try {
         const originUrl = new URL(event.origin);
@@ -223,14 +220,6 @@ export default function SceneSelectionModal({
         console.log('🚫 Invalid origin URL:', event.origin);
         return;
       }
-      
-      const trustedHostnames = [
-        'pinterest.com',
-        'www.pinterest.com', 
-        'in.pinterest.com',
-        'br.pinterest.com',
-        'i.pinimg.com'
-      ];
       
       const isPinterestDomain = trustedHostnames.includes(originHostname) ||
                                event.origin === window.location.origin;
@@ -241,101 +230,37 @@ export default function SceneSelectionModal({
       }
 
       if (event.data?.type === 'PINTEREST_IMAGE_URL' && event.data?.url) {
-        console.log('📨 Received Pinterest URL via postMessage:', event.data.url);
-        handleDetectedUrl(event.data.url, 'PostMessage');
-      }
-    };
-
-    // مراقبة الـ localStorage للروابط الجديدة
-    const checkLocalStorage = () => {
-      try {
-        const storedUrl = localStorage.getItem('pinterest_copied_url');
-        const storedTimestamp = parseInt(localStorage.getItem('pinterest_copied_timestamp') || '0');
+        console.log('✅ Received Pinterest URL via postMessage:', event.data.url);
         
-        if (storedUrl && storedTimestamp > lastCheckedTimestamp) {
-          console.log('📦 Detected Pinterest URL from localStorage:', storedUrl);
-          handleDetectedUrl(storedUrl, 'LocalStorage');
-          lastCheckedTimestamp = storedTimestamp;
-        }
-      } catch (e) {
-        console.log('⚠️ LocalStorage check failed:', e);
+        // إنشاء مشهد مخصص من الرابط
+        const customScene: SceneData = {
+          id: `pinterest_selected_${Date.now()}`,
+          name: 'مشهد Pinterest - مختار',
+          description: 'تم اختياره من Pinterest popup',
+          imageUrl: event.data.url,
+          category: 'pinterest-selected',
+          style: 'user-selected',
+          keywords: ['pinterest', 'user-choice'],
+          lighting: 'natural',
+          colors: ['متنوع']
+        };
+        
+        setUrlDetectionStatus('✅ تم استلام الصورة من Pinterest!');
+        onSceneSelect(customScene, productSize);
+        onClose();
       }
     };
 
-    // مراقبة الحافظة (إذا أُمكن)
-    const checkClipboard = async () => {
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          const clipboardText = await navigator.clipboard.readText();
-          if (clipboardText && 
-              (clipboardText.includes('pinimg.com') || clipboardText.includes('pinterest.com')) &&
-              clipboardText.startsWith('http') &&
-              clipboardText !== lastDetectedUrl) {
-            console.log('📋 Detected Pinterest URL from clipboard:', clipboardText);
-            handleDetectedUrl(clipboardText, 'Clipboard');
-          }
-        }
-      } catch (e) {
-        // Clipboard access denied - normal behavior
-      }
-    };
-
-    const handleDetectedUrl = (url: string, source: string) => {
-      if (url === lastDetectedUrl) return; // تجنب التكرار
-
-      setLastDetectedUrl(url);
-      setSearchQuery(url);
-      setUrlDetectionStatus(`🎉 تم اكتشاف رابط من ${source}!`);
-      
-      // تأثير بصري
-      setTimeout(() => {
-        setUrlDetectionStatus('🤖 جاري مراقبة روابط جديدة...');
-      }, 3000);
-
-      // تطبيق الرابط تلقائياً إذا كان صحيحاً
-      if (url.includes('pinimg.com') || url.includes('pinterest.com')) {
-        setTimeout(() => {
-          const customScene: SceneData = {
-            id: `pinterest_auto_${Date.now()}`,
-            name: 'مشهد Pinterest - تلقائي',
-            description: `تم اختياره تلقائياً من ${source}`,
-            imageUrl: url,
-            category: 'pinterest-auto',
-            style: 'auto-detected',
-            keywords: ['pinterest', 'auto', source.toLowerCase()],
-            lighting: 'natural',
-            colors: ['متنوع']
-          };
-          
-          if (isAutoDetecting) {
-            setUrlDetectionStatus('✅ تم تطبيق المشهد تلقائياً!');
-            onSceneSelect(customScene, productSize);
-            onClose();
-          }
-        }, 1000);
-      }
-    };
-
-    // بدء المراقبة
+    // إضافة listener للرسائل
     window.addEventListener('message', handleMessage);
-    
-    // فحص دوري للحافظة فقط (localStorage لن يعمل cross-origin)  
-    pollInterval = setInterval(() => {
-      checkClipboard();
-    }, 2000); // كل ثانيتين
-
-    // فحص فوري للحافظة
-    checkClipboard();
-
-    console.log('🤖 Pinterest Auto-Detection started');
+    console.log('📨 Pinterest postMessage listener ready');
 
     // تنظيف عند الإغلاق
     return () => {
       window.removeEventListener('message', handleMessage);
-      if (pollInterval) clearInterval(pollInterval);
-      console.log('🛑 Pinterest Auto-Detection stopped');
+      console.log('🛑 Pinterest postMessage listener removed');
     };
-  }, [isOpen, isAutoDetecting, lastDetectedUrl, productSize, onSceneSelect, onClose]);
+  }, [isOpen, productSize, onSceneSelect, onClose]);
 
   const analyzeProductAndSearch = async () => {
     if (!productImageUrl) {
