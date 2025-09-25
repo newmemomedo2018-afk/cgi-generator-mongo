@@ -110,24 +110,47 @@ export default function SceneSelectionModal({
 
   // فتح Pinterest في popup منفصل مع bookmarklet مبسط
   const openPinterestPopup = () => {
+    console.log('🚀 Attempting to open Pinterest popup...');
     const pinterestUrl = `https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`;
-    const popup = window.open(pinterestUrl, 'pinterest-popup', 'width=1400,height=900,scrollbars=yes,resizable=yes,toolbar=yes');
+    console.log('📌 Pinterest URL:', pinterestUrl);
     
-    if (popup) {
-      console.log('📌 Pinterest popup opened successfully');
-      setUrlDetectionStatus('📌 Pinterest مفتوح! استخدم الـ bookmarklet للنسخ السريع');
+    // طريقة أكثر أمان لفتح النافذة
+    try {
+      const popup = window.open(pinterestUrl, 'pinterest-popup', 'width=1400,height=900,scrollbars=yes,resizable=yes,toolbar=yes');
       
-      // مراقبة إغلاق النافذة
-      const checkClosed = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkClosed);
-          console.log('📌 Pinterest popup closed');
-          setUrlDetectionStatus('🤖 جاهز للاستقبال التلقائي');
-        }
-      }, 1000);
-    } else {
-      console.error('❌ Failed to open Pinterest popup');
-      alert('❌ فشل في فتح Pinterest. تأكد من إلغاء حجب النوافذ المنبثقة.');
+      if (popup && !popup.closed) {
+        console.log('✅ Pinterest popup opened successfully');
+        setUrlDetectionStatus('📌 Pinterest مفتوح! استخدم الـ bookmarklet للنسخ السريع');
+        
+        // التركيز على النافذة الجديدة
+        popup.focus();
+        
+        // مراقبة إغلاق النافذة
+        const checkClosed = setInterval(() => {
+          try {
+            if (popup.closed) {
+              clearInterval(checkClosed);
+              console.log('📌 Pinterest popup closed');
+              setUrlDetectionStatus('🤖 جاهز للاستقبال التلقائي');
+            }
+          } catch (e) {
+            // إذا حصل خطأ، توقف المراقبة
+            clearInterval(checkClosed);
+          }
+        }, 1000);
+      } else {
+        throw new Error('Popup blocked or failed to open');
+      }
+    } catch (error) {
+      console.error('❌ Pinterest popup failed:', error);
+      alert('❌ فشل في فتح Pinterest!\n\nهذا عادة بسبب pop-up blocker في المتصفح.\nبرجاء السماح للنوافذ المنبثقة من هذا الموقع وحاول مرة أخرى.');
+      
+      // كحل بديل، فتح في نفس النافذة
+      const fallbackChoice = confirm('هل تريد فتح Pinterest في تبويبة جديدة بدلاً من ذلك؟');
+      if (fallbackChoice) {
+        window.open(pinterestUrl, '_blank');
+        setUrlDetectionStatus('📌 Pinterest مفتوح في تبويبة جديدة - انسخ الـ bookmarklet واستخدمه هناك');
+      }
     }
   };
 
