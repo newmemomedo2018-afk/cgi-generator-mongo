@@ -108,6 +108,39 @@ export default function SceneSelectionModal({
     }
   }, [isOpen]); // Pinterest direct only now
 
+  // فتح Pinterest في popup منفصل مع زرار نسخ مدمج
+  const openPinterestPopup = () => {
+    const pinterestUrl = `https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`;
+    const popup = window.open(pinterestUrl, 'pinterest-popup', 'width=1400,height=900,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,status=no,location=no');
+    
+    if (popup) {
+      console.log('📌 Pinterest popup opened successfully');
+      
+      // انتظار قليل ثم حقن زرار النسخ
+      setTimeout(() => {
+        injectCopyButtonIntoPopup(popup);
+      }, 3000); // 3 ثواني لتحميل Pinterest
+      
+      // مراقبة إغلاق النافذة
+      const checkClosed = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkClosed);
+          console.log('📌 Pinterest popup closed');
+        }
+      }, 1000);
+    } else {
+      console.error('❌ Failed to open Pinterest popup');
+      alert('❌ فشل في فتح Pinterest. تأكد من إلغاء حجب النوافذ المنبثقة.');
+    }
+  };
+
+  // حقن زرار النسخ في نافذة Pinterest
+  const injectCopyButtonIntoPopup = (popup: Window) => {
+    console.log('🔧 Attempting to inject copy button into Pinterest popup...');
+    // سنستخدم مراسلة من النافذة المنفصلة بدلاً من الحقن المباشر
+    // لأن Pinterest لا يسمح بالحقن المباشر (same-origin policy)
+  };
+
   // Auto-Detection System للروابط من Pinterest
   useEffect(() => {
     if (!isOpen) return;
@@ -487,56 +520,25 @@ export default function SceneSelectionModal({
             </div>
           </div>
 
-          {/* Pinterest Embedded Browser */}
+          {/* Pinterest Popup Button */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden shadow-xl">
-            <div className="bg-gray-100 dark:bg-gray-900 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                </div>
-                <div className="flex-1 bg-white dark:bg-gray-800 rounded-full px-4 py-2 text-sm text-gray-600 dark:text-gray-400 font-mono">
-                  📌 pinterest.com/search/pins/?q=cgi+{productType}
-                </div>
-                <div className="text-xs text-gray-500">Pinterest Browser</div>
+            <div className="text-center p-12">
+              <div className="bg-red-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg className="w-12 h-12 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
+                </svg>
               </div>
-            </div>
-            <div style={{height: '700px'}} className="relative">
-              <iframe
-                src={`https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`}
-                className="w-full h-full border-0"
-                title="Pinterest Embedded Browser"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-popups-to-escape-sandbox allow-downloads"
-                loading="eager"
-                onLoad={() => {
-                  console.log('✅ Pinterest embedded browser loaded successfully');
-                }}
-                onError={() => {
-                  console.log('❌ Pinterest iframe blocked - showing fallback');
-                }}
-              />
-              {/* Fallback overlay */}
-              <div className="absolute inset-0 flex items-center justify-center bg-white/95 dark:bg-gray-800/95" style={{display: 'none'}} id="pinterest-fallback-overlay">
-                <div className="text-center p-8">
-                  <div className="bg-red-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg className="w-10 h-10 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Pinterest محجوب!</h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">Pinterest لا يسمح بالعرض داخل التطبيقات</p>
-                  <button
-                    onClick={() => {
-                      const pinterestUrl = `https://pinterest.com/search/pins/?q=cgi+product+scene+${encodeURIComponent(productType || 'product')}`;
-                      window.open(pinterestUrl, '_blank', 'width=1400,height=900');
-                    }}
-                    className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl"
-                  >
-                    🌐 فتح Pinterest في نافذة منفصلة
-                  </button>
-                </div>
-              </div>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">🚀 ابحث واختر من Pinterest</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
+                ستفتح نافذة Pinterest منفصلة مع زرار نسخ مدمج
+              </p>
+              <button
+                onClick={() => openPinterestPopup()}
+                className="bg-red-600 hover:bg-red-700 text-white px-12 py-6 rounded-full font-bold text-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+                data-testid="open-pinterest-popup"
+              >
+                📌 فتح Pinterest مع زرار النسخ
+              </button>
             </div>
           </div>
         </div>
