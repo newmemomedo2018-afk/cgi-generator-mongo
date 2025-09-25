@@ -1,5 +1,5 @@
 /**
- * Pinterest Simple Mock Service - No browser dependencies needed!
+ * Pinterest Real API Service - Connects to actual Pinterest API
  */
 
 export interface PinterestScene {
@@ -30,7 +30,7 @@ interface SearchOptions {
 }
 
 /**
- * Smart Pinterest CGI Scene Search - Mock Implementation
+ * Real Pinterest API Search Implementation
  */
 export async function searchPinterestForProduct(
   productType: string = 'أثاث',
@@ -39,132 +39,101 @@ export async function searchPinterestForProduct(
   options: SearchOptions = {}
 ): Promise<PinterestScene[]> {
   
-  console.log('🎯 Smart Pinterest search for product:', {
+  console.log('🎯 Real Pinterest API search for product:', {
     productType,
     productStyle,
     keywords
   });
 
   const { maxResults = 24 } = options;
+  const accessToken = process.env.PINTEREST_ACCESS_TOKEN;
   
-  // Generate comprehensive CGI scenes (24+ results for better browsing)
-  const baseImages = [
-    "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1582582494787-1b76cb3d9ad2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1519947486511-46149fa0a254?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1524758631624-e2822e304c36?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1549497538-303791108f95?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1493663284031-b7e3aaa4c4a0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1503174971373-b1f69850bded?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1540932239986-30128078f3c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1565814329452-e1efa11c5b89?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1563298723-dcfebaa392e3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1556228720-195a672e8a03?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1554995207-c18c203602cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1595515106969-1ce29566ff3c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-  ];
+  if (!accessToken) {
+    console.error('❌ No Pinterest access token found');
+    return [];
+  }
 
-  // Dynamic themes based on search query AND product type
-  let styles, themes, productSpecificImages;
-  
-  const searchText = keywords.join(' ').toLowerCase();
-  const productTypeText = productType.toLowerCase();
-  
-  if (searchText.includes('energy drink') || searchText.includes('beverage') || searchText.includes('drink') || 
-      productTypeText.includes('مشروب') || productTypeText.includes('طاقة')) {
-    styles = ["Dynamic", "Modern", "Commercial", "Sporty", "Vibrant", "Professional"];
-    themes = ["Energy Drink CGI", "Beverage Advertisement", "Product Visualization", "Commercial Render", "Studio Photography", "Marketing Scene"];
-    productSpecificImages = [
-      "https://images.unsplash.com/photo-1556909110-a5fc4fb83cd8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // studio setup - black background
-      "https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // minimalist product photography
-      "https://images.unsplash.com/photo-1608662832810-0e1e3e9bb42d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // clean studio background
-      "https://images.unsplash.com/photo-1544145945-f90425340c7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern workspace for products
-      "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // professional studio lighting
-      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // industrial product showcase
-      "https://images.unsplash.com/photo-1569772513192-6d4f4dd78566?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // dark commercial backdrop
-      "https://images.unsplash.com/photo-1473968512647-3e447244af8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // sleek product environment
-      "https://images.unsplash.com/photo-1556909075-f3db8b47e458?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", // modern commercial space
-      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"  // urban commercial setting
-    ];
-  } else if (searchText.includes('furniture') || searchText.includes('chair') || searchText.includes('table')) {
-    styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial"];
-    themes = ["Furniture CGI", "Interior Design", "Product Visualization", "3D Furniture Render", "Home Decor", "Design Showcase"];
-    productSpecificImages = baseImages.slice(0, 6);
-  } else {
-    styles = ["Modern", "Luxury", "Contemporary", "Minimalist", "Classic", "Industrial", "Scandinavian", "Rustic"];
-    themes = ["CGI Visualization", "3D Rendering", "Interior Scene", "Design Render", "Photorealistic Render", "Studio Setup"];
-    productSpecificImages = baseImages.slice(0, 6);
-  }
-  
-  const finalImages = productSpecificImages.length > 0 ? productSpecificImages : baseImages;
-  
-  const mockCGIScenes: PinterestScene[] = [];
-  
-  // Generate scenes dynamically based on maxResults (up to 30)
-  // Ensure unique images by cycling through them properly
-  for (let i = 0; i < Math.min(maxResults, 30); i++) {
-    const style = styles[i % styles.length];
-    const theme = themes[i % themes.length];
-    const imageUrl = finalImages[i % finalImages.length];
-    
-    // Create unique timestamp to avoid duplicates
-    const uniqueTimestamp = Date.now() + i;
-    
-    mockCGIScenes.push({
-      id: `pinterest_cgi_${uniqueTimestamp}_${i + 1}`,
-      title: `${style} ${productType} ${theme}`,
-      description: `3D rendered ${productType} in ${style.toLowerCase()} style with professional lighting and composition`,
-      imageUrl: imageUrl,
-      pinterestUrl: `https://pinterest.com/pin/cgi-${style.toLowerCase()}-${productType}-${i}`,
-      boardName: `${style} CGI ${productType}`,
-      userName: `CGI Artist ${Math.floor(i / 3) + 1}`,
-      isCGI: true,
-      category: getCategoryFromProductType(productType),
-      extractedKeywords: [style.toLowerCase(), productType.toLowerCase(), "cgi", "3d", "render", productStyle],
-      scrapedAt: new Date()
+  try {
+    // Create search query from keywords
+    const searchQuery = keywords.length > 0 ? keywords.join(' ') : 'cgi 3d render';
+    console.log('🔍 Pinterest search query:', searchQuery);
+
+    // Pinterest API v5 search endpoint
+    const response = await fetch(`https://api.pinterest.com/v5/search/pins/?query=${encodeURIComponent(searchQuery)}&limit=${Math.min(maxResults, 50)}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
     });
-  }
-  
-  // Filter based on keywords (if provided), otherwise return all scenes
-  const searchQuery = keywords.join(' ').toLowerCase();
-  let relevantScenes = mockCGIScenes;
-  
-  if (keywords.length > 0 && searchQuery.trim()) {
-    relevantScenes = mockCGIScenes.filter(scene => {
-      const searchText = `${scene.title} ${scene.description} ${scene.extractedKeywords.join(' ')}`.toLowerCase();
-      
-      // Check if any keyword appears in the scene
-      return keywords.some(keyword => 
-        searchText.includes(keyword.toLowerCase()) || 
-        searchText.includes(productType.toLowerCase())
-      );
+
+    if (!response.ok) {
+      console.error('❌ Pinterest API error:', response.status, response.statusText);
+      return getFallbackScenes(productType, keywords, maxResults);
+    }
+
+    const data = await response.json();
+    console.log('✅ Pinterest API response:', { totalResults: data.items?.length || 0 });
+
+    if (!data.items || data.items.length === 0) {
+      console.log('⚠️ No Pinterest results found, using fallback');
+      return getFallbackScenes(productType, keywords, maxResults);
+    }
+
+    // Convert Pinterest API response to our format
+    const scenes: PinterestScene[] = data.items.slice(0, maxResults).map((pin: any, index: number) => {
+      return {
+        id: `pinterest_real_${pin.id}`,
+        title: pin.title || `${productType} CGI Scene`,
+        description: pin.description || `Pinterest CGI scene for ${productType}`,
+        imageUrl: pin.media?.images?.['600x']?.url || pin.media?.images?.original?.url || '',
+        pinterestUrl: pin.link || `https://pinterest.com/pin/${pin.id}`,
+        boardName: pin.board_name || 'CGI Scenes',
+        userName: pin.pinner?.username || 'Pinterest User',
+        isCGI: true,
+        category: getCategoryFromProductType(productType),
+        extractedKeywords: extractKeywordsFromPinterest(pin.title, pin.description, keywords),
+        scrapedAt: new Date()
+      };
     });
+
+    console.log('📊 Real Pinterest search completed:', {
+      query: searchQuery,
+      totalResults: scenes.length,
+      topCategories: Array.from(new Set(scenes.map(s => s.category)))
+    });
+
+    return scenes;
+
+  } catch (error) {
+    console.error('❌ Pinterest API request failed:', error);
+    return getFallbackScenes(productType, keywords, maxResults);
   }
+}
+
+/**
+ * Fallback scenes when Pinterest API fails
+ */
+function getFallbackScenes(productType: string, keywords: string[], maxResults: number): PinterestScene[] {
+  console.log('🔄 Using fallback scenes due to Pinterest API unavailable');
+  return [];
+}
+
+/**
+ * Extract keywords from Pinterest pin data
+ */
+function extractKeywordsFromPinterest(title?: string, description?: string, searchKeywords: string[] = []): string[] {
+  const text = `${title || ''} ${description || ''}`.toLowerCase();
+  const words = text.split(/\s+/).filter(word => word.length > 2);
+  const relevantWords = words.filter(word => 
+    word.includes('cgi') || 
+    word.includes('3d') || 
+    word.includes('render') || 
+    word.includes('design') ||
+    searchKeywords.some(keyword => word.includes(keyword.toLowerCase()))
+  );
   
-  const limitedResults = relevantScenes.slice(0, Math.min(maxResults, relevantScenes.length));
-  
-  console.log('📊 Pinterest search completed:', {
-    query: searchQuery,
-    totalResults: limitedResults.length,
-    topCategories: Array.from(new Set(limitedResults.map(s => s.category)))
-  });
-  
-  return limitedResults;
+  return [...searchKeywords, ...relevantWords.slice(0, 5)];
 }
 
 /**
