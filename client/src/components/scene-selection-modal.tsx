@@ -501,51 +501,80 @@ export default function SceneSelectionModal({
             </div>
           </div>
 
-          {/* Pinterest Popup Button */}
+          {/* Pinterest Gallery */}
           <div className="bg-white dark:bg-gray-800 rounded-2xl border-2 border-gray-200 dark:border-gray-700 overflow-hidden shadow-xl">
-            <div className="text-center p-12">
-              <div className="bg-red-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
-                <svg className="w-12 h-12 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
-                </svg>
+            <div className="space-y-6 p-6">
+              {/* Pinterest Gallery Header */}
+              <div className="text-center pb-4 border-b border-border/20">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 19c-.68 0-1.32-.063-1.94-.18.27-.43.68-1.07.85-1.65l.59-2.25c.3.58 1.19.98 2.13.98 2.8 0 4.71-2.55 4.71-5.96 0-2.58-2.19-5.02-5.52-5.02-4.14 0-6.23 2.98-6.23 5.46 0 1.5.57 2.84 1.78 3.34.2.08.38 0 .44-.22l.36-1.45c.05-.2.03-.27-.1-.45-.29-.35-.47-.8-.47-1.44 0-1.86 1.39-3.53 3.63-3.53 1.98 0 3.07 1.21 3.07 2.83 0 2.13-0.94 3.92-2.34 3.92-.77 0-1.35-.64-1.16-1.42.22-.93.66-1.94.66-2.61 0-.6-.32-.11-.32-1.71 0-.15.02-.3.05-.44.18-.92.92-2.2 2.09-2.2.85 0 1.28.52 1.28 1.24 0 .92-.48 1.68-.48 2.84 0 .64.34 1.16.95 1.16 1.4 0 2.35-1.79 2.35-3.96 0-2.58-2.19-5.02-5.52-5.02z"/>
+                  </svg>
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">🎬 مشاهد من Pinterest</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm">
+                  البحث عن: <span className="font-semibold">{analyzedProductType || productType}</span> - اضغط "استخدام الصورة" لاختيار أي مشهد
+                </p>
               </div>
-              <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">🚀 ابحث واختر من Pinterest</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg">
-                ستفتح نافذة Pinterest منفصلة. استخدم الـ bookmarklet للنسخ السريع!
-              </p>
-              <div className="space-y-4">
-                <button
-                  onClick={() => openPinterestPopup()}
-                  className="bg-red-600 hover:bg-red-700 text-white px-12 py-6 rounded-full font-bold text-xl transition-all shadow-lg hover:shadow-xl transform hover:scale-105 w-full"
-                  data-testid="open-pinterest-popup"
-                >
-                  📌 فتح Pinterest للبحث
-                </button>
-                
-                <button
-                  onClick={() => copySimpleBookmarklet()}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-12 py-4 rounded-full font-bold text-lg transition-all shadow-lg hover:shadow-xl transform hover:scale-105 w-full"
-                  data-testid="copy-bookmarklet"
-                >
-                  📋 نسخ أداة الاختيار السريع
-                </button>
-                
-                <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-yellow-400 text-white p-2 rounded-full flex-shrink-0">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+              {/* Pinterest Gallery */}
+              <div className="max-h-96 overflow-y-auto">
+                {pinterestLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-400">جاري البحث في Pinterest...</p>
+                  </div>
+                ) : pinterestScenes && pinterestScenes.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    {pinterestScenes.map((scene: any) => (
+                      <div key={scene.id} className="group relative bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700">
+                        <div className="aspect-video relative">
+                          <img 
+                            src={scene.imageUrl} 
+                            alt={scene.name || scene.description || 'Pinterest scene'}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"></div>
+                        </div>
+                        <div className="p-3">
+                          <h4 className="font-semibold text-sm text-gray-900 dark:text-white mb-1 truncate">
+                            {scene.name || 'مشهد Pinterest'}
+                          </h4>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">
+                            {scene.description || 'مشهد مميز من Pinterest'}
+                          </p>
+                          <button
+                            onClick={() => {
+                              console.log('🎯 استخدام صورة Pinterest:', scene.imageUrl);
+                              onSceneSelect(scene, productSize);
+                              onClose();
+                            }}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold text-xs transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                            data-testid={`use-scene-${scene.id}`}
+                          >
+                            ✨ استخدام الصورة
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </div>
-                    <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                      <strong>طريقة الاستخدام:</strong><br/>
-                      1. اضغط "فتح Pinterest" أولاً<br/>
-                      2. ثم اضغط "نسخ أداة الاختيار"<br/>
-                      3. في Pinterest، الصق الأداة في شريط العناوين<br/>
-                      4. اضغط Enter واختر أي صورة!
-                    </div>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">لا توجد نتائج بحث</p>
+                    <button
+                      onClick={() => refetchPinterest()}
+                      className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm"
+                    >
+                      إعادة المحاولة
+                    </button>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
