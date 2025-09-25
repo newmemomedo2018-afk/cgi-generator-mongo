@@ -51,7 +51,7 @@ export default function SceneSelectionModal({
   productImageUrl,
   productType = 'أثاث'
 }: SceneSelectionModalProps) {
-  const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('pinterest');
+  const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('default');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analyzedProductType, setAnalyzedProductType] = useState<string | null>(null);
