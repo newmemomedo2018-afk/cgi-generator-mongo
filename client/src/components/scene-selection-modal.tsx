@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// Removed Tabs - Pinterest direct only now
 import { Loader2, Search, Sparkles, ImageIcon, ExternalLink, Scale, Zap, RefreshCw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -51,7 +51,7 @@ export default function SceneSelectionModal({
   productImageUrl,
   productType = 'أثاث'
 }: SceneSelectionModalProps) {
-  const [activeTab, setActiveTab] = useState<'default' | 'pinterest'>('default');
+  // Removed activeTab - Pinterest direct only now
   const [searchQuery, setSearchQuery] = useState('');
   const [lastDetectedUrl, setLastDetectedUrl] = useState('');
   const [urlDetectionStatus, setUrlDetectionStatus] = useState('🤖 جاهز للاستقبال التلقائي');
@@ -60,78 +60,7 @@ export default function SceneSelectionModal({
   const [analyzedProductType, setAnalyzedProductType] = useState<string | null>(null);
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
 
-  // جلب المشاهد الافتراضية
-  const { data: defaultScenes = [], status: defaultStatus, error: defaultError, refetch: refetchDefault } = useQuery<SceneData[]>({
-    queryKey: ['/api/scenes/default', analyzedProductType, productType],
-    queryFn: async () => {
-      const currentProductType = analyzedProductType || productType || 'أثاث';
-      console.log('🎯 Default scenes with analyzed product type:', { 
-        originalProductType: productType, 
-        analyzedProductType,
-        finalProductType: currentProductType 
-      });
-      const params = new URLSearchParams();
-      if (currentProductType) params.append('productType', currentProductType);
-      
-      const token = localStorage.getItem('auth_token');
-      console.log('🔍 Fetching default scenes:', {
-        url: `/api/scenes/default?${params}`,
-        originalProductType: productType,
-        analyzedProductType,
-        finalProductType: currentProductType,
-        isOpen,
-        activeTab,
-        hasToken: !!token,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'none'
-      });
-      
-      const headers: Record<string, string> = {
-        'Cache-Control': 'no-cache',
-        'Content-Type': 'application/json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch(`/api/scenes/default?${params}`, {
-        headers
-      });
-      
-      console.log('📡 Default scenes response:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Default scenes error:', {
-          status: response.status,
-          error: errorText,
-          hasToken: !!token
-        });
-        throw new Error(`Failed to load default scenes: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('✅ Default scenes loaded:', {
-        count: data.length,
-        firstScene: data[0]?.name,
-        categories: Array.from(new Set(data.map((s: SceneData) => s.category))),
-        scenes: data.map((s: SceneData) => ({ id: s.id, name: s.name })),
-        hasImageUrls: data.filter((s: SceneData) => s.imageUrl).length,
-        imageUrls: data.slice(0, 3).map((s: SceneData) => ({ id: s.id, imageUrl: s.imageUrl })),
-        fullData: data[0] // Show first complete scene for debugging
-      });
-      
-      return data;
-    },
-    enabled: isOpen,
-    retry: 1,
-    staleTime: 0,
-    gcTime: 0
-  });
+  // Removed default scenes query - Pinterest direct only now
 
   // جلب مشاهد Pinterest
   const { data: pinterestScenes = [], isLoading: pinterestLoading, error: pinterestError, refetch: refetchPinterest } = useQuery<PinterestScene[]>({
@@ -165,7 +94,7 @@ export default function SceneSelectionModal({
 
   // تحليل المنتج تلقائياً عند فتح المودال  
   useEffect(() => {
-    if (isOpen && activeTab === 'pinterest') {
+    if (isOpen) {  // Pinterest direct only now
       console.log('🔄 Auto-loading Pinterest scenes...', { productImageUrl: !!productImageUrl });
       if (productImageUrl) {
         // إذا توفرت صورة المنتج، قم بالتحليل والبحث الذكي
@@ -177,7 +106,7 @@ export default function SceneSelectionModal({
         setTimeout(() => refetchPinterest(), 100); // Small delay to ensure state is set
       }
     }
-  }, [isOpen, activeTab]); // Remove productImageUrl dependency to prevent re-triggering
+  }, [isOpen]); // Pinterest direct only now
 
   // Auto-Detection System للروابط من Pinterest
   useEffect(() => {
@@ -188,8 +117,37 @@ export default function SceneSelectionModal({
 
     // مراقبة الـ postMessage من Pinterest popup
     const handleMessage = (event: MessageEvent) => {
-      // تحقق من المصدر - Pinterest فقط
-      if (event.origin !== 'https://pinterest.com' && !event.data?.type?.includes('PINTEREST')) {
+      // تحقق أمني صارم - Pinterest domains فقط
+      const trustedOrigins = [
+        'https://www.pinterest.com',
+        'https://pinterest.com', 
+        'https://in.pinterest.com',
+        'https://br.pinterest.com'
+      ];
+      
+      // Parse origin URL securely  
+      let originHostname: string;
+      try {
+        const originUrl = new URL(event.origin);
+        originHostname = originUrl.hostname;
+      } catch (e) {
+        console.log('🚫 Invalid origin URL:', event.origin);
+        return;
+      }
+      
+      const trustedHostnames = [
+        'pinterest.com',
+        'www.pinterest.com', 
+        'in.pinterest.com',
+        'br.pinterest.com',
+        'i.pinimg.com'
+      ];
+      
+      const isPinterestDomain = trustedHostnames.includes(originHostname) ||
+                               event.origin === window.location.origin;
+      
+      if (!isPinterestDomain || event.data?.type !== 'PINTEREST_IMAGE_URL') {
+        console.log('🚫 Rejected untrusted message:', { origin: event.origin, hostname: originHostname, type: event.data?.type });
         return;
       }
 
@@ -272,14 +230,12 @@ export default function SceneSelectionModal({
     // بدء المراقبة
     window.addEventListener('message', handleMessage);
     
-    // فحص دوري للـ localStorage والحافظة
+    // فحص دوري للحافظة فقط (localStorage لن يعمل cross-origin)  
     pollInterval = setInterval(() => {
-      checkLocalStorage();
       checkClipboard();
-    }, 1000); // كل ثانية
+    }, 2000); // كل ثانيتين
 
-    // فحص فوري
-    checkLocalStorage();
+    // فحص فوري للحافظة
     checkClipboard();
 
     console.log('🤖 Pinterest Auto-Detection started');
@@ -320,15 +276,14 @@ export default function SceneSelectionModal({
         setAnalyzedProductType(analysis.productType);
         setSearchQuery(optimizedQuery);
         
-        console.log('✅ Analysis completed, updating both default and Pinterest scenes:', {
+        console.log('✅ Analysis completed, updating Pinterest scenes:', {
           analyzedProductType: analysis.productType,
           searchQuery: optimizedQuery,
           pinterestSearchTerms: analysis.pinterestSearchTerms
         });
         
-        // تحديث المشاهد الافتراضية والـ Pinterest بناء على التحليل الجديد
+        // تحديث مشاهد Pinterest بناء على التحليل الجديد
         setTimeout(() => {
-          refetchDefault();  // إعادة جلب المشاهد الافتراضية بنوع المنتج الجديد
           refetchPinterest(); // إعادة جلب مشاهد Pinterest
         }, 100);
       } else {
@@ -433,7 +388,19 @@ export default function SceneSelectionModal({
                 </div>
                 <button
                   onClick={() => {
-                    if (searchQuery && (searchQuery.includes('pinimg.com') || searchQuery.includes('pinterest.com') || searchQuery.startsWith('http'))) {
+                    // تحقق أمني - Pinterest URLs فقط
+                    let isPinterestUrl = false;
+                    if (searchQuery) {
+                      try {
+                        const url = new URL(searchQuery);
+                        const trustedHosts = ['pinterest.com', 'www.pinterest.com', 'i.pinimg.com', 'in.pinterest.com', 'br.pinterest.com'];
+                        isPinterestUrl = trustedHosts.includes(url.hostname) || searchQuery.includes('pinimg.com');
+                      } catch (e) {
+                        isPinterestUrl = searchQuery.includes('pinimg.com') || searchQuery.includes('pinterest.com');
+                      }
+                    }
+                    
+                    if (searchQuery && isPinterestUrl) {
                       const customScene: SceneData = {
                         id: `pinterest_auto_${Date.now()}`,
                         name: 'مشهد Pinterest المختار',
