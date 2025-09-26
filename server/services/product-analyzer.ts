@@ -72,7 +72,12 @@ export async function analyzeProductForScenes(imageUrl: string): Promise<Product
       imageUrl: imageUrl.substring(0, 50) + '...'
     });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.5-flash",
+      generationConfig: {
+        responseMimeType: "application/json"
+      }
+    });
 
     // تحميل الصورة مع timeout وsize limits
     const controller = new AbortController();
