@@ -38,7 +38,11 @@ export default function Dashboard() {
       return videoCost + audioCost;
     }
   };
-  const [activeTab, setActiveTab] = useState("new-project");
+  const [activeTab, setActiveTab] = useState(() => {
+    // Check localStorage for saved tab preference
+    const savedTab = localStorage.getItem('dashboard-active-tab');
+    return (savedTab === "my-projects" || savedTab === "new-project") ? savedTab : "new-project";
+  });
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [projectData, setProjectData] = useState({
     title: "",
@@ -224,8 +228,9 @@ export default function Dashboard() {
         description: "بدأت معالجة مشروع CGI الخاص بك",
       });
       
-      // 🚀 Auto-navigate to projects tab with clear visual feedback
+      // 🚀 Auto-navigate to projects tab with clear visual feedback and localStorage persistence
       console.log("📍 Switching to my-projects tab...");
+      localStorage.setItem('dashboard-active-tab', 'my-projects');
       setActiveTab("my-projects");
       
       // Show immediate toast feedback to user
@@ -497,7 +502,10 @@ export default function Dashboard() {
               <p className="text-xl text-muted-foreground">أنشئ مشروع CGI جديد أو تابع مشاريعك السابقة</p>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={(tab) => {
+              localStorage.setItem('dashboard-active-tab', tab);
+              setActiveTab(tab);
+            }} className="w-full">
               <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 glass-card p-1">
                 <TabsTrigger value="new-project" className="data-[state=active]:gradient-button">
                   <Plus className="ml-2 h-4 w-4" />
