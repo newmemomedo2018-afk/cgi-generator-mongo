@@ -1660,7 +1660,7 @@ async function processProjectFromJob(job: any) {
           geminiImageResult, // Use the generated image data
           {
             duration: project.videoDurationSeconds || 10,
-            includeAudio: false,
+            includeAudio: project.includeAudio || false,
             userDescription: project.description || "",
             productName: project.title || "Product"
           }
@@ -1729,8 +1729,8 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
             promptLength: finalVideoPrompt.length,
             promptType: finalVideoPrompt === enhancedPrompt ? "original" : "video-enhanced",
             duration: project.videoDurationSeconds || 10,
-            includeAudio: false,
-            hasAudioPrompt: false
+            includeAudio: project.includeAudio || false,
+            hasAudioPrompt: !!audioPrompt
           });
           
           // Use the video-enhanced prompt and selected video duration with quality negative prompt
@@ -1752,7 +1752,7 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
             imageResult.url, 
             finalVideoPrompt, // Use enhanced video prompt instead of original
             project.videoDurationSeconds || 10,
-            false, // Audio disabled
+            project.includeAudio || false, // Use actual audio setting
             effectiveNegativePrompt,
             // For recovery system
             projectId,
