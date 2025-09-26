@@ -184,55 +184,64 @@ export async function enhancePromptWithGemini(
     ]);
 
     const prompt = `
-انت خبير CGI متقدم وهاتعمل تعليمات دقيقة لتوليد الصور بالذكاء الاصطناعي.
+انت خبير CGI محترف وأستاذ في الاستبدال الذكي للمنتجات في المشاهد.
 
-قم بتحليل الصورتين دول بدقة:
-1. صورة المنتج: عرف اسم المنتج والبراند والشكل والالوان
-2. صورة المشهد: شوف ايه الموجود والاضاءة والبيئة
+🔍 تحليل الصور المطلوب:
+1. صورة المنتج: حدد نوع المنتج، الفئة (علبة/زجاجة/إكسسوار/etc)، الألوان، والبراند
+2. صورة المشهد: فهرس كل المنتجات والعناصر الموجودة واماكنها بدقة
 
-المطلوب منك - استبدال ذكي للمنتج فقط:
+🎯 استراتيجية الاستبدال الذكي:
 
-🎯 خطوة 1: تحديد المنتج المماثل في المشهد
-- احلل طلب المستخدم: "${userDescription}"
-- دور على المنتج المماثل أو المشابه في المشهد الحالي
-- مثال: لو المنتج الجديد نجفة، دور على النجفة الموجودة في المشهد فقط
-- مثال: لو المنتج الجديد كنبة، دور على الكنبة الموجودة في المشهد فقط
-- مثال: لو المنتج الجديد لوحة، دور على اللوحة الموجودة على نفس الحيطة فقط
+خطوة 1: البحث عن المنتج المماثل
+- ابحث عن نفس فئة المنتج في المشهد (علبة طلاء ← علبة طلاء، زجاجة عطر ← زجاجة عطر)
+- إذا وُجد منتج مماثل: حدد موقعه بدقة (يمين/يسار/وسط، على أي سطح، بجانب أي عنصر)
+- إذا لم يوجد مماثل: ابحث عن أنسب مكان طبيعي للمنتج
 
-🔄 خطوة 2: الاستبدال المحدود (المنتج المماثل فقط)
-1. إذا لم يوجد عنصر مماثل في المشهد، ضع المنتج الجديد في موضع طبيعي مناسب بدون حذف أي عنصر على الإطلاق
-2. إذا وُجد أكثر من عنصر مماثل، استبدل عنصراً واحداً فقط (الأكثر وضوحاً/في مركز الكادر/الأقرب للكاميرا) واترك الباقي كما هو
+خطوة 2: خطة الاستبدال المحددة
+- حدد بالضبط أي منتج سيتم استبداله (الأكثر وضوحاً أو الأقرب للمركز)
+- احسب الحجم المطلوب بناءً على منظور المكان والمسافة من الكاميرا
+- خطط للإضاءة والظلال المطلوبة لتطابق المشهد
 
-📏 خطوة 3: حجم وإبراز المنتج (مهم جداً)
+خطوة 3: مواصفات الحجم والإبراز (حاسمة)
 ${productSize === 'emphasized' ? 
-`- اجعل المنتج مُبرز وبارز كنقطة تركيز في المشهد
-- زود حجم المنتج بنسبة 20-30% عن الحجم الطبيعي
-- ضع إضاءة إضافية على المنتج ليظهر بوضوح أكبر
-- اجعل المنتج في موضع مركزي يلفت الانتباه
-- أضف تدرج ضوئي خفيف حول المنتج ليبرز عن الخلفية` :
-`- اجعل المنتج بحجم طبيعي ومتناسق مع باقي عناصر المشهد
-- لا تزود أو تقلل الحجم، خليه مناسب للمكان
-- الإضاءة طبيعية ومتوازنة مع باقي المشهد
-- المنتج يندمج بشكل طبيعي دون إبراز زائد`}
-3. اشيل بس المنتج المماثل الموجود الواحد (نفس النوع) - مش أي حاجة تانية
-4. استخدم inpainting محدوداً داخل قناع المنتج فقط بدون لمس الخلفية المحيطة
-5. ⚠️ مهم جداً: احتفظ بكل باقي عناصر المشهد (طرابيز، كراسي، ديكورات، نباتات، أضاءة إضافية، أثاث)
+`- اجعل المنتج النقطة المحورية الأساسية في المشهد
+- زود الحجم بـ 25-35% عن المنتج الأصلي في المشهد  
+- إضاءة متقدمة: إضاءة أساسية قوية + إضاءة تكميلية خفيفة
+- موضع استراتيجي: وسط الكادر أو في المقدمة لجذب العين
+- halo effect خفيف: تدرج ضوئي بسيط حول المنتج لإبرازه` :
+`- حجم متناسب 100% مع منظور المكان والمسافة
+- إضاءة طبيعية تطابق مصدر الضوء الرئيسي في المشهد  
+- موضع طبيعي: يندمج مع باقي العناصر دون إخلال بالتوازن
+- ظلال واقعية: تطابق اتجاه وقوة الضوء في المشهد`}
 
-🎯 خطوة 3: الاضافة المتطابقة مع المشهد
-1. حط المنتج الجديد في نفس مكان المنتج القديم تماماً
-2. خلي الاضاءة والظلال متطابقة مع إضاءة المشهد الأصلي
-3. احتفظ بكل العمارة والتفاصيل (السقف، الحيطان، الارضية، النوافذ) زي ما هي
-4. احتفظ بكل الأثاث والديكورات (طرابيز، كراسي، نباتات، إكسسوارات) زي ما هي
+خطوة 4: التنفيذ الدقيق
+- إزالة المنتج المحدد فقط من موقعه (لا تلمس أي شيء آخر)
+- تطبيق inpainting محدود جداً داخل حدود المنتج القديم
+- وضع المنتج الجديد بدقة في نفس الموقع والزاوية
+- مطابقة الإضاءة: اتجاه الضوء + قوة الإضاءة + لون الضوء
+- تطبيق الظلال: اتجاه مطابق + نعومة/حدة مطابقة للمشهد
 
-🚨 قواعد الحفاظ على المشهد المهمة:
-- ⚠️ لا تشيل أو تغير أي شيء إلا المنتج المماثل فقط
-- لا تُنشئ نُسخاً متعددة من نفس الكائن، لا تُزيل أو تُعدل أي ديكور/أثاث/إضاءة غير مستهدفة
-- احتفظ بكل تفاصيل المشهد الأصلي (طرابيز، كراسي، نباتات، ديكورات، إضاءة)
-- الهدف: استبدال منتج واحد فقط وليس إعادة تصميم المشهد
-- خلي المشهد يبدو طبيعي كأن المنتج الجديد كان موجود من البداية
-- احتفظ بألوان وخامات المشهد الأصلي
+خطوة 5: ضمان سلامة المشهد  
+- حافظ على 100% من العمارة: جدران، سقف، أرضية، نوافذ، أبواب
+- حافظ على 100% من الأثاث: كراسي، طاولات، خزائن، أرفف
+- حافظ على 100% من الديكور: نباتات، لوحات، مزهريات، إكسسوارات
+- حافظ على كل مصادر الإضاءة الأصلية: ثريات، مصابيح، ضوء النوافذ
 
-اكتب تعليمات مباشرة بالانجليزي للذكاء الاصطناعي للاستبدال المحدود فقط.
+🚨 قواعد الحفاظ التام على المشهد:
+- ✅ استبدل منتج واحد فقط من نفس الفئة (علبة ← علبة، زجاجة ← زجاجة)  
+- ❌ لا تضيف منتجات جديدة للمشهد - فقط استبدال
+- ❌ لا تعدل أي أثاث أو ديكور أو إضاءة غير المنتج المستهدف
+- ✅ احتفظ بكامل تخطيط الغرفة والتصميم الداخلي
+- ✅ احتفظ بكل الألوان والخامات والتفاصيل الأصلية
+- ✅ النتيجة: المشهد الأصلي بالضبط + منتج مستبدل واحد فقط
+
+طلب المستخدم المحدد: "${userDescription}"
+
+⚡ اكتب الآن تعليمات دقيقة بالإنجليزية للذكاء الاصطناعي تركز على:
+1. تحليل فئة المنتج ومطابقتها في المشهد  
+2. تحديد الموقع الدقيق للاستبدال
+3. مواصفات الحجم والإضاءة والظلال المطلوبة
+4. ضمان الجودة العالية والواقعية التامة
 
 `;
 
@@ -291,40 +300,52 @@ export async function generateImageWithGemini(
 
     // تكوين الـ prompt مع الصور للـ multi-image input
     const prompt = `
-GENERATE A NEW IMAGE by composing these two input images:
+🎯 TASK: Create ultra-high quality photorealistic product replacement using advanced CGI techniques.
 
-INPUT 1 (Product): Extract this exact product/object
-INPUT 2 (Scene): Place the product into this environment
+📥 INPUT ANALYSIS:
+- IMAGE 1: Product to extract (preserve exact colors, branding, proportions, design details)
+- IMAGE 2: Scene environment for product placement
 
-COMPOSITION INSTRUCTIONS:
+🔄 INTELLIGENT REPLACEMENT STRATEGY:
 ${enhancedPrompt}
 
-PRODUCT SIZE SPECIFICATIONS:
+📏 PRODUCT SIZING & EMPHASIS:
 ${productSize === 'emphasized' ? 
-`- Make the product PROMINENT and EMPHASIZED as a focal point
-- Increase product size by 20-30% compared to natural proportions
-- Add enhanced lighting on the product for better visibility
-- Place product in a central, attention-grabbing position
-- Add subtle light gradient around product to make it stand out from background` :
-`- Keep product at NATURAL, PROPORTIONAL size that fits the scene
-- Do not oversizend or undersizend the product - make it scene-appropriate
-- Use balanced, natural lighting consistent with the scene
-- Product should blend naturally without excessive emphasis`}
+`🌟 HERO PRODUCT MODE:
+- Size: 25-35% larger than original scene product to dominate visual hierarchy
+- Lighting: Primary spotlight + subtle rim lighting for dramatic effect  
+- Position: Central focal point or foreground for maximum visual impact
+- Visual Enhancement: Subtle glow/halo effect to separate from background
+- Camera Angle: Optimal viewing angle to showcase product features` :
+`🔄 NATURAL INTEGRATION MODE:
+- Size: Precisely match original scene product proportions and perspective
+- Lighting: Seamlessly match existing scene illumination (direction, intensity, color temperature)
+- Position: Exact placement where original product was located
+- Integration: Product should appear as natural part of original scene
+- Realism: Maintain scene's authentic atmosphere and visual balance`}
 
-CRITICAL IMAGE GENERATION REQUIREMENTS:
-- CREATE A NEW PHOTOREALISTIC IMAGE (not text description)
-- Extract the product from image 1 and seamlessly place it in scene from image 2
-- If no matching object exists in the scene, do not remove anything; place the product naturally in a suitable location while preserving all other elements.
-- If matching objects exist: Preserve the entire scene 100% unchanged EXCEPT the single existing similar product which must be removed and replaced. Do not duplicate the product.
-- Remove exactly one matching instance (most prominent/center/closest to camera), then place the new product in that exact spot; do not delete or alter any other object.
-- Use minimal inpainting strictly within the replaced object's mask; do not modify adjacent background, textures, or nearby objects.
-- Match lighting, shadows, and perspective perfectly
-- Ultra-sharp details, Full HD quality (1920x1080 minimum for landscapes, 1536x1536 for square compositions)
-- Use exact product branding, colors, and shape from first image
-- Professional CGI quality with no compositing artifacts
-- OUTPUT: Return the generated composite image, not text analysis
+⚡ EXECUTION REQUIREMENTS:
+🖼️ Image Generation Specs:
+- OUTPUT: Generate new composite image (NOT text analysis or description)
+- RESOLUTION: Ultra HD quality (minimum 1920x1080 for landscape, 1536x1536 for square)  
+- DETAIL LEVEL: Pixel-perfect sharpness, professional photography quality
+- COLOR ACCURACY: Exact brand colors, realistic material representation
 
-GENERATE THE COMPOSITE IMAGE NOW.
+🔧 Technical Implementation:
+- Surgical Replacement: Remove ONLY the identified matching product (preserve 100% of other elements)
+- Inpainting Precision: Minimal editing limited to product boundaries only
+- Lighting Analysis: Match exact direction, intensity, color temperature, and shadow casting
+- Perspective Matching: Maintain original viewpoint, depth, and spatial relationships
+- Quality Assurance: Zero compositing artifacts, natural material textures, realistic shadows
+
+🏆 QUALITY STANDARDS:
+- Professional CGI standard equivalent to Hollywood VFX
+- Photorealistic material rendering (metal, plastic, glass, fabric textures)
+- Accurate physics simulation (gravity, light behavior, reflection patterns)
+- Seamless integration with zero visual inconsistencies
+- Brand-accurate reproduction of logos, text, and design elements
+
+🚀 GENERATE FINAL COMPOSITE IMAGE NOW
 `;
 
     // Send request to Gemini with multi-image input using original working format
