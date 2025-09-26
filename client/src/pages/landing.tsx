@@ -102,14 +102,10 @@ export default function Landing() {
         <section id="home" className="py-20">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              اصنع صور وفيديوهات
-              <span className="gradient-text block">
-                CGI احترافية
-              </span>
-              بالذكاء الاصطناعي
+              {t('landing_hero_title')}
             </h1>
             <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto">
-              ارفع صورة منتجك وصورة المشهد واتركنا ندمجهم في صورة أو فيديو CGI احترافي باستخدام أحدث تقنيات الذكاء الاصطناعي
+              {t('landing_hero_description')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
               <AuthDialog defaultTab="register">
@@ -119,7 +115,7 @@ export default function Landing() {
                   data-testid="start-free-button"
                 >
                   <Rocket className="ml-2 h-5 w-5" />
-                  ابدأ الآن مجاناً
+                  {t('landing_get_started')}
                 </Button>
               </AuthDialog>
               <Button 
@@ -133,7 +129,7 @@ export default function Landing() {
                 data-testid="watch-demo-button"
               >
                 <Play className="ml-2 h-5 w-5" />
-                شاهد كيف يعمل
+                {t('landing_watch_demo')}
               </Button>
             </div>
 
@@ -142,22 +138,22 @@ export default function Landing() {
               <Card className="glass-card text-center">
                 <CardContent className="p-8">
                   <Camera className="h-12 w-12 mx-auto mb-4 text-primary" />
-                  <h3 className="text-xl font-bold mb-4">ارفع الصور</h3>
-                  <p className="text-muted-foreground">ارفع صورة منتجك وصورة المشهد المطلوب</p>
+                  <h3 className="text-xl font-bold mb-4">{t('landing_step1_title')}</h3>
+                  <p className="text-muted-foreground">{t('landing_step1_description')}</p>
                 </CardContent>
               </Card>
               <Card className="glass-card text-center">
                 <CardContent className="p-8">
                   <Bot className="h-12 w-12 mx-auto mb-4 text-accent" />
-                  <h3 className="text-xl font-bold mb-4">معالجة ذكية</h3>
-                  <p className="text-muted-foreground">الذكاء الاصطناعي يحلل ويدمج المحتوى بدقة</p>
+                  <h3 className="text-xl font-bold mb-4">{t('landing_step2_title')}</h3>
+                  <p className="text-muted-foreground">{t('landing_step2_description')}</p>
                 </CardContent>
               </Card>
               <Card className="glass-card text-center">
                 <CardContent className="p-8">
                   <Film className="h-12 w-12 mx-auto mb-4 text-primary" />
-                  <h3 className="text-xl font-bold mb-4">نتيجة احترافية</h3>
-                  <p className="text-muted-foreground">احصل على صورة أو فيديو CGI بجودة عالية</p>
+                  <h3 className="text-xl font-bold mb-4">{t('landing_step3_title')}</h3>
+                  <p className="text-muted-foreground">{t('landing_step3_description')}</p>
                 </CardContent>
               </Card>
             </div>
@@ -165,10 +161,10 @@ export default function Landing() {
             {/* Before/After Examples */}
             <Card id="example-section" className="glass-card">
               <CardContent className="p-8">
-                <h2 className="text-3xl font-bold mb-8">أمثلة على النتائج</h2>
+                <h2 className="text-3xl font-bold mb-8">{t('landing_examples_title')}</h2>
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="text-lg font-semibold mb-4">قبل - الصور الأصلية</h4>
+                    <h4 className="text-lg font-semibold mb-4">{t('landing_examples_before')}</h4>
                     <div className="grid grid-cols-2 gap-4">
                       <img 
                         src={productImage} 
@@ -185,7 +181,7 @@ export default function Landing() {
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-lg font-semibold mb-4">بعد - النتيجة النهائية</h4>
+                    <h4 className="text-lg font-semibold mb-4">{t('landing_examples_after')}</h4>
                     <img 
                       src={resultImage} 
                       alt="نتيجة CGI - هاتف مدمج في المشهد" 
@@ -203,8 +199,8 @@ export default function Landing() {
         <section id="features" className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">مميزات منصة مولد CGI</h2>
-              <p className="text-xl text-muted-foreground">تقنيات متقدمة لإنتاج محتوى CGI احترافي</p>
+              <h2 className="text-4xl font-bold mb-4">{t('landing_features_title')}</h2>
+              <p className="text-xl text-muted-foreground">{t('landing_features_subtitle')}</p>
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -259,9 +255,9 @@ export default function Landing() {
           <div className="container mx-auto px-4 text-center">
             <Card className="glass-card">
               <CardContent className="p-12">
-                <h2 className="text-4xl font-bold mb-4">جاهز لإنشاء محتوى CGI مذهل؟</h2>
+                <h2 className="text-4xl font-bold mb-4">{t('landing_cta_title')}</h2>
                 <p className="text-xl text-muted-foreground mb-8">
-                  ابدأ بـ 5 كريدت مجانية واكتشف قوة الذكاء الاصطناعي
+                  {t('landing_cta_subtitle')}
                 </p>
                 <AuthDialog defaultTab="register">
                   <Button 

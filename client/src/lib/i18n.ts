@@ -27,9 +27,93 @@ export interface TranslationKeys {
   // Landing page
   landing_title: string;
   landing_subtitle: string;
+  landing_hero_title: string;
   landing_hero_description: string;
   landing_get_started: string;
-  landing_learn_more: string;
+  landing_watch_demo: string;
+  landing_examples_title: string;
+  
+  // How it works section
+  landing_step1_title: string;
+  landing_step1_description: string;
+  landing_step2_title: string;
+  landing_step2_description: string;
+  landing_step3_title: string;
+  landing_step3_description: string;
+  
+  // Examples section
+  landing_examples_before: string;
+  landing_examples_after: string;
+  
+  // Features section
+  landing_features_title: string;
+  landing_features_subtitle: string;
+  
+  // CTA section
+  landing_cta_title: string;
+  landing_cta_subtitle: string;
+  
+  // Dashboard
+  dashboard_users: string;
+  dashboard_projects: string;
+  dashboard_actual_costs: string;
+  dashboard_new_project: string;
+  dashboard_my_projects: string;
+  
+  // Dashboard table headers
+  table_title: string;
+  table_type: string;
+  table_status: string;
+  table_user: string;
+  table_credits_used: string;
+  table_date: string;
+  
+  // Project statuses
+  status_processing: string;
+  status_completed: string;
+  status_failed: string;
+  status_pending: string;
+  status_enhancing_prompt: string;
+  status_generating_image: string;
+  status_generating_video: string;
+  
+  // Project form labels
+  form_product_image: string;
+  form_scene_image: string;
+  form_project_title: string;
+  form_content_type: string;
+  form_video_duration: string;
+  form_include_audio: string;
+  form_enhance_integration: string;
+  form_advanced_settings: string;
+  
+  // Progress modal
+  progress_modal_title: string;
+  progress_modal_description: string;
+  progress_step_enhance: string;
+  progress_step_image: string;
+  progress_step_video_prompt: string;
+  progress_step_video: string;
+  progress_overall: string;
+  progress_cancel: string;
+  
+  // Upload zone
+  upload_uploading: string;
+  upload_please_wait: string;
+  upload_preview: string;
+  upload_click_change: string;
+  upload_drag_drop: string;
+  upload_or_browse: string;
+  upload_extract_failed: string;
+  
+  // Time and actions
+  time_now: string;
+  time_minutes_ago: string;
+  time_hours_ago: string;
+  time_days_ago: string;
+  action_download: string;
+  action_preview: string;
+  action_play: string;
 
   // Features
   features_title: string;
@@ -120,9 +204,93 @@ export const translations: Record<Language, TranslationKeys> = {
     // Landing page
     landing_title: 'CGI Generator',
     landing_subtitle: 'Transform Your Products into Stunning CGI',
-    landing_hero_description: 'Create professional CGI images and videos using advanced AI technology. Upload your product and scene images to generate amazing visual content.',
+    landing_hero_title: 'Create Professional CGI Images and Videos with AI',
+    landing_hero_description: 'Upload your product and scene images and let us blend them into professional CGI images or videos using cutting-edge AI technology.',
     landing_get_started: 'Get Started Free',
-    landing_learn_more: 'Learn More',
+    landing_watch_demo: 'Watch How It Works',
+    landing_examples_title: 'Results Examples',
+    
+    // How it works section
+    landing_step1_title: 'Upload Images',
+    landing_step1_description: 'Upload your product image and the desired scene image',
+    landing_step2_title: 'AI Processing',
+    landing_step2_description: 'AI analyzes and blends the content with precision',
+    landing_step3_title: 'Professional Result',
+    landing_step3_description: 'Get high-quality CGI image or video',
+    
+    // Examples section
+    landing_examples_before: 'Before - Original Images',
+    landing_examples_after: 'After - Final Result',
+    
+    // Features section
+    landing_features_title: 'CGI Generator Platform Features',
+    landing_features_subtitle: 'Advanced technologies for professional CGI content production',
+    
+    // CTA section
+    landing_cta_title: 'Ready to Create Amazing CGI Content?',
+    landing_cta_subtitle: 'Start with 5 free credits and discover the power of AI',
+    
+    // Dashboard
+    dashboard_users: 'Users',
+    dashboard_projects: 'Projects',
+    dashboard_actual_costs: 'Actual Costs',
+    dashboard_new_project: 'New Project',
+    dashboard_my_projects: 'My Projects',
+    
+    // Dashboard table headers
+    table_title: 'Title',
+    table_type: 'Type',
+    table_status: 'Status',
+    table_user: 'User',
+    table_credits_used: 'Credits Used',
+    table_date: 'Date',
+    
+    // Project statuses
+    status_processing: 'Processing',
+    status_completed: 'Completed',
+    status_failed: 'Failed',
+    status_pending: 'Pending',
+    status_enhancing_prompt: 'Enhancing Description',
+    status_generating_image: 'Generating Image',
+    status_generating_video: 'Generating Video',
+    
+    // Project form labels
+    form_product_image: 'Product Image',
+    form_scene_image: 'Scene Image',
+    form_project_title: 'Project Title',
+    form_content_type: 'Content Type',
+    form_video_duration: 'Video Duration',
+    form_include_audio: 'Add Audio to Video',
+    form_enhance_integration: 'Enhance Image Integration (Optional)',
+    form_advanced_settings: 'Advanced Settings',
+    
+    // Progress modal
+    progress_modal_title: 'Producing CGI',
+    progress_modal_description: 'Please wait, this may take a few minutes',
+    progress_step_enhance: 'Enhancing Description',
+    progress_step_image: 'Generating Image',
+    progress_step_video_prompt: 'Enhancing Video Prompt',
+    progress_step_video: 'Generating Video',
+    progress_overall: 'Overall Progress',
+    progress_cancel: 'Cancel Operation',
+    
+    // Upload zone
+    upload_uploading: 'Uploading image...',
+    upload_please_wait: 'Please wait',
+    upload_preview: 'Image Preview',
+    upload_click_change: 'Click to change',
+    upload_drag_drop: 'Drag and drop product image here',
+    upload_or_browse: 'or click to browse',
+    upload_extract_failed: 'Failed to extract image',
+    
+    // Time and actions
+    time_now: 'now',
+    time_minutes_ago: 'minutes ago',
+    time_hours_ago: 'hours ago',
+    time_days_ago: 'days ago',
+    action_download: 'Download',
+    action_preview: 'Preview',
+    action_play: 'Play',
 
     // Features
     features_title: 'Powerful Features',
@@ -132,29 +300,6 @@ export const translations: Record<Language, TranslationKeys> = {
     features_quality_description: 'Professional-grade images and videos',
     features_speed_title: 'Fast Processing',
     features_speed_description: 'Generate content in minutes, not hours',
-
-    // Dashboard
-    dashboard_new_project: 'New Project',
-    dashboard_my_projects: 'My Projects',
-    dashboard_title: 'Project Title',
-    dashboard_description: 'Description',
-    dashboard_upload_product: 'Upload Product Image',
-    dashboard_upload_scene: 'Upload Scene Image/Video',
-    dashboard_content_type: 'Content Type',
-    dashboard_image: 'Image',
-    dashboard_video: 'Video',
-    dashboard_duration: 'Duration',
-    dashboard_audio: 'Include Audio',
-    dashboard_generate: 'Generate',
-    dashboard_reset: 'Reset',
-    dashboard_credits_needed: 'Credits Needed',
-    dashboard_credits_available: 'Credits Available',
-
-    // Project status
-    status_pending: 'Pending',
-    status_processing: 'Processing',
-    status_completed: 'Completed',
-    status_failed: 'Failed',
 
     // Pricing
     pricing_title: 'Choose Your Plan',
@@ -169,8 +314,6 @@ export const translations: Record<Language, TranslationKeys> = {
     action_cancel: 'Cancel',
     action_delete: 'Delete',
     action_edit: 'Edit',
-    action_download: 'Download',
-    action_preview: 'Preview',
     action_upload: 'Upload',
     action_close: 'Close',
     action_confirm: 'Confirm',
@@ -212,9 +355,93 @@ export const translations: Record<Language, TranslationKeys> = {
     // Landing page
     landing_title: 'مولد CGI',
     landing_subtitle: 'حول منتجاتك إلى محتوى CGI مذهل',
-    landing_hero_description: 'أنشئ صور ومقاطع فيديو CGI احترافية باستخدام تقنية الذكاء الاصطناعي المتقدمة. ارفع صور منتجك والمشهد لتوليد محتوى بصري مذهل.',
-    landing_get_started: 'ابدأ مجاناً',
-    landing_learn_more: 'تعلم المزيد',
+    landing_hero_title: 'اصنع صور وفيديوهات CGI احترافية بالذكاء الاصطناعي',
+    landing_hero_description: 'ارفع صورة منتجك وصورة المشهد واتركنا ندمجهم في صورة أو فيديو CGI احترافي باستخدام أحدث تقنيات الذكاء الاصطناعي.',
+    landing_get_started: 'ابدأ الآن مجاناً',
+    landing_watch_demo: 'شاهد كيف يعمل',
+    landing_examples_title: 'أمثلة على النتائج',
+    
+    // How it works section
+    landing_step1_title: 'ارفع الصور',
+    landing_step1_description: 'ارفع صورة منتجك وصورة المشهد المطلوب',
+    landing_step2_title: 'معالجة ذكية',
+    landing_step2_description: 'الذكاء الاصطناعي يحلل ويدمج المحتوى بدقة',
+    landing_step3_title: 'نتيجة احترافية',
+    landing_step3_description: 'احصل على صورة أو فيديو CGI بجودة عالية',
+    
+    // Examples section
+    landing_examples_before: 'قبل - الصور الأصلية',
+    landing_examples_after: 'بعد - النتيجة النهائية',
+    
+    // Features section
+    landing_features_title: 'مميزات منصة مولد CGI',
+    landing_features_subtitle: 'تقنيات متقدمة لإنتاج محتوى CGI احترافي',
+    
+    // CTA section
+    landing_cta_title: 'جاهز لإنشاء محتوى CGI مذهل؟',
+    landing_cta_subtitle: 'ابدأ بـ 5 كريدت مجانية واكتشف قوة الذكاء الاصطناعي',
+    
+    // Dashboard
+    dashboard_users: 'المستخدمين',
+    dashboard_projects: 'المشاريع',
+    dashboard_actual_costs: 'التكاليف الفعلية',
+    dashboard_new_project: 'مشروع جديد',
+    dashboard_my_projects: 'مشاريعي',
+    
+    // Dashboard table headers
+    table_title: 'العنوان',
+    table_type: 'النوع',
+    table_status: 'الحالة',
+    table_user: 'المستخدم',
+    table_credits_used: 'الكريدت المستخدم',
+    table_date: 'التاريخ',
+    
+    // Project statuses
+    status_processing: 'قيد المعالجة',
+    status_completed: 'مكتمل',
+    status_failed: 'فاشل',
+    status_pending: 'في الانتظار',
+    status_enhancing_prompt: 'تحسين الوصف',
+    status_generating_image: 'إنتاج الصورة',
+    status_generating_video: 'إنتاج الفيديو',
+    
+    // Project form labels
+    form_product_image: 'صورة المنتج',
+    form_scene_image: 'صورة المشهد',
+    form_project_title: 'عنوان المشروع',
+    form_content_type: 'نوع المحتوى',
+    form_video_duration: 'مدة الفيديو',
+    form_include_audio: 'إضافة صوت للفيديو',
+    form_enhance_integration: 'تحسين دمج الصور (اختياري)',
+    form_advanced_settings: 'إعدادات متقدمة',
+    
+    // Progress modal
+    progress_modal_title: 'جاري إنتاج CGI',
+    progress_modal_description: 'يرجى الانتظار، هذا قد يستغرق بضع دقائق',
+    progress_step_enhance: 'تحسين الوصف',
+    progress_step_image: 'إنتاج الصورة',
+    progress_step_video_prompt: 'تحسين برومبت الفيديو',
+    progress_step_video: 'إنتاج الفيديو',
+    progress_overall: 'التقدم الإجمالي',
+    progress_cancel: 'إلغاء العملية',
+    
+    // Upload zone
+    upload_uploading: 'جاري رفع الصورة...',
+    upload_please_wait: 'يرجى الانتظار',
+    upload_preview: 'معاينة الصورة',
+    upload_click_change: 'انقر لتغيير',
+    upload_drag_drop: 'اسحب وأفلت صورة المنتج هنا',
+    upload_or_browse: 'أو انقر للتصفح',
+    upload_extract_failed: 'فشل في استخراج الصورة',
+    
+    // Time and actions
+    time_now: 'الآن',
+    time_minutes_ago: 'دقيقة',
+    time_hours_ago: 'ساعة',
+    time_days_ago: 'يوم',
+    action_download: 'تحميل',
+    action_preview: 'معاينة',
+    action_play: 'تشغيل',
 
     // Features
     features_title: 'مميزات قوية',
@@ -225,28 +452,6 @@ export const translations: Record<Language, TranslationKeys> = {
     features_speed_title: 'معالجة سريعة',
     features_speed_description: 'أنتج المحتوى في دقائق وليس ساعات',
 
-    // Dashboard
-    dashboard_new_project: 'مشروع جديد',
-    dashboard_my_projects: 'مشاريعي',
-    dashboard_title: 'عنوان المشروع',
-    dashboard_description: 'الوصف',
-    dashboard_upload_product: 'رفع صورة المنتج',
-    dashboard_upload_scene: 'رفع صورة/فيديو المشهد',
-    dashboard_content_type: 'نوع المحتوى',
-    dashboard_image: 'صورة',
-    dashboard_video: 'فيديو',
-    dashboard_duration: 'المدة',
-    dashboard_audio: 'تضمين الصوت',
-    dashboard_generate: 'توليد',
-    dashboard_reset: 'إعادة تعيين',
-    dashboard_credits_needed: 'الأرصدة المطلوبة',
-    dashboard_credits_available: 'الأرصدة المتاحة',
-
-    // Project status
-    status_pending: 'في الانتظار',
-    status_processing: 'قيد المعالجة',
-    status_completed: 'مكتمل',
-    status_failed: 'فشل',
 
     // Pricing
     pricing_title: 'اختر خطتك',
@@ -261,8 +466,6 @@ export const translations: Record<Language, TranslationKeys> = {
     action_cancel: 'إلغاء',
     action_delete: 'حذف',
     action_edit: 'تعديل',
-    action_download: 'تنزيل',
-    action_preview: 'معاينة',
     action_upload: 'رفع',
     action_close: 'إغلاق',
     action_confirm: 'تأكيد',
