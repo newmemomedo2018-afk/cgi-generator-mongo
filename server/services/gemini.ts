@@ -20,7 +20,11 @@ async function getImageDataFromStorage(filePath: string): Promise<{base64: strin
       const allowedDomains = [
         'res.cloudinary.com',
         'images.unsplash.com',
-        'cloudinary.com'
+        'cloudinary.com',
+        'i.pinimg.com',           // Pinterest images - main domain  
+        'pinimg.com',             // Pinterest images - CDN
+        's.pinimg.com',           // Pinterest images - static CDN
+        'i.pinimg.pinimg.com'     // Pinterest images - alternative CDN
       ];
       
       let url: URL;
