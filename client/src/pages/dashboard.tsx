@@ -507,16 +507,19 @@ export default function Dashboard() {
               setActiveTab(tab);
             }} className="w-full">
               <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 glass-card p-1">
-                <TabsTrigger value="new-project" className="data-[state=active]:gradient-button">
-                  <Plus className="ml-2 h-4 w-4" />
-                  مشروع جديد
+                <TabsTrigger value="new-project" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
+                  <Plus className="ml-1 sm:ml-2 h-4 w-4" />
+                  <span className="hidden sm:inline">مشروع جديد</span>
+                  <span className="sm:hidden">جديد</span>
                 </TabsTrigger>
-                <TabsTrigger value="my-projects" className="data-[state=active]:gradient-button">
-                  مشاريعي
+                <TabsTrigger value="my-projects" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
+                  <span className="hidden sm:inline">مشاريعي</span>
+                  <span className="sm:hidden">مشاريع</span>
                 </TabsTrigger>
-                <TabsTrigger value="actual-costs" className="data-[state=active]:gradient-button">
-                  <Coins className="ml-2 h-4 w-4" />
-                  التكاليف الفعلية
+                <TabsTrigger value="actual-costs" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
+                  <Coins className="ml-1 sm:ml-2 h-4 w-4" />
+                  <span className="hidden sm:inline">التكاليف الفعلية</span>
+                  <span className="sm:hidden">تكاليف</span>
                 </TabsTrigger>
               </TabsList>
 

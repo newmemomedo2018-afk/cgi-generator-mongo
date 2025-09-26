@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Rocket, Play, Camera, Bot, Film, Star, Check } from "lucide-react";
+import { Rocket, Play, Camera, Bot, Film, Star, Check, Menu, X } from "lucide-react";
 import { AuthDialog } from "@/components/auth/AuthDialog";
 import { CREDIT_COSTS } from "@shared/constants";
 import productImage from "@assets/generated_images/Modern_smartphone_product_photo_8515c516.png";
@@ -9,6 +10,7 @@ import sceneImage from "@assets/generated_images/Modern_living_room_scene_8d3842
 import resultImage from "@assets/generated_images/CGI_smartphone_composite_result_bc061ac4.png";
 
 export default function Landing() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -25,9 +27,26 @@ export default function Landing() {
               <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">المميزات</a>
               <a href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">الأسعار</a>
             </nav>
+            {/* Mobile Navigation */}
+            <div className="md:hidden">
+              <button 
+                className="p-3 rounded-md glass-card hover:bg-white/20 mobile-touch-target"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-nav"
+                aria-label="Toggle mobile menu"
+                data-testid="mobile-menu-button"
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
+              </button>
+            </div>
             <div className="flex items-center space-x-reverse space-x-4">
               <AuthDialog>
-                <Button className="gradient-button" data-testid="login-button">
+                <Button className="gradient-button mobile-touch-target mobile-button-padding" data-testid="login-button">
                   <i className="fas fa-user mr-2"></i>
                   تسجيل الدخول
                 </Button>
@@ -36,6 +55,43 @@ export default function Landing() {
           </div>
         </div>
       </header>
+
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
+        <nav 
+          id="mobile-nav" 
+          className="fixed top-20 left-0 right-0 z-40 md:hidden animate-in slide-in-from-top-2"
+          role="navigation"
+          aria-label="Mobile navigation"
+        >
+          <div className="glass-card m-4 p-4 space-y-4">
+            <a 
+              href="#home" 
+              className="block py-3 text-center hover:text-primary transition-colors mobile-touch-target"
+              onClick={() => setIsMobileMenuOpen(false)}
+              data-testid="mobile-nav-home"
+            >
+              الرئيسية
+            </a>
+            <a 
+              href="#features" 
+              className="block py-3 text-center hover:text-primary transition-colors mobile-touch-target"
+              onClick={() => setIsMobileMenuOpen(false)}
+              data-testid="mobile-nav-features"
+            >
+              المميزات
+            </a>
+            <a 
+              href="#pricing" 
+              className="block py-3 text-center hover:text-primary transition-colors mobile-touch-target"
+              onClick={() => setIsMobileMenuOpen(false)}
+              data-testid="mobile-nav-pricing"
+            >
+              الأسعار
+            </a>
+          </div>
+        </nav>
+      )}
 
       <div className="pt-20">
         {/* Hero Section */}
@@ -55,7 +111,7 @@ export default function Landing() {
               <AuthDialog defaultTab="register">
                 <Button 
                   size="lg" 
-                  className="gradient-button"
+                  className="gradient-button mobile-touch-target mobile-button-padding"
                   data-testid="start-free-button"
                 >
                   <Rocket className="ml-2 h-5 w-5" />
@@ -65,7 +121,7 @@ export default function Landing() {
               <Button 
                 variant="outline" 
                 size="lg" 
-                className="glass-card hover:bg-white/20 text-white border-white/20"
+                className="glass-card hover:bg-white/20 text-white border-white/20 mobile-touch-target mobile-button-padding"
                 onClick={() => {
                   const exampleSection = document.getElementById('example-section');
                   exampleSection?.scrollIntoView({ behavior: 'smooth' });

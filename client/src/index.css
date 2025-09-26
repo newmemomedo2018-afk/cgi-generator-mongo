@@ -187,6 +187,31 @@
   .gradient-button:hover {
     background: linear-gradient(135deg, hsl(var(--primary) / 0.8), hsl(var(--accent) / 0.8));
   }
+
+  /* Mobile-friendly touch targets */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Mobile-friendly form spacing */
+  @media (max-width: 768px) {
+    .mobile-form-spacing {
+      gap: 1rem;
+    }
+    
+    .mobile-card-padding {
+      padding: 1rem;
+    }
+    
+    .mobile-text-size {
+      font-size: 0.875rem;
+    }
+    
+    .mobile-button-padding {
+      padding: 0.75rem 1rem;
+    }
+  }
 }
 
 @keyframes pulse {
