@@ -170,7 +170,7 @@ export async function enhancePromptWithGemini(
       apiKeyLength: process.env.GEMINI_API_KEY?.length || 0
     });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Load images with correct MIME types from Object Storage
     console.log("Loading images from Object Storage...");
@@ -467,7 +467,7 @@ export async function enhanceVideoPromptWithGemini(
       apiKeyExists: !!process.env.GEMINI_API_KEY
     });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     // Load product image (always required)
     console.log("Loading media for video prompt generation...");
@@ -751,7 +751,7 @@ export async function enhanceVideoPromptFromGeneratedImage(
       userDescription: projectDetails.userDescription.substring(0, 50) + "..."
     });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const durationSeconds = projectDetails.duration;
     const isShortVideo = durationSeconds <= 5;
