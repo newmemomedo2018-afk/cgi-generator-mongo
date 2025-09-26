@@ -224,6 +224,9 @@ export default function Dashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
+      // 🚀 Auto-navigate to projects tab after generation starts
+      setActiveTab("projects");
+      
       // Reset form
       setProjectData({
         title: "",

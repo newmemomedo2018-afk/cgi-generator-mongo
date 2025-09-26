@@ -573,8 +573,10 @@ export class PostgreSQLStorage implements IStorage {
         const project = projectResult.rows[0] as Project;
         console.log(`✅ Project created in transaction: ${project.id}`);
 
-        // 3. Deduct credits from user (unless admin)
-        if (!isAdmin) {
+        // 3. Deduct credits from user (unless admin in production)
+        // In development, always deduct credits for better testing
+        const shouldDeductCredits = !isAdmin || process.env.NODE_ENV === 'development';
+        if (shouldDeductCredits) {
           const newCredits = currentCredits - projectData.creditsUsed;
           await tx.execute(sql`
             UPDATE users 
@@ -582,6 +584,11 @@ export class PostgreSQLStorage implements IStorage {
             WHERE id = ${projectData.userId}
           `);
           console.log(`💰 Credits deducted in transaction: ${projectData.creditsUsed} (${currentCredits} → ${newCredits})`);
+          if (isAdmin) {
+            console.log(`🔧 Development mode: Credits deducted from admin for testing`);
+          }
+        } else {
+          console.log(`👑 Admin privileges: Credits not deducted in production`);
         }
 
         // 4. Create job within transaction (using the created project ID)
