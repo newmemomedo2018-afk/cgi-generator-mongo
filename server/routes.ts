@@ -287,27 +287,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-      fileSize: 10 * 1024 * 1024, // 10MB limit
+      fileSize: 50 * 1024 * 1024, // 50MB limit for videos
     },
     fileFilter: (req: any, file: any, cb: any) => {
-      // Only allow image files
+      // Allow image and video files for scene uploads
+      if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image and video files are allowed'));
+      }
+    }
+  });
+
+  // Separate multer for product images (image only)
+  const uploadProductImage = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit for images
+    },
+    fileFilter: (req: any, file: any, cb: any) => {
+      // Only allow image files for products
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);
       } else {
-        cb(new Error('Only image files are allowed'));
+        cb(new Error('Only image files are allowed for product uploads'));
       }
     }
   });
   
-  // Upload endpoint for product images - using Cloudinary
-  app.post('/api/upload-product-image', isAuthenticated, upload.single('productImage'), async (req: any, res) => {
+  // Upload endpoint for product images - using Cloudinary with Quality Enhancement
+  app.post('/api/upload-product-image', isAuthenticated, uploadProductImage.single('productImage'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
       // Use the centralized Cloudinary service
-      console.log("Uploading to Cloudinary:", {
+      console.log("📤 Uploading to Cloudinary:", {
         originalName: req.file.originalname,
         fileSize: req.file.size,
       });
@@ -315,19 +331,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const filename = req.file.originalname || `upload-${Date.now()}`;
       const uploadUrl = await uploadToCloudinary(req.file.buffer, filename);
       
+      // 🎨 Apply quality enhancement if needed
+      console.log("🔍 Processing image quality...");
+      const { processImageForQuality } = await import('./services/image-quality-enhancer');
+      const qualityResult = await processImageForQuality(uploadUrl);
+      
+      // استخدام الصورة المحسنة إذا كانت متوفرة
+      const finalImageUrl = qualityResult.finalUrl;
+      
+      console.log("✅ Image upload and quality processing completed:", {
+        originalUrl: uploadUrl.substring(0, 50) + '...',
+        finalUrl: finalImageUrl.substring(0, 50) + '...',
+        qualityScore: qualityResult.assessment.qualityScore,
+        enhancementApplied: !!qualityResult.enhancement
+      });
+      
       res.json({ 
-        url: uploadUrl,
-        imageUrl: uploadUrl,
-        publicId: `user-uploads/${filename}`
+        url: finalImageUrl,
+        imageUrl: finalImageUrl,
+        publicId: `user-uploads/${filename}`,
+        qualityInfo: {
+          originalQuality: qualityResult.assessment.qualityScore,
+          enhancementApplied: !!qualityResult.enhancement,
+          enhancementTypes: qualityResult.enhancement?.enhancementApplied || [],
+          qualityImprovement: qualityResult.enhancement?.qualityImprovement || 0
+        }
       });
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("❌ Error uploading file:", error);
       res.status(500).json({ error: "Failed to upload file" });
     }
   });
 
-  // Pinterest image URL extraction endpoint
-  app.post('/api/extract-pinterest-image', async (req: any, res) => {
+  // Upload endpoint for scene images - using Cloudinary with Quality Enhancement  
+  app.post('/api/upload-scene-image', isAuthenticated, upload.single('sceneImage'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No scene file uploaded" });
+      }
+      
+      console.log("📤 Uploading scene to Cloudinary:", {
+        originalName: req.file.originalname,
+        fileSize: req.file.size,
+        mimeType: req.file.mimetype
+      });
+      
+      const filename = req.file.originalname || `scene-${Date.now()}`;
+      const uploadUrl = await uploadToCloudinary(req.file.buffer, filename);
+      
+      // 🎨 Apply quality enhancement for scene images
+      if (req.file.mimetype.startsWith('image/')) {
+        console.log("🔍 Processing scene image quality...");
+        const { processImageForQuality } = await import('./services/image-quality-enhancer');
+        const qualityResult = await processImageForQuality(uploadUrl);
+        
+        const finalImageUrl = qualityResult.finalUrl;
+        
+        console.log("✅ Scene image upload and quality processing completed:", {
+          originalUrl: uploadUrl.substring(0, 50) + '...',
+          finalUrl: finalImageUrl.substring(0, 50) + '...',
+          qualityScore: qualityResult.assessment.qualityScore,
+          enhancementApplied: !!qualityResult.enhancement
+        });
+        
+        res.json({ 
+          url: finalImageUrl,
+          imageUrl: finalImageUrl,
+          publicId: `scene-uploads/${filename}`,
+          fileType: 'image',
+          qualityInfo: {
+            originalQuality: qualityResult.assessment.qualityScore,
+            enhancementApplied: !!qualityResult.enhancement,
+            enhancementTypes: qualityResult.enhancement?.enhancementApplied || [],
+            qualityImprovement: qualityResult.enhancement?.qualityImprovement || 0
+          }
+        });
+      } else {
+        // For video files, no quality enhancement (yet)
+        res.json({ 
+          url: uploadUrl,
+          videoUrl: uploadUrl,
+          publicId: `scene-uploads/${filename}`,
+          fileType: 'video'
+        });
+      }
+    } catch (error) {
+      console.error("❌ Error uploading scene file:", error);
+      res.status(500).json({ error: "Failed to upload scene file" });
+    }
+  });
+
+  // Pinterest image URL extraction endpoint - SECURED with authentication
+  app.post('/api/extract-pinterest-image', isAuthenticated, async (req: any, res) => {
     try {
       const { pinterestUrl } = req.body;
       
@@ -343,10 +438,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Invalid Pinterest URL' });
       }
 
-      // If it's already a direct image URL, return it
+      // If it's already a direct image URL, enhance and return it
       if (pinterestUrl.includes('pinimg.com')) {
         const optimizedUrl = enhancePinterestImageQuality(pinterestUrl);
-        return res.json({ imageUrl: optimizedUrl });
+        console.log('🔍 Applying quality enhancement to direct Pinterest image...');
+        
+        // 🎨 Apply comprehensive quality enhancement
+        const { processImageForQuality } = await import('./services/image-quality-enhancer');
+        const qualityResult = await processImageForQuality(optimizedUrl);
+        
+        console.log('✅ Direct Pinterest image enhanced:', {
+          originalUrl: optimizedUrl.substring(0, 50) + '...',
+          finalUrl: qualityResult.finalUrl.substring(0, 50) + '...',
+          qualityScore: qualityResult.assessment.qualityScore,
+          enhancementApplied: !!qualityResult.enhancement
+        });
+        
+        return res.json({ 
+          imageUrl: qualityResult.finalUrl,
+          qualityInfo: {
+            originalQuality: qualityResult.assessment.qualityScore,
+            enhancementApplied: !!qualityResult.enhancement,
+            enhancementTypes: qualityResult.enhancement?.enhancementApplied || [],
+            qualityImprovement: qualityResult.enhancement?.qualityImprovement || 0
+          }
+        });
       }
 
       // Extract image URL from Pinterest post URL using puppeteer
@@ -357,9 +473,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const optimizedUrl = enhancePinterestImageQuality(imageUrl);
-      console.log('✅ Extracted and optimized Pinterest image URL:', optimizedUrl);
+      console.log('🔍 Applying comprehensive quality enhancement to Pinterest image...');
       
-      res.json({ imageUrl: optimizedUrl });
+      // 🎨 Apply our advanced quality enhancement system
+      const { processImageForQuality } = await import('./services/image-quality-enhancer');
+      const qualityResult = await processImageForQuality(optimizedUrl);
+      
+      console.log('✅ Pinterest image extracted and enhanced:', {
+        originalUrl: optimizedUrl.substring(0, 50) + '...',
+        finalUrl: qualityResult.finalUrl.substring(0, 50) + '...',
+        qualityScore: qualityResult.assessment.qualityScore,
+        enhancementApplied: !!qualityResult.enhancement
+      });
+      
+      res.json({ 
+        imageUrl: qualityResult.finalUrl,
+        qualityInfo: {
+          originalQuality: qualityResult.assessment.qualityScore,
+          enhancementApplied: !!qualityResult.enhancement,
+          enhancementTypes: qualityResult.enhancement?.enhancementApplied || [],
+          qualityImprovement: qualityResult.enhancement?.qualityImprovement || 0
+        }
+      });
     } catch (error) {
       console.error('❌ Pinterest image extraction failed:', error);
       res.status(500).json({ error: 'Failed to extract Pinterest image' });
