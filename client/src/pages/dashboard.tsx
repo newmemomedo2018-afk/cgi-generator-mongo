@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -24,6 +25,19 @@ export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Calculate total credits needed for current project configuration
+  const calculateTotalCredits = () => {
+    if (projectData.contentType === "image") {
+      return CREDIT_COSTS.IMAGE_GENERATION;
+    } else {
+      const videoCost = projectData.videoDurationSeconds <= 5 
+        ? CREDIT_COSTS.VIDEO_SHORT 
+        : CREDIT_COSTS.VIDEO_LONG;
+      const audioCost = projectData.includeAudio ? CREDIT_COSTS.AUDIO_SURCHARGE : 0;
+      return videoCost + audioCost;
+    }
+  };
   const [activeTab, setActiveTab] = useState("new-project");
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [projectData, setProjectData] = useState({
@@ -390,7 +404,7 @@ export default function Dashboard() {
       return;
     }
 
-    const creditsNeeded = projectData.contentType === "image" ? 1 : 5;
+    const creditsNeeded = calculateTotalCredits();
     if (userData && userData.credits < creditsNeeded) {
       toast({
         title: "كريدت غير كافي",
@@ -738,7 +752,8 @@ export default function Dashboard() {
                               data-testid="duration-5s-card"
                             >
                               <CardContent className="p-4 text-center">
-                                <h4 className="font-medium mb-1">5 ثوانٍ</h4>
+                                <h4 className="font-medium mb-2">5 ثوانٍ</h4>
+                                <Badge variant="secondary" className="mb-2">{CREDIT_COSTS.VIDEO_SHORT} كريدت</Badge>
                                 <p className="text-xs text-muted-foreground">سريع ومؤثر</p>
                               </CardContent>
                             </Card>
@@ -750,7 +765,8 @@ export default function Dashboard() {
                               data-testid="duration-10s-card"
                             >
                               <CardContent className="p-4 text-center">
-                                <h4 className="font-medium mb-1">10 ثوانٍ</h4>
+                                <h4 className="font-medium mb-2">10 ثوانٍ</h4>
+                                <Badge variant="secondary" className="mb-2">{CREDIT_COSTS.VIDEO_LONG} كريدت</Badge>
                                 <p className="text-xs text-muted-foreground">تفصيل أكثر</p>
                               </CardContent>
                             </Card>
@@ -758,6 +774,31 @@ export default function Dashboard() {
                         </div>
                       )}
 
+                      {/* Audio Settings - Only show for video content */}
+                      {projectData.contentType === "video" && (
+                        <div>
+                          <Label className="block text-sm font-medium mb-4">إعدادات الصوت</Label>
+                          <div className="flex items-center space-x-3 space-x-reverse">
+                            <Checkbox
+                              id="includeAudio"
+                              checked={projectData.includeAudio}
+                              onCheckedChange={(checked) => 
+                                setProjectData(prev => ({ ...prev, includeAudio: !!checked }))
+                              }
+                              data-testid="include-audio-checkbox"
+                            />
+                            <Label htmlFor="includeAudio" className="flex items-center gap-2 cursor-pointer">
+                              <span>إضافة صوت للفيديو</span>
+                              <Badge variant="outline" className="text-xs">
+                                +{CREDIT_COSTS.AUDIO_SURCHARGE} كريدت
+                              </Badge>
+                            </Label>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            يتم إضافة صوت تلقائي مناسب للمشهد
+                          </p>
+                        </div>
+                      )}
 
                       {/* Project Description */}
                       <div>
@@ -819,10 +860,41 @@ export default function Dashboard() {
                         </div>
                       </details>
 
+                      {/* Credit Cost Summary */}
+                      <div className="bg-muted/50 rounded-lg p-4 border">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Coins className="h-5 w-5 text-primary" />
+                            <span className="font-medium">إجمالي التكلفة:</span>
+                          </div>
+                          <Badge variant="secondary" className="text-lg px-3 py-1">
+                            {calculateTotalCredits()} كريدت
+                          </Badge>
+                        </div>
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          {projectData.contentType === "image" ? (
+                            "صورة CGI واحدة"
+                          ) : (
+                            <div className="space-y-1">
+                              <div>فيديو CGI ({projectData.videoDurationSeconds} ثوانٍ)</div>
+                              {projectData.includeAudio && <div>+ صوت تلقائي</div>}
+                            </div>
+                          )}
+                        </div>
+                        {userData && (
+                          <div className="mt-2 text-sm">
+                            <span className="text-muted-foreground">رصيدك الحالي: </span>
+                            <span className={userData.credits >= calculateTotalCredits() ? "text-green-600" : "text-red-600"}>
+                              {userData.credits} كريدت
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
                       {/* Generate Button */}
                       <Button 
                         onClick={handleCreateProject}
-                        disabled={createProjectMutation.isPending || !projectData.title || !isProductImageUploaded || !isSceneImageUploaded}
+                        disabled={createProjectMutation.isPending || !projectData.title || !isProductImageUploaded || !isSceneImageUploaded || (userData && userData.credits < calculateTotalCredits())}
                         className="w-full gradient-button"
                         size="lg"
                         data-testid="generate-cgi-button"
