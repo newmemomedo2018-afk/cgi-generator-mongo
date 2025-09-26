@@ -26,10 +26,19 @@ export const users = pgTable('users', {
   firstName: varchar('first_name', { length: 100 }),
   lastName: varchar('last_name', { length: 100 }),
   profileImageUrl: text('profile_image_url'),
-  credits: integer('credits').default(5).notNull(),
+  credits: integer('credits').default(2).notNull(), // Changed from 5 to 2 for new credit system
   isAdmin: boolean('is_admin').default(false).notNull(),
+  
+  // Stripe integration fields
   stripeCustomerId: varchar('stripe_customer_id', { length: 255 }),
   stripeSubscriptionId: varchar('stripe_subscription_id', { length: 255 }),
+  
+  // New credit system fields
+  hasAddedCard: boolean('has_added_card').default(false).notNull(), // +3 credits when true
+  trialStartDate: timestamp('trial_start_date'), // When 7-day trial started
+  trialCreditsUsed: integer('trial_credits_used').default(0).notNull(), // Credits used during trial
+  isSubscribed: boolean('is_subscribed').default(false).notNull(), // $10/month subscription status
+  subscriptionStartDate: timestamp('subscription_start_date'), // When subscription started
   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
@@ -105,10 +114,19 @@ export const insertUserSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
   profileImageUrl: z.string().optional(),
-  credits: z.number().min(0).default(5),
+  credits: z.number().min(0).default(2), // Changed from 5 to 2
   isAdmin: z.boolean().default(false),
+  
+  // Stripe integration fields
   stripeCustomerId: z.string().optional(),
   stripeSubscriptionId: z.string().optional(),
+  
+  // New credit system fields
+  hasAddedCard: z.boolean().default(false),
+  trialStartDate: z.date().optional(),
+  trialCreditsUsed: z.number().min(0).default(0),
+  isSubscribed: z.boolean().default(false),
+  subscriptionStartDate: z.date().optional(),
 });
 
 // Client-side project creation schema (excludes server-managed fields)

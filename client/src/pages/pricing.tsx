@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { loadStripe } from "@stripe/stripe-js";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { CREDIT_PACKAGES, CREDIT_COSTS } from "@shared/constants";
+import { CREDIT_PACKAGES, CREDIT_COSTS, NEW_CREDIT_SYSTEM } from "@shared/constants";
 
 export default function Pricing() {
   const { isAuthenticated } = useAuth();
@@ -26,35 +26,47 @@ export default function Pricing() {
     setPurchasingPackage(packageId);
 
     try {
-      // Create payment intent using apiRequest
-      const response = await apiRequest('POST', '/api/purchase-credits', {
-        amount: selectedPackage.price,
-        credits: selectedPackage.credits,
-        packageId: selectedPackage.id
-      });
-
-      const { clientSecret } = await response.json();
-      
-      // Load Stripe
-      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
-      if (!stripe) {
-        throw new Error('Failed to load Stripe');
-      }
-
-      // Redirect to Stripe checkout
-      const { error } = await stripe.confirmPayment({
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/dashboard?payment=success`,
-        },
-      });
-
-      if (error) {
+      // Handle subscription differently  
+      if (selectedPackage.type === "subscription") {
+        // For subscription, show coming soon message
         toast({
-          title: "خطأ في الدفع",
-          description: error.message || "حدث خطأ أثناء معالجة الدفعة",
-          variant: "destructive"
+          title: "🚧 قريباً",
+          description: "الاشتراك الشهري قيد التطوير. سيتم إطلاقه قريباً مع دعم كامل لـ Stripe!",
+          variant: "default"
         });
+        return;
+        
+      } else {
+        // Regular one-time purchase
+        const response = await apiRequest('POST', '/api/purchase-credits', {
+          amount: selectedPackage.price,
+          credits: selectedPackage.credits,
+          packageId: selectedPackage.id
+        });
+
+        const { clientSecret } = await response.json();
+        
+        // Load Stripe
+        const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
+        if (!stripe) {
+          throw new Error('Failed to load Stripe');
+        }
+
+        // Redirect to Stripe checkout
+        const { error } = await stripe.confirmPayment({
+          clientSecret,
+          confirmParams: {
+            return_url: `${window.location.origin}/dashboard?payment=success`,
+          },
+        });
+
+        if (error) {
+          toast({
+            title: "خطأ في الدفع",
+            description: error.message || "حدث خطأ أثناء معالجة الدفعة",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error('Payment error:', error);
@@ -122,7 +134,7 @@ export default function Pricing() {
         "دعم فني متقدم",
         "صالح لمدة 12 شهر",
       ],
-      popular: true,
+      popular: false,
     },
     {
       id: "business",
@@ -142,6 +154,28 @@ export default function Pricing() {
         "صالح لمدة 12 شهر",
       ],
       popular: false,
+    },
+    {
+      id: "subscription",
+      name: CREDIT_PACKAGES.subscription.name,
+      icon: <Crown className="h-8 w-8" />,
+      price: CREDIT_PACKAGES.subscription.price,
+      credits: CREDIT_PACKAGES.subscription.credits,
+      type: "subscription",
+      features: [
+        `${CREDIT_PACKAGES.subscription.credits} كريدت شهرياً`,
+        "صور CGI عالية الجودة (1024x1024)",
+        "فيديوهات CGI بدون حدود",
+        `تكلفة الصورة: ${CREDIT_COSTS.IMAGE_GENERATION} كريدت`,
+        `تكلفة الفيديو: ${CREDIT_COSTS.VIDEO_SHORT} كريدت (قصير) / ${CREDIT_COSTS.VIDEO_LONG} كريدت (طويل)`,
+        `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت للصوت`,
+        "✨ تجديد تلقائي شهرياً",
+        "إلغاء في أي وقت",
+        "معالجة فورية",
+        "دعم فني مخصص VIP",
+      ],
+      popular: true,
+      isSubscription: true,
     },
   ];
 

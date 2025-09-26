@@ -25,6 +25,14 @@ export interface IStorage {
   upsertUser(user: NewUser & { id?: number }): Promise<User>;
   updateUser(id: number, updates: Partial<User>): Promise<void>;
   updateUserCredits(id: number, credits: number): Promise<void>;
+  
+  // New credit system operations
+  addCardReward(userId: number): Promise<void>; // +3 credits for adding card
+  startTrial(userId: number): Promise<void>; // Start 7-day trial
+  isTrialActive(userId: number): Promise<boolean>; // Check if trial is active
+  getRemainingTrialCredits(userId: number): Promise<number>; // Get remaining trial credits
+  activateSubscription(userId: number): Promise<void>; // Activate $10/month subscription
+  deactivateSubscription(userId: number): Promise<void>; // Deactivate subscription
 
   // Atomic project creation operation
   createProjectWithTransaction(
@@ -74,7 +82,7 @@ export class PostgreSQLStorage implements IStorage {
   // User operations
   async getUser(id: number): Promise<User | undefined> {
     try {
-      // Production-compatible query - handles both old and new schema
+      // Production-compatible query - handles both old and new schema with credit system fields
       const result = await db.execute(sql`
         SELECT id, email, password, credits, is_admin, created_at, updated_at,
                CASE 
@@ -101,7 +109,12 @@ export class PostgreSQLStorage implements IStorage {
                  WHEN EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') 
                  THEN stripe_subscription_id 
                  ELSE NULL 
-               END as stripe_subscription_id
+               END as stripe_subscription_id,
+               COALESCE(has_added_card, false) as has_added_card,
+               trial_start_date,
+               COALESCE(trial_credits_used, 0) as trial_credits_used,
+               COALESCE(is_subscribed, false) as is_subscribed,
+               subscription_start_date
         FROM users 
         WHERE id = ${id} 
         LIMIT 1
@@ -121,6 +134,12 @@ export class PostgreSQLStorage implements IStorage {
         isAdmin: row.is_admin,
         stripeCustomerId: row.stripe_customer_id,
         stripeSubscriptionId: row.stripe_subscription_id,
+        // New credit system fields
+        hasAddedCard: row.has_added_card || false,
+        trialStartDate: row.trial_start_date || null,
+        trialCreditsUsed: row.trial_credits_used || 0,
+        isSubscribed: row.is_subscribed || false,
+        subscriptionStartDate: row.subscription_start_date || null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
@@ -203,6 +222,12 @@ export class PostgreSQLStorage implements IStorage {
         isAdmin: row.is_admin,
         stripeCustomerId: row.stripe_customer_id,
         stripeSubscriptionId: row.stripe_subscription_id,
+        // New credit system fields
+        hasAddedCard: row.has_added_card || false,
+        trialStartDate: row.trial_start_date || null,
+        trialCreditsUsed: row.trial_credits_used || 0,
+        isSubscribed: row.is_subscribed || false,
+        subscriptionStartDate: row.subscription_start_date || null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
@@ -728,6 +753,109 @@ export class PostgreSQLStorage implements IStorage {
     } catch (error) {
       console.error('Database health check failed:', error);
       return false;
+    }
+  }
+
+  // New credit system operations
+  async addCardReward(userId: number): Promise<void> {
+    try {
+      // Give +3 credits and mark hasAddedCard as true
+      await db.execute(sql`
+        UPDATE users 
+        SET credits = credits + 3, 
+            has_added_card = true,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${userId} AND has_added_card = false
+      `);
+      console.log(`✅ Card reward (+3 credits) granted to user ${userId}`);
+    } catch (error) {
+      console.error('Error granting card reward:', error);
+      throw error;
+    }
+  }
+
+  async startTrial(userId: number): Promise<void> {
+    try {
+      // Start 7-day trial with bonus credits
+      await db.execute(sql`
+        UPDATE users 
+        SET trial_start_date = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${userId} AND trial_start_date IS NULL
+      `);
+      console.log(`✅ 7-day trial started for user ${userId}`);
+    } catch (error) {
+      console.error('Error starting trial:', error);
+      throw error;
+    }
+  }
+
+  async isTrialActive(userId: number): Promise<boolean> {
+    try {
+      const result = await db.execute(sql`
+        SELECT trial_start_date 
+        FROM users 
+        WHERE id = ${userId} 
+          AND trial_start_date IS NOT NULL 
+          AND trial_start_date > CURRENT_TIMESTAMP - INTERVAL '7 days'
+        LIMIT 1
+      `);
+      return result.rows.length > 0;
+    } catch (error) {
+      console.error('Error checking trial status:', error);
+      return false;
+    }
+  }
+
+  async getRemainingTrialCredits(userId: number): Promise<number> {
+    try {
+      const user = await this.getUser(userId);
+      if (!user) return 0;
+      
+      const isActive = await this.isTrialActive(userId);
+      if (!isActive) return 0;
+      
+      // During trial, users get unlimited credits (practical limit: 100)
+      const trialCreditsLimit = 100;
+      const usedCredits = user.trialCreditsUsed || 0;
+      return Math.max(0, trialCreditsLimit - usedCredits);
+    } catch (error) {
+      console.error('Error getting remaining trial credits:', error);
+      return 0;
+    }
+  }
+
+  async activateSubscription(userId: number): Promise<void> {
+    try {
+      // Activate subscription and give monthly credits allowance
+      await db.execute(sql`
+        UPDATE users 
+        SET is_subscribed = true,
+            subscription_start_date = CURRENT_TIMESTAMP,
+            credits = credits + 100,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${userId}
+      `);
+      console.log(`✅ $10/month subscription activated for user ${userId}`);
+    } catch (error) {
+      console.error('Error activating subscription:', error);
+      throw error;
+    }
+  }
+
+  async deactivateSubscription(userId: number): Promise<void> {
+    try {
+      await db.execute(sql`
+        UPDATE users 
+        SET is_subscribed = false,
+            subscription_start_date = NULL,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ${userId}
+      `);
+      console.log(`✅ Subscription deactivated for user ${userId}`);
+    } catch (error) {
+      console.error('Error deactivating subscription:', error);
+      throw error;
     }
   }
 }

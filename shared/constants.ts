@@ -1,9 +1,23 @@
-// Credit package definitions - shared between frontend and backend - UPDATED FOR 300% PROFIT
+// NEW CREDIT SYSTEM - 2 credits start, 5 with card, trial system, $10/month subscription
 export const CREDIT_PACKAGES = {
+  // One-time credit purchases (for users who don't want subscription)
   tester: { credits: 125, price: 10.00, name: "المبتدئ" },      // $0.08 per credit
   starter: { credits: 315, price: 25.00, name: "العادي" },      // $0.079 per credit
   pro: { credits: 650, price: 50.00, name: "البرو" },          // $0.077 per credit
-  business: { credits: 1350, price: 100.00, name: "الأعمال" }  // $0.074 per credit
+  business: { credits: 1350, price: 100.00, name: "الأعمال" },  // $0.074 per credit
+  
+  // NEW: Monthly subscription option
+  subscription: { credits: 100, price: 10.00, name: "الاشتراك الشهري", type: "subscription" } // $0.10 per credit
+} as const;
+
+// NEW CREDIT SYSTEM CONSTANTS
+export const NEW_CREDIT_SYSTEM = {
+  NEW_USER_CREDITS: 2,           // Credits for new users
+  CARD_BONUS_CREDITS: 3,         // Extra credits when adding card (total: 5)
+  TRIAL_DURATION_DAYS: 7,        // 7-day trial
+  TRIAL_CREDITS_LIMIT: 100,      // Practical limit during trial
+  SUBSCRIPTION_MONTHLY_CREDITS: 100, // Credits per month with subscription
+  SUBSCRIPTION_PRICE: 10.00      // $10/month subscription
 } as const;
 
 // AI Service Costs - UPDATED FOR 300% PROFIT MARGIN

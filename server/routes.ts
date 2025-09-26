@@ -1006,6 +1006,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // NEW CREDIT SYSTEM ENDPOINTS
+  
+  // Add card reward (+3 credits) - SECURED: Only via Stripe webhook verification
+  app.post('/api/add-card-reward', isAuthenticated, async (req: any, res) => {
+    // SECURITY: This endpoint is disabled for direct access to prevent abuse
+    // Card rewards should only be granted via Stripe webhook after SetupIntent confirmation
+    res.status(403).json({ 
+      message: "Card rewards can only be granted via Stripe verification process" 
+    });
+  });
+
+  // Start 7-day trial
+  app.post('/api/start-trial', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Check if trial already started
+      const isActive = await storage.isTrialActive(userId);
+      if (isActive) {
+        return res.status(400).json({ message: "Trial already active" });
+      }
+      
+      await storage.startTrial(userId);
+      const remainingCredits = await storage.getRemainingTrialCredits(userId);
+      
+      res.json({ 
+        success: true, 
+        message: "7-day trial started! Enjoy unlimited credits.",
+        remainingTrialCredits: remainingCredits
+      });
+    } catch (error) {
+      console.error("Error starting trial:", error);
+      res.status(500).json({ message: "Failed to start trial" });
+    }
+  });
+
+  // Check trial status
+  app.get('/api/trial-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const isActive = await storage.isTrialActive(userId);
+      const remainingCredits = await storage.getRemainingTrialCredits(userId);
+      
+      res.json({ 
+        isActive,
+        remainingCredits,
+        message: isActive ? "Trial is active" : "Trial not active"
+      });
+    } catch (error) {
+      console.error("Error checking trial status:", error);
+      res.status(500).json({ message: "Failed to check trial status" });
+    }
+  });
+
+  // Activate subscription ($10/month) - SECURED: Only via Stripe webhook verification  
+  app.post('/api/activate-subscription', isAuthenticated, async (req: any, res) => {
+    // SECURITY: This endpoint is disabled for direct access to prevent abuse
+    // Subscriptions should only be activated via Stripe webhook after payment confirmation
+    res.status(403).json({ 
+      message: "Subscriptions can only be activated via Stripe payment confirmation" 
+    });
+  });
+
+  // Deactivate subscription
+  app.post('/api/deactivate-subscription', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      await storage.deactivateSubscription(userId);
+      
+      res.json({ 
+        success: true, 
+        message: "Subscription deactivated successfully."
+      });
+    } catch (error) {
+      console.error("Error deactivating subscription:", error);
+      res.status(500).json({ message: "Failed to deactivate subscription" });
+    }
+  });
+
   // Stripe webhook handler - raw body parsing applied at app level
   app.post('/api/webhooks/stripe', async (req, res) => {
     const sig = req.headers['stripe-signature'];
