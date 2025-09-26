@@ -1,6 +1,6 @@
 # Overview
 
-CGI Generator is a SaaS platform that allows users to create professional CGI images and videos using AI technology. Users upload a product image and scene image, and the system uses Gemini AI to generate integrated CGI content. The platform operates on a credit-based system where users receive 5 free credits upon registration, with image generation costing 1 credit and video generation costing 5 credits.
+CGI Generator is a SaaS platform that allows users to create professional CGI images and videos using AI technology. Users upload a product image and scene image, and the system uses Gemini AI to generate integrated CGI content. The platform operates on a credit-based system where users receive 5 free credits upon registration, with image generation costing 2 credits, short video generation (5s) costing 13 credits, long video generation (10s) costing 18 credits, and an additional 5 credits for audio enhancement (updated for 300% profit margin).
 
 # User Preferences
 

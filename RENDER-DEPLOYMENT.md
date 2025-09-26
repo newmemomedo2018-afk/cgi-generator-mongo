@@ -157,8 +157,10 @@ npm run db:push
 - [ ] Health check: `https://your-app.onrender.com/api/health`
 - [ ] User registration/login
 - [ ] Credit package purchase
-- [ ] Image generation (1 credit)
-- [ ] Video generation (5 credits)
+- [ ] Image generation (2 credits)
+- [ ] Video generation short (13 credits)
+- [ ] Video generation long (18 credits)
+- [ ] Audio enhancement (+5 credits)
 - [ ] Download generated content
 
 ### 8.2 Performance Monitoring

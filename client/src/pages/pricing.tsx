@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { loadStripe } from "@stripe/stripe-js";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { CREDIT_PACKAGES } from "@shared/constants";
+import { CREDIT_PACKAGES, CREDIT_COSTS } from "@shared/constants";
 
 export default function Pricing() {
   const { isAuthenticated } = useAuth();
@@ -79,8 +79,9 @@ export default function Pricing() {
         `${CREDIT_PACKAGES.tester.credits} كريدت`,
         "صور CGI عالية الجودة (1024x1024)",
         "فيديوهات CGI قصيرة (5 ثواني)",
-        "تكلفة الصورة: 2 كريدت",
-        "تكلفة الفيديو: 13 كريدت",
+        `تكلفة الصورة: ${CREDIT_COSTS.IMAGE_GENERATION} كريدت`,
+        `تكلفة الفيديو: ${CREDIT_COSTS.VIDEO_SHORT} كريدت (قصير) / ${CREDIT_COSTS.VIDEO_LONG} كريدت (طويل)`,
+        `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت للصوت`,
         "دعم فني عبر الإيميل",
         "صالح لمدة 6 أشهر",
       ],
@@ -96,8 +97,9 @@ export default function Pricing() {
         `${CREDIT_PACKAGES.starter.credits} كريدت`,
         "صور CGI عالية الجودة (1024x1024)",
         "فيديوهات CGI قصيرة وطويلة",
-        "تكلفة الصورة: 2 كريدت",
-        "تكلفة الفيديو: 13 كريدت",
+        `تكلفة الصورة: ${CREDIT_COSTS.IMAGE_GENERATION} كريدت`,
+        `تكلفة الفيديو: ${CREDIT_COSTS.VIDEO_SHORT} كريدت (قصير) / ${CREDIT_COSTS.VIDEO_LONG} كريدت (طويل)`,
+        `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت للصوت`,
         "دعم فني سريع",
         "صالح لمدة 6 أشهر",
       ],
@@ -113,8 +115,9 @@ export default function Pricing() {
         `${CREDIT_PACKAGES.pro.credits} كريدت (أفضل قيمة!)`,
         "صور CGI عالية الجودة (1024x1024)",
         "فيديوهات CGI بدون حدود",
-        "تكلفة الصورة: 2 كريدت",
-        "تكلفة الفيديو: 13 كريدت",
+        `تكلفة الصورة: ${CREDIT_COSTS.IMAGE_GENERATION} كريدت`,
+        `تكلفة الفيديو: ${CREDIT_COSTS.VIDEO_SHORT} كريدت (قصير) / ${CREDIT_COSTS.VIDEO_LONG} كريدت (طويل)`,
+        `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت للصوت`,
         "أولوية في المعالجة",
         "دعم فني متقدم",
         "صالح لمدة 12 شهر",
@@ -131,8 +134,9 @@ export default function Pricing() {
         `${CREDIT_PACKAGES.business.credits} كريدت (أقصى توفير!)`,
         "صور CGI عالية الجودة (1024x1024)",
         "فيديوهات CGI بدون حدود",
-        "تكلفة الصورة: 2 كريدت",
-        "تكلفة الفيديو: 13 كريدت",
+        `تكلفة الصورة: ${CREDIT_COSTS.IMAGE_GENERATION} كريدت`,
+        `تكلفة الفيديو: ${CREDIT_COSTS.VIDEO_SHORT} كريدت (قصير) / ${CREDIT_COSTS.VIDEO_LONG} كريدت (طويل)`,
+        `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت للصوت`,
         "معالجة فورية",
         "دعم فني مخصص",
         "صالح لمدة 12 شهر",
@@ -144,8 +148,10 @@ export default function Pricing() {
   const features = [
     { name: "عدد الكريدت", tester: `${CREDIT_PACKAGES.tester.credits}`, starter: `${CREDIT_PACKAGES.starter.credits}`, pro: `${CREDIT_PACKAGES.pro.credits}`, business: `${CREDIT_PACKAGES.business.credits}` },
     { name: "دقة الصور", tester: "1024x1024", starter: "1024x1024", pro: "1024x1024", business: "1024x1024" },
-    { name: "الصور CGI", tester: "2 كريدت", starter: "2 كريدت", pro: "2 كريدت", business: "2 كريدت" },
-    { name: "الفيديوهات CGI (5s)", tester: "13 كريدت", starter: "13 كريدت", pro: "13 كريدت", business: "13 كريدت" },
+    { name: "الصور CGI", tester: `${CREDIT_COSTS.IMAGE_GENERATION} كريدت`, starter: `${CREDIT_COSTS.IMAGE_GENERATION} كريدت`, pro: `${CREDIT_COSTS.IMAGE_GENERATION} كريدت`, business: `${CREDIT_COSTS.IMAGE_GENERATION} كريدت` },
+    { name: "الفيديوهات CGI (قصير)", tester: `${CREDIT_COSTS.VIDEO_SHORT} كريدت`, starter: `${CREDIT_COSTS.VIDEO_SHORT} كريدت`, pro: `${CREDIT_COSTS.VIDEO_SHORT} كريدت`, business: `${CREDIT_COSTS.VIDEO_SHORT} كريدت` },
+    { name: "الفيديوهات CGI (طويل)", tester: `${CREDIT_COSTS.VIDEO_LONG} كريدت`, starter: `${CREDIT_COSTS.VIDEO_LONG} كريدت`, pro: `${CREDIT_COSTS.VIDEO_LONG} كريدت`, business: `${CREDIT_COSTS.VIDEO_LONG} كريدت` },
+    { name: "إضافة الصوت", tester: `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت`, starter: `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت`, pro: `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت`, business: `+${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت` },
     { name: "دعم Pinterest", tester: true, starter: true, pro: true, business: true },
     { name: "أولوية المعالجة", tester: false, starter: false, pro: true, business: true },
     { name: "صالح لمدة", tester: "6 أشهر", starter: "6 أشهر", pro: "12 شهر", business: "12 شهر" },
@@ -337,7 +343,7 @@ export default function Pricing() {
                       </svg>
                     </summary>
                     <p className="mt-4 text-muted-foreground">
-نظام الكريدت هو طريقة بسيطة للدفع مقابل استخدام خدمات CGI المتقدمة. كل صورة CGI تكلف 2 كريدت، وكل فيديو CGI (5 ثواني) يكلف 13 كريدت. يمكنك دمج منتجاتك في مشاهد Pinterest بذكاء اصطناعي.
+نظام الكريدت هو طريقة بسيطة للدفع مقابل استخدام خدمات CGI المتقدمة. كل صورة CGI تكلف ${CREDIT_COSTS.IMAGE_GENERATION} كريدت، والفيديو القصير يكلف ${CREDIT_COSTS.VIDEO_SHORT} كريدت والطويل ${CREDIT_COSTS.VIDEO_LONG} كريدت (مع إضافة ${CREDIT_COSTS.AUDIO_SURCHARGE} كريدت للصوت). يمكنك دمج منتجاتك في مشاهد Pinterest بذكاء اصطناعي.
                     </p>
                   </details>
                   

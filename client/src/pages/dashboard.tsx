@@ -18,6 +18,7 @@ import ProgressModal from "@/components/progress-modal";
 import SceneSelectionModal from "@/components/scene-selection-modal";
 import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera } from "lucide-react";
 import type { User as UserType, Project } from "@shared/schema";
+import { CREDIT_COSTS } from "@shared/constants";
 
 export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
@@ -693,8 +694,8 @@ export default function Dashboard() {
                             <CardContent className="p-6 text-center">
                               <Image className="h-8 w-8 mx-auto mb-3 text-primary" />
                               <h4 className="font-bold mb-2">صورة CGI</h4>
-                              <p className="text-sm text-muted-foreground mb-2">1 كريدت</p>
-                              <Badge variant="outline" className="text-xs">$0.003</Badge>
+                              <p className="text-sm text-muted-foreground mb-2">{CREDIT_COSTS.IMAGE_GENERATION} كريدت</p>
+                              <Badge variant="outline" className="text-xs">صورة واحدة</Badge>
                             </CardContent>
                           </Card>
                           <Card 
@@ -711,10 +712,13 @@ export default function Dashboard() {
                               <Video className="h-8 w-8 mx-auto mb-3 text-accent" />
                               <h4 className="font-bold mb-2">فيديو CGI</h4>
                               <p className="text-sm text-muted-foreground mb-2">
-                                5 كريدت
+                                {CREDIT_COSTS.VIDEO_SHORT} كريدت (قصير) / {CREDIT_COSTS.VIDEO_LONG} كريدت (طويل)
+                              </p>
+                              <p className="text-xs text-muted-foreground mb-2">
+                                +{CREDIT_COSTS.AUDIO_SURCHARGE} كريدت للصوت
                               </p>
                               <Badge variant="outline" className="text-xs">
-                                $0.13
+                                فيديو واحد
                               </Badge>
                             </CardContent>
                           </Card>

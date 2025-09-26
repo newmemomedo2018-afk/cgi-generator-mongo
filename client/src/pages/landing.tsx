@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Rocket, Play, Camera, Bot, Film, Star, Check } from "lucide-react";
 import { AuthDialog } from "@/components/auth/AuthDialog";
+import { CREDIT_COSTS } from "@shared/constants";
 import productImage from "@assets/generated_images/Modern_smartphone_product_photo_8515c516.png";
 import sceneImage from "@assets/generated_images/Modern_living_room_scene_8d384239.png";
 import resultImage from "@assets/generated_images/CGI_smartphone_composite_result_bc061ac4.png";
@@ -153,7 +154,7 @@ export default function Landing() {
                     <Badge className="credit-badge">محسّن</Badge>
                     <h3 className="text-lg font-bold mr-2">Google Gemini AI</h3>
                   </div>
-                  <p className="text-muted-foreground mb-4">إنتاج صور عالية الجودة بتكلفة معقولة - 2 كريدت لكل صورة</p>
+                  <p className="text-muted-foreground mb-4">إنتاج صور عالية الجودة بتكلفة معقولة - {CREDIT_COSTS.IMAGE_GENERATION} كريدت لكل صورة</p>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 text-yellow-500 ml-1" />
                     <span className="text-sm">جودة فائقة</span>
@@ -167,7 +168,8 @@ export default function Landing() {
                     <Badge className="credit-badge">متطور</Badge>
                     <h3 className="text-lg font-bold mr-2">Kling AI Video</h3>
                   </div>
-                  <p className="text-muted-foreground mb-4">فيديوهات CGI بجودة عالية - 10 كريدت (قصير) أو 18 كريدت (طويل)</p>
+                  <p className="text-muted-foreground mb-4">فيديوهات CGI بجودة عالية - {CREDIT_COSTS.VIDEO_SHORT} كريدت (قصير) أو {CREDIT_COSTS.VIDEO_LONG} كريدت (طويل)</p>
+                  <p className="text-xs text-muted-foreground mb-2">+{CREDIT_COSTS.AUDIO_SURCHARGE} كريدت إضافية للصوت</p>
                   <div className="flex items-center">
                     <Check className="h-4 w-4 text-green-500 ml-1" />
                     <span className="text-sm">جودة HD+</span>

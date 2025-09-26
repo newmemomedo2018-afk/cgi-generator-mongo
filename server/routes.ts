@@ -12,7 +12,7 @@ import { enhancePromptWithGemini, generateImageWithGemini } from './services/gem
 import { uploadToCloudinary } from './services/cloudinary';
 import multer from 'multer';
 
-import { COSTS, CREDIT_PACKAGES, ACTUAL_COSTS } from '@shared/constants';
+import { COSTS, CREDIT_PACKAGES, ACTUAL_COSTS, CREDIT_COSTS } from '@shared/constants';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
 import puppeteer from 'puppeteer';
@@ -554,10 +554,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // Calculate credits needed based on content type and audio inclusion
-      let creditsNeeded = clientProjectData.contentType === "image" ? 2 : 10; // Base: 2 for image, 10 for video
-      if (clientProjectData.contentType === "video" && clientProjectData.includeAudio) {
-        creditsNeeded += 5; // Additional 5 credits for audio
+      // Calculate credits needed based on content type, duration, and audio inclusion
+      let creditsNeeded: number;
+      
+      if (clientProjectData.contentType === "image") {
+        creditsNeeded = CREDIT_COSTS.IMAGE_GENERATION;
+      } else {
+        // Duration-based pricing for videos: 5s = short, 10s = long
+        const isShortVideo = (clientProjectData.videoDurationSeconds || 5) <= 5;
+        creditsNeeded = isShortVideo ? CREDIT_COSTS.VIDEO_SHORT : CREDIT_COSTS.VIDEO_LONG;
+        
+        // Additional cost for audio
+        if (clientProjectData.includeAudio) {
+          creditsNeeded += CREDIT_COSTS.AUDIO_SURCHARGE;
+        }
       }
       
       const isAdmin = user.isAdmin === true;

@@ -22,3 +22,11 @@ export const ACTUAL_COSTS = {
   GEMINI_VIDEO_ANALYSIS: 3,       // $0.003 actual cost
   VIDEO_GENERATION: 260           // $0.26 actual cost to Kling AI
 } as const;
+
+// Credit costs for services (consistent across all interfaces)
+export const CREDIT_COSTS = {
+  IMAGE_GENERATION: 2,           // 2 credits per image
+  VIDEO_SHORT: 13,               // 13 credits per short video (5s)
+  VIDEO_LONG: 18,                // 18 credits per long video (10s)
+  AUDIO_SURCHARGE: 5             // +5 credits for audio in videos
+} as const;

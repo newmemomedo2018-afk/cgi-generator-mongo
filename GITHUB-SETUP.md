@@ -129,7 +129,9 @@ Ensure these collections are created:
 - [ ] User registration/login
 - [ ] Credit package purchase
 - [ ] Image generation (2 credits)
-- [ ] Video generation (10 credits)
+- [ ] Video generation short (13 credits)
+- [ ] Video generation long (18 credits)
+- [ ] Audio enhancement (+5 credits)
 - [ ] Download generated content
 
 ### 6.2 Payment Flow Test
