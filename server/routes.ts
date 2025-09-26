@@ -2243,6 +2243,87 @@ function setupHealthCheckRoutes(app: Express) {
     }
   });
 
+  // Simple rate limiting for health check - FIXED
+  const healthCheckRateLimit = new Map<string, number[]>();
+  const RATE_LIMIT_WINDOW = 60000; // 1 minute
+  const MAX_REQUESTS = 10; // 10 requests per minute per IP
+  
+  // In-memory cache for health check results
+  let healthCheckCache: any = null;
+  let cacheExpiry = 0;
+  const CACHE_TTL = 120000; // 2 minutes
+
+  // Comprehensive external services health check endpoint
+  app.get('/api/health/comprehensive', async (req, res) => {
+    try {
+      // Rate limiting - FIXED LOGIC
+      const clientIP = req.ip || 'unknown';
+      const now = Date.now();
+      const windowStart = now - RATE_LIMIT_WINDOW;
+      
+      // Get or create request timestamps for this IP
+      if (!healthCheckRateLimit.has(clientIP)) {
+        healthCheckRateLimit.set(clientIP, []);
+      }
+      
+      const ipRequests = healthCheckRateLimit.get(clientIP)!;
+      
+      // Clean old requests outside the window
+      const validRequests = ipRequests.filter(timestamp => timestamp > windowStart);
+      healthCheckRateLimit.set(clientIP, validRequests);
+      
+      // Check if rate limit exceeded
+      if (validRequests.length >= MAX_REQUESTS) {
+        return res.status(429).json({
+          overall: 'rate_limited',
+          timestamp: new Date().toISOString(),
+          error: 'Too many health check requests. Please wait before trying again.',
+          retryAfter: Math.ceil(RATE_LIMIT_WINDOW / 1000)
+        });
+      }
+      
+      // Add current request
+      validRequests.push(now);
+      healthCheckRateLimit.set(clientIP, validRequests);
+      
+      // Check cache first - FIXED STATUS CODE HANDLING
+      if (healthCheckCache && now < cacheExpiry) {
+        const cachedResult = {
+          ...healthCheckCache,
+          cached: true,
+          cacheAge: Math.round((now - (cacheExpiry - CACHE_TTL)) / 1000)
+        };
+        
+        // Set correct status code based on cached health status
+        const statusCode = healthCheckCache.overall === 'healthy' ? 200 : 
+                          healthCheckCache.overall === 'warning' ? 200 : 503;
+        
+        return res.status(statusCode).json(cachedResult);
+      }
+      
+      // Run comprehensive health check
+      const { runComprehensiveHealthCheck } = await import('./services/health-tester');
+      const healthResult = await runComprehensiveHealthCheck();
+      
+      // Cache the result
+      healthCheckCache = healthResult;
+      cacheExpiry = now + CACHE_TTL;
+      
+      const statusCode = healthResult.overall === 'healthy' ? 200 : 
+                        healthResult.overall === 'warning' ? 200 : 503;
+      
+      res.status(statusCode).json(healthResult);
+    } catch (error) {
+      res.status(500).json({
+        overall: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        services: [],
+        summary: { healthy: 0, unhealthy: 1, warning: 0, total: 1 },
+        error: 'Health check service failed to load',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
 
   // Production setup endpoint - run once to initialize admin user (HEAVILY PROTECTED)
   app.post('/api/setup-production', async (req, res) => {
