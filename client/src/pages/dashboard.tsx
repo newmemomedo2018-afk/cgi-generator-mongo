@@ -228,11 +228,17 @@ export default function Dashboard() {
       console.log("📍 Switching to my-projects tab...");
       setActiveTab("my-projects");
       
-      // Add delay to ensure tab switch completes before modal
+      // Add delay to ensure tab switch completes and is visible before modal
       setTimeout(() => {
         console.log("🔄 Showing progress modal after tab switch...");
         setShowProgressModal(true);
-      }, 100);
+        
+        // Scroll to ensure the tab is visible
+        const tabsContainer = document.querySelector('[role="tablist"]');
+        if (tabsContainer) {
+          tabsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 200);
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
