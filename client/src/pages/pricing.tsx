@@ -71,14 +71,16 @@ export default function Pricing() {
   const packages = [
     {
       id: "tester",
-      name: "التيستر",
+      name: CREDIT_PACKAGES.tester.name,
       icon: <TestTube className="h-8 w-8" />,
-      price: 10,
-      credits: 100,
+      price: CREDIT_PACKAGES.tester.price,
+      credits: CREDIT_PACKAGES.tester.credits,
       features: [
-        "100 كريدت",
+        `${CREDIT_PACKAGES.tester.credits} كريدت`,
         "صور CGI عالية الجودة (1024x1024)",
-        "فيديوهات قصيرة (5 ثواني)",
+        "فيديوهات CGI قصيرة (5 ثواني)",
+        "تكلفة الصورة: 2 كريدت",
+        "تكلفة الفيديو: 13 كريدت",
         "دعم فني عبر الإيميل",
         "صالح لمدة 6 أشهر",
       ],
@@ -86,14 +88,16 @@ export default function Pricing() {
     },
     {
       id: "starter",
-      name: "المبتدئ",
+      name: CREDIT_PACKAGES.starter.name,
       icon: <Rocket className="h-8 w-8" />,
-      price: 25,
-      credits: 250,
+      price: CREDIT_PACKAGES.starter.price,
+      credits: CREDIT_PACKAGES.starter.credits,
       features: [
-        "250 كريدت",
+        `${CREDIT_PACKAGES.starter.credits} كريدت`,
         "صور CGI عالية الجودة (1024x1024)",
-        "فيديوهات قصيرة وطويلة",
+        "فيديوهات CGI قصيرة وطويلة",
+        "تكلفة الصورة: 2 كريدت",
+        "تكلفة الفيديو: 13 كريدت",
         "دعم فني سريع",
         "صالح لمدة 6 أشهر",
       ],
@@ -101,14 +105,16 @@ export default function Pricing() {
     },
     {
       id: "pro",
-      name: "المحترف",
+      name: CREDIT_PACKAGES.pro.name,
       icon: <Star className="h-8 w-8" />,
-      price: 50,
-      credits: 550,
+      price: CREDIT_PACKAGES.pro.price,
+      credits: CREDIT_PACKAGES.pro.credits,
       features: [
-        "550 كريدت (10% مجاناً)",
+        `${CREDIT_PACKAGES.pro.credits} كريدت (أفضل قيمة!)`,
         "صور CGI عالية الجودة (1024x1024)",
-        "فيديوهات بدون حدود",
+        "فيديوهات CGI بدون حدود",
+        "تكلفة الصورة: 2 كريدت",
+        "تكلفة الفيديو: 13 كريدت",
         "أولوية في المعالجة",
         "دعم فني متقدم",
         "صالح لمدة 12 شهر",
@@ -117,14 +123,16 @@ export default function Pricing() {
     },
     {
       id: "business",
-      name: "الأعمال",
+      name: CREDIT_PACKAGES.business.name,
       icon: <Building className="h-8 w-8" />,
-      price: 100,
-      credits: 1200,
+      price: CREDIT_PACKAGES.business.price,
+      credits: CREDIT_PACKAGES.business.credits,
       features: [
-        "1200 كريدت (20% مجاناً)",
+        `${CREDIT_PACKAGES.business.credits} كريدت (أقصى توفير!)`,
         "صور CGI عالية الجودة (1024x1024)",
-        "فيديوهات بدون حدود",
+        "فيديوهات CGI بدون حدود",
+        "تكلفة الصورة: 2 كريدت",
+        "تكلفة الفيديو: 13 كريدت",
         "معالجة فورية",
         "دعم فني مخصص",
         "صالح لمدة 12 شهر",
@@ -134,12 +142,13 @@ export default function Pricing() {
   ];
 
   const features = [
-    { name: "عدد الكريدت", tester: "100", starter: "250", pro: "550", business: "1200" },
+    { name: "عدد الكريدت", tester: `${CREDIT_PACKAGES.tester.credits}`, starter: `${CREDIT_PACKAGES.starter.credits}`, pro: `${CREDIT_PACKAGES.pro.credits}`, business: `${CREDIT_PACKAGES.business.credits}` },
     { name: "دقة الصور", tester: "1024x1024", starter: "1024x1024", pro: "1024x1024", business: "1024x1024" },
-    { name: "الصور", tester: "2 كريدت", starter: "2 كريدت", pro: "2 كريدت", business: "2 كريدت" },
-    { name: "الفيديوهات القصيرة (5s)", tester: "10 كريدت", starter: "10 كريدت", pro: "10 كريدت", business: "10 كريدت" },
-    { name: "الفيديوهات الطويلة (10s)", tester: "18 كريدت", starter: "18 كريدت", pro: "18 كريدت", business: "18 كريدت" },
+    { name: "الصور CGI", tester: "2 كريدت", starter: "2 كريدت", pro: "2 كريدت", business: "2 كريدت" },
+    { name: "الفيديوهات CGI (5s)", tester: "13 كريدت", starter: "13 كريدت", pro: "13 كريدت", business: "13 كريدت" },
+    { name: "دعم Pinterest", tester: true, starter: true, pro: true, business: true },
     { name: "أولوية المعالجة", tester: false, starter: false, pro: true, business: true },
+    { name: "صالح لمدة", tester: "6 أشهر", starter: "6 أشهر", pro: "12 شهر", business: "12 شهر" },
   ];
 
   return (
@@ -251,10 +260,10 @@ export default function Pricing() {
                     <thead>
                       <tr className="border-b border-border">
                         <th className="p-4 text-right">المميزة</th>
-                        <th className="p-4">التيستر</th>
-                        <th className="p-4">المبتدئ</th>
-                        <th className="p-4">المحترف</th>
-                        <th className="p-4">الأعمال</th>
+                        <th className="p-4">{CREDIT_PACKAGES.tester.name}</th>
+                        <th className="p-4">{CREDIT_PACKAGES.starter.name}</th>
+                        <th className="p-4">{CREDIT_PACKAGES.pro.name}</th>
+                        <th className="p-4">{CREDIT_PACKAGES.business.name}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -328,7 +337,7 @@ export default function Pricing() {
                       </svg>
                     </summary>
                     <p className="mt-4 text-muted-foreground">
-نظام الكريدت هو طريقة بسيطة للدفع مقابل استخدام خدمات CGI. كل صورة تكلف 2 كريدت، وكل فيديو قصير يكلف 10 كريدت، والفيديو الطويل يكلف 18 كريدت.
+نظام الكريدت هو طريقة بسيطة للدفع مقابل استخدام خدمات CGI المتقدمة. كل صورة CGI تكلف 2 كريدت، وكل فيديو CGI (5 ثواني) يكلف 13 كريدت. يمكنك دمج منتجاتك في مشاهد Pinterest بذكاء اصطناعي.
                     </p>
                   </details>
                   
