@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,6 +28,7 @@ interface SceneSelectionModalProps {
   onSceneSelect: (scene: SceneData, productSize?: 'normal' | 'emphasized') => void;
   productImageUrl?: string;
   productType?: string;
+  resetKey?: string; // Add resetKey prop for clearing modal state
 }
 
 export default function SceneSelectionModal({
@@ -35,7 +36,8 @@ export default function SceneSelectionModal({
   onClose,
   onSceneSelect,
   productImageUrl,
-  productType = 'أثاث'
+  productType = 'أثاث',
+  resetKey
 }: SceneSelectionModalProps) {
   const [pinterestUrl, setPinterestUrl] = useState('');
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
@@ -43,6 +45,10 @@ export default function SceneSelectionModal({
   const [isExtracting, setIsExtracting] = useState(false);
   const [smartSearchTerms, setSmartSearchTerms] = useState<string[]>([]);
   const [isAnalyzingProduct, setIsAnalyzingProduct] = useState(false);
+
+  // 🔄 Refs and controllers for race condition prevention
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const currentResetKeyRef = useRef<string | undefined>(resetKey);
 
   // Debug logging for state changes
   console.log('🔄 Modal state:', { 
@@ -60,8 +66,34 @@ export default function SceneSelectionModal({
     }
   }, [isOpen, productImageUrl]);
 
+  // 🔄 Reset modal state when resetKey changes
+  useEffect(() => {
+    if (resetKey) {
+      console.log('🔄 SceneSelectionModal: Resetting state due to resetKey change:', resetKey);
+      
+      // Cancel any ongoing async operations
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort('Reset triggered');
+        abortControllerRef.current = null;
+      }
+      
+      // Update current reset key for race condition checking
+      currentResetKeyRef.current = resetKey;
+      
+      // Reset all state
+      setPinterestUrl('');
+      setProductSize('normal');
+      setExtractedImageUrl(null);
+      setIsExtracting(false);
+      setSmartSearchTerms([]);
+      setIsAnalyzingProduct(false);
+    }
+  }, [resetKey]);
+
   const analyzeProductForSearch = async () => {
     if (!productImageUrl) return;
+
+    const startResetKey = currentResetKeyRef.current;
 
     try {
       setIsAnalyzingProduct(true);
@@ -74,6 +106,12 @@ export default function SceneSelectionModal({
       const analysis = await response.json();
       console.log('✅ Product analysis result:', analysis);
       
+      // 🔄 Check if reset occurred during async operation
+      if (currentResetKeyRef.current !== startResetKey) {
+        console.log('⚠️ analyzeProductForSearch: Reset occurred during operation, skipping state update');
+        return;
+      }
+      
       if (analysis.pinterestSearchTerms && analysis.pinterestSearchTerms.length > 0) {
         setSmartSearchTerms(analysis.pinterestSearchTerms);
         console.log('🎯 Smart Pinterest search terms:', analysis.pinterestSearchTerms);
@@ -84,10 +122,16 @@ export default function SceneSelectionModal({
       
     } catch (error) {
       console.error('Product analysis failed:', error);
-      // Fallback to default terms
-      setSmartSearchTerms([`${productType} cgi scene`]);
+      
+      // 🔄 Check if reset occurred before setting fallback
+      if (currentResetKeyRef.current === startResetKey) {
+        setSmartSearchTerms([`${productType} cgi scene`]);
+      }
     } finally {
-      setIsAnalyzingProduct(false);
+      // 🔄 Only update if no reset occurred
+      if (currentResetKeyRef.current === startResetKey) {
+        setIsAnalyzingProduct(false);
+      }
     }
   };
 
@@ -105,17 +149,22 @@ export default function SceneSelectionModal({
       return;
     }
 
+    const startResetKey = currentResetKeyRef.current;
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
       setIsExtracting(true);
       setExtractedImageUrl(null);
       
-      // Extract real image URL from Pinterest post
+      // Extract real image URL from Pinterest post with AbortController
       const response = await fetch('/api/extract-pinterest-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ pinterestUrl })
+        body: JSON.stringify({ pinterestUrl }),
+        signal: abortController.signal
       });
 
       if (!response.ok) {
@@ -126,6 +175,12 @@ export default function SceneSelectionModal({
       const result = await response.json();
       console.log('🔍 Full API response:', result);
       
+      // 🔄 Check if reset occurred during async operation
+      if (currentResetKeyRef.current !== startResetKey) {
+        console.log('⚠️ handleUsePinterestImage: Reset occurred during operation, skipping state update');
+        return;
+      }
+      
       const { imageUrl } = result;
       console.log('✅ Pinterest image extracted:', { original: pinterestUrl, extracted: imageUrl });
       
@@ -133,15 +188,21 @@ export default function SceneSelectionModal({
         throw new Error('لم يتم العثور على رابط صورة صالح');
       }
       
-      // Show preview of extracted image
+      // Show preview of extracted image (only if not reset)
       console.log('🎯 Setting extracted image URL:', imageUrl);
       setExtractedImageUrl(imageUrl);
       console.log('✅ State updated with extracted URL');
       setIsExtracting(false);
       
-      // Auto-confirm and close modal after successful extraction
+      // Auto-confirm and close modal after successful extraction (with race condition guard)
       console.log('🚀 Auto-confirming Pinterest image selection...');
       setTimeout(() => {
+        // 🔄 Final check before applying scene selection
+        if (currentResetKeyRef.current !== startResetKey) {
+          console.log('⚠️ handleUsePinterestImage: Reset occurred before scene selection, skipping');
+          return;
+        }
+        
         const customScene: SceneData = {
           id: `pinterest_${Date.now()}`,
           name: 'مشهد Pinterest',
@@ -160,10 +221,19 @@ export default function SceneSelectionModal({
       }, 500); // Small delay to let user see the extracted image briefly
       
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('🔄 Pinterest extraction aborted due to reset');
+        return;
+      }
+      
       console.error('Pinterest image extraction failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
       alert(`فشل في استخراج الصورة: ${errorMessage}`);
-      setIsExtracting(false);
+      
+      // 🔄 Only update state if no reset occurred
+      if (currentResetKeyRef.current === startResetKey) {
+        setIsExtracting(false);
+      }
     }
   };
 

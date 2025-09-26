@@ -17,7 +17,7 @@ import UploadZone from "@/components/upload-zone";
 import ProjectCard from "@/components/project-card";
 import ProgressModal from "@/components/progress-modal";
 import SceneSelectionModal from "@/components/scene-selection-modal";
-import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera } from "lucide-react";
+import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera, RotateCcw } from "lucide-react";
 import type { User as UserType, Project } from "@shared/schema";
 import { CREDIT_COSTS } from "@shared/constants";
 
@@ -307,6 +307,63 @@ export default function Dashboard() {
     }
   }, [user, authLoading, toast]);
 
+  // 🔄 COMPREHENSIVE INTERFACE RESET SYSTEM
+  const resetInterfaceState = () => {
+    console.log("🔄 Resetting interface state for new project...");
+    
+    // 1. Reset main project form data
+    setProjectData({
+      title: "",
+      description: "",
+      productImageUrl: "",
+      sceneImageUrl: "",
+      sceneVideoUrl: "",
+      contentType: "image",
+      videoDurationSeconds: 5,
+      resolution: "1920x1080", 
+      quality: "standard",
+      includeAudio: false
+    });
+    
+    // 2. Reset upload status flags
+    setIsProductImageUploaded(false);
+    setIsSceneImageUploaded(false);
+    
+    // 3. Generate new reset key to clear UploadZone previews and component state
+    setResetKey(Date.now().toString());
+    
+    // 4. Close any open modals
+    setShowProgressModal(false);
+    setShowSceneSelector(false);
+    
+    // 5. Clear Pinterest/scene selection related localStorage
+    localStorage.removeItem('pinterest_copied_url');
+    localStorage.removeItem('pinterest_copied_timestamp');
+    
+    // 6. Refresh user data to get latest credits
+    queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    
+    // 7. Cancel and clear scene search caches to prevent stale results
+    queryClient.cancelQueries({ queryKey: ["/api/analyze-product"] });
+    queryClient.cancelQueries({ queryKey: ["/api/pinterest"] }); 
+    queryClient.cancelQueries({ queryKey: ["/api/scenes"] });
+    queryClient.cancelQueries({ queryKey: ["/api/extract-pinterest-image"] });
+    
+    queryClient.removeQueries({ queryKey: ["/api/analyze-product"] });
+    queryClient.removeQueries({ queryKey: ["/api/pinterest"] }); 
+    queryClient.removeQueries({ queryKey: ["/api/scenes"] });
+    queryClient.removeQueries({ queryKey: ["/api/extract-pinterest-image"] });
+    
+    console.log("✅ Interface state reset completed");
+    
+    // 8. Show feedback to user
+    toast({
+      title: "🔄 تم تنظيف الواجهة",
+      description: "جاهز للبدء في مشروع جديد",
+      duration: 2000,
+    });
+  };
+
   const handleLogout = () => {
     // Clear JWT token from localStorage
     localStorage.removeItem('auth_token');
@@ -505,6 +562,14 @@ export default function Dashboard() {
             <Tabs value={activeTab} onValueChange={(tab) => {
               localStorage.setItem('dashboard-active-tab', tab);
               setActiveTab(tab);
+              
+              // 🔄 Auto-reset interface when switching to new-project tab for clean start
+              if (tab === "new-project" && activeTab !== "new-project") {
+                console.log("🔄 Switching to new-project tab - triggering interface reset...");
+                setTimeout(() => {
+                  resetInterfaceState();
+                }, 300); // Small delay to ensure tab switch completes first
+              }
             }} className="w-full">
               <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 glass-card p-1">
                 <TabsTrigger value="new-project" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
@@ -527,8 +592,19 @@ export default function Dashboard() {
                 <div className="grid lg:grid-cols-2 gap-8 mb-12">
                   {/* Upload Section */}
                   <Card className="glass-card">
-                    <CardHeader>
+                    <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle className="text-2xl">رفع الصور</CardTitle>
+                      {/* Manual Reset Button */}
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={resetInterfaceState}
+                        className="text-xs"
+                        data-testid="button-reset-form"
+                      >
+                        <RotateCcw className="ml-1 h-4 w-4" />
+                        مسح الكل
+                      </Button>
                     </CardHeader>
                     <CardContent className="space-y-8">
                       {/* Product Image Section */}
@@ -1136,6 +1212,7 @@ export default function Dashboard() {
         onSceneSelect={handleSceneSelection}
         productImageUrl={projectData.productImageUrl}
         productType="أثاث" // TODO: Extract product type from analysis
+        resetKey={resetKey} // Pass resetKey to clear modal state
       />
     </div>
   );
