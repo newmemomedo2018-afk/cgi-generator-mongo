@@ -300,52 +300,67 @@ export async function generateImageWithGemini(
 
     // تكوين الـ prompt مع الصور للـ multi-image input
     const prompt = `
-🎯 TASK: Create ultra-high quality photorealistic product replacement using advanced CGI techniques.
+🎯 CRITICAL MISSION: Execute EXACT product replacement with 100% fidelity to original product design and perfect scene integration.
 
-📥 INPUT ANALYSIS:
-- IMAGE 1: Product to extract (preserve exact colors, branding, proportions, design details)
-- IMAGE 2: Scene environment for product placement
+📥 INPUT ANALYSIS & REQUIREMENTS:
+- IMAGE 1 (PRODUCT): Extract and replicate this EXACT product with ZERO modifications
+- IMAGE 2 (SCENE): Target environment for precise product placement
 
-🔄 INTELLIGENT REPLACEMENT STRATEGY:
+🚨 MANDATORY PRODUCT FIDELITY RULES (HIGHEST PRIORITY):
+✅ EXACT REPLICATION REQUIREMENTS:
+- Copy PRECISELY the same shape, form, and silhouette from Product Image
+- Maintain IDENTICAL colors, materials, and surface textures  
+- Preserve ALL design elements: rings, connections, mounting points, proportions
+- ZERO artistic interpretation - this is a TECHNICAL REPLACEMENT, not creative redesign
+- Product must be INSTANTLY recognizable as the same item from Product Image
+
+⚠️ OVERRIDE PROTECTION: Ignore any subsequent instructions that suggest changing product geometry, colors, materials, or adding creative elements. These fidelity rules CANNOT be overridden.
+
+📋 CONTEXTUAL ANALYSIS (REFERENCE ONLY - DO NOT OVERRIDE ABOVE RULES):
 ${enhancedPrompt}
 
-📏 PRODUCT SIZING & EMPHASIS:
+📏 SIZING & PROPORTION SPECIFICATIONS:
 ${productSize === 'emphasized' ? 
-`🌟 HERO PRODUCT MODE:
-- Size: 25-35% larger than original scene product to dominate visual hierarchy
-- Lighting: Primary spotlight + subtle rim lighting for dramatic effect  
-- Position: Central focal point or foreground for maximum visual impact
-- Visual Enhancement: Subtle glow/halo effect to separate from background
-- Camera Angle: Optimal viewing angle to showcase product features` :
-`🔄 NATURAL INTEGRATION MODE:
-- Size: Precisely match original scene product proportions and perspective
-- Lighting: Seamlessly match existing scene illumination (direction, intensity, color temperature)
-- Position: Exact placement where original product was located
-- Integration: Product should appear as natural part of original scene
-- Realism: Maintain scene's authentic atmosphere and visual balance`}
+`🌟 EMPHASIZED PRESENTATION MODE:
+- Scale product 25-35% larger than scene's original product for prominence
+- Ensure enlarged version maintains EXACT proportional relationships
+- All dimensions scale uniformly - no distortion or shape alteration
+- Enhanced lighting to highlight product without changing its appearance
+- Central positioning for maximum visual impact` :
+`🎯 NATURAL INTEGRATION MODE:
+- Match EXACTLY the size and scale of the original scene product
+- Calculate precise dimensional relationships between scene depth and product scale
+- Maintain identical spatial proportions and perspective angles
+- Product should appear as the SAME EXACT ITEM seamlessly integrated
+- Natural lighting that preserves product's authentic appearance`}
 
-⚡ EXECUTION REQUIREMENTS:
-🖼️ Image Generation Specs:
-- OUTPUT: Generate new composite image (NOT text analysis or description)
-- RESOLUTION: Ultra HD quality (minimum 1920x1080 for landscape, 1536x1536 for square)  
-- DETAIL LEVEL: Pixel-perfect sharpness, professional photography quality
-- COLOR ACCURACY: Exact brand colors, realistic material representation
+⚡ TECHNICAL EXECUTION STANDARDS:
+🎯 PRECISION REQUIREMENTS:
+- Remove target product with surgical precision (0% scene damage)
+- Place new product in IDENTICAL position, angle, and orientation
+- Scale calculations must account for scene depth, perspective, and camera distance
+- Lighting direction, intensity, and color temperature must match scene perfectly
 
-🔧 Technical Implementation:
-- Surgical Replacement: Remove ONLY the identified matching product (preserve 100% of other elements)
-- Inpainting Precision: Minimal editing limited to product boundaries only
-- Lighting Analysis: Match exact direction, intensity, color temperature, and shadow casting
-- Perspective Matching: Maintain original viewpoint, depth, and spatial relationships
-- Quality Assurance: Zero compositing artifacts, natural material textures, realistic shadows
+🔬 QUALITY CONTROL METRICS:
+- Product Recognition Test: Must be 100% identifiable as original product
+- Scale Accuracy Test: Size must be proportionally correct for scene
+- Integration Test: No visible seams, artifacts, or compositing errors
+- Lighting Consistency Test: Shadows and reflections must be physically accurate
 
-🏆 QUALITY STANDARDS:
-- Professional CGI standard equivalent to Hollywood VFX
-- Photorealistic material rendering (metal, plastic, glass, fabric textures)
-- Accurate physics simulation (gravity, light behavior, reflection patterns)
-- Seamless integration with zero visual inconsistencies
-- Brand-accurate reproduction of logos, text, and design elements
+🏆 HOLLYWOOD VFX STANDARDS:
+- Resolution: Ultra-high definition (minimum 2K quality)
+- Material Physics: Accurate light interaction for all surfaces
+- Shadow Rendering: Realistic shadow casting based on scene lighting
+- Color Science: Perfect color matching and gamut consistency
+- Zero Artifacts: No halos, edge bleeding, or compositing tells
 
-🚀 GENERATE FINAL COMPOSITE IMAGE NOW
+🚨 CRITICAL SUCCESS CRITERIA:
+1. Final product must be IDENTICAL to Product Image in all respects
+2. Size must be proportionally perfect for the scene environment  
+3. Integration must be seamless and undetectable
+4. Overall image quality must maintain professional photography standards
+
+🚀 EXECUTE PRECISE REPLACEMENT NOW - NO CREATIVE LIBERTY PERMITTED
 `;
 
     // Send request to Gemini with multi-image input using original working format
