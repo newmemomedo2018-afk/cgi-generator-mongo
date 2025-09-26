@@ -228,9 +228,11 @@ export default function Dashboard() {
       console.log("📍 Switching to my-projects tab...");
       setActiveTab("my-projects");
       
-      // Then show modal and refresh data
-      console.log("🔄 Showing progress modal...");
-      setShowProgressModal(true);
+      // Add delay to ensure tab switch completes before modal
+      setTimeout(() => {
+        console.log("🔄 Showing progress modal after tab switch...");
+        setShowProgressModal(true);
+      }, 100);
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
