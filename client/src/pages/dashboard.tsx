@@ -224,21 +224,28 @@ export default function Dashboard() {
         description: "بدأت معالجة مشروع CGI الخاص بك",
       });
       
-      // 🚀 Auto-navigate to projects tab FIRST before modal
+      // 🚀 Auto-navigate to projects tab with clear visual feedback
       console.log("📍 Switching to my-projects tab...");
       setActiveTab("my-projects");
       
-      // Add delay to ensure tab switch completes and is visible before modal
+      // Show immediate toast feedback to user
+      toast({
+        title: "تم إنشاء المشروع ✅",
+        description: "سيتم عرض التقدم في تاب 'مشاريعي'",
+        duration: 3000,
+      });
+      
+      // Scroll to tabs immediately and add longer delay for modal
+      const tabsContainer = document.querySelector('[role="tablist"]');
+      if (tabsContainer) {
+        tabsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      
+      // Longer delay to ensure user sees the tab switch before modal appears
       setTimeout(() => {
         console.log("🔄 Showing progress modal after tab switch...");
         setShowProgressModal(true);
-        
-        // Scroll to ensure the tab is visible
-        const tabsContainer = document.querySelector('[role="tablist"]');
-        if (tabsContainer) {
-          tabsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 200);
+      }, 800);
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
