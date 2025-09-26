@@ -139,6 +139,26 @@ export default function SceneSelectionModal({
       console.log('✅ State updated with extracted URL');
       setIsExtracting(false);
       
+      // Auto-confirm and close modal after successful extraction
+      console.log('🚀 Auto-confirming Pinterest image selection...');
+      setTimeout(() => {
+        const customScene: SceneData = {
+          id: `pinterest_${Date.now()}`,
+          name: 'مشهد Pinterest',
+          description: 'مشهد تم اختياره من Pinterest',
+          imageUrl: imageUrl,
+          category: 'pinterest',
+          style: 'user-selected',
+          keywords: ['pinterest'],
+          lighting: 'natural',
+          colors: ['متنوع']
+        };
+        
+        onSceneSelect(customScene, productSize);
+        onClose();
+        console.log('✅ Pinterest scene auto-selected and modal closed');
+      }, 500); // Small delay to let user see the extracted image briefly
+      
     } catch (error) {
       console.error('Pinterest image extraction failed:', error);
       const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
