@@ -1159,8 +1159,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(404).json({ message: "File not found" });
         }
       } else {
-        // For external URLs, redirect
-        res.redirect(outputUrl);
+        // For external URLs (like Cloudinary), download and serve the file - SECURED
+        console.log("🔗 Processing external file download:", outputUrl.substring(0, 50) + '...');
+        
+        // SECURITY: Validate URL to prevent SSRF attacks
+        try {
+          const url = new URL(outputUrl);
+          
+          // Allow only HTTPS
+          if (url.protocol !== 'https:') {
+            console.error("❌ Non-HTTPS URL rejected:", url.protocol);
+            return res.status(400).json({ message: "Only HTTPS URLs are allowed" });
+          }
+          
+          // Allowlist trusted domains
+          const allowedDomains = [
+            'res.cloudinary.com',
+            'cloudinary.com',
+            'images.unsplash.com'
+          ];
+          
+          const isAllowedDomain = allowedDomains.some(domain => 
+            url.hostname === domain || url.hostname.endsWith('.' + domain)
+          );
+          
+          if (!isAllowedDomain) {
+            console.error("❌ Domain not in allowlist:", url.hostname);
+            return res.status(400).json({ message: "Domain not allowed for download" });
+          }
+          
+          // Block private IP ranges
+          const hostname = url.hostname.toLowerCase();
+          if (hostname.match(/^10\./) || hostname.match(/^192\.168\./) || 
+              hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./) ||
+              hostname.includes('169.254.') || hostname.includes('127.0.0.1') ||
+              hostname === 'localhost') {
+            console.error("❌ Private IP range rejected:", hostname);
+            return res.status(400).json({ message: "Private network access not allowed" });
+          }
+          
+        } catch (urlError) {
+          console.error("❌ Invalid URL format:", urlError);
+          return res.status(400).json({ message: "Invalid URL format" });
+        }
+        
+        try {
+          // Add timeout and size limits
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+          
+          console.log("🌐 Fetching external file with security controls...");
+          const response = await fetch(outputUrl, {
+            signal: controller.signal,
+            headers: {
+              'User-Agent': 'CGI-Generator-Download/1.0'
+            }
+          });
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            console.error(`❌ External file fetch failed: ${response.status} ${response.statusText}`);
+            return res.status(502).json({ message: `External service error: ${response.status}` });
+          }
+          
+          // Check content length
+          const contentLength = response.headers.get('content-length');
+          if (contentLength && parseInt(contentLength) > 200 * 1024 * 1024) { // 200MB limit
+            console.error("❌ File too large:", contentLength);
+            return res.status(400).json({ message: "File too large (max 200MB)" });
+          }
+          
+          // Get MIME type from response headers (preferred) or fallback to detection
+          let mimeType = response.headers.get('content-type') || '';
+          let fileExt: string;
+          
+          if (project.contentType === "video") {
+            if (!mimeType.startsWith('video/')) {
+              mimeType = "video/mp4";
+            }
+            fileExt = "mp4";
+          } else {
+            if (!mimeType.startsWith('image/')) {
+              // Fallback to URL-based detection
+              const detectedExt = outputUrl.toLowerCase().includes('.jpg') || outputUrl.toLowerCase().includes('.jpeg') ? '.jpg' : '.png';
+              const extToMime: { [key: string]: string } = {
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg', 
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp'
+              };
+              mimeType = extToMime[detectedExt] || 'image/png';
+            }
+            fileExt = mimeType.includes('jpeg') ? 'jpg' : 
+                     mimeType.includes('png') ? 'png' :
+                     mimeType.includes('gif') ? 'gif' :
+                     mimeType.includes('webp') ? 'webp' : 'png';
+          }
+          
+          // Create safe filename with Arabic support using RFC 5987
+          const safeTitle = project.title.replace(/[^a-zA-Z0-9\u0600-\u06FF\s]/g, '_').trim();
+          const fileName = `${safeTitle}_${project.id}.${fileExt}`;
+          const encodedFileName = encodeURIComponent(fileName);
+          
+          // Set headers for download with Unicode support
+          res.setHeader('Content-Type', mimeType);
+          res.setHeader('Content-Disposition', `attachment; filename="${fileName}"; filename*=UTF-8''${encodedFileName}`);
+          if (contentLength) {
+            res.setHeader('Content-Length', contentLength);
+          }
+          
+          // STREAMING: Use pipeline for memory efficiency
+          console.log("📥 Streaming file to user...");
+          const reader = response.body?.getReader();
+          if (!reader) {
+            throw new Error("No response body available");
+          }
+          
+          try {
+            let totalBytes = 0;
+            const maxSize = 200 * 1024 * 1024; // 200MB
+            
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              totalBytes += value.length;
+              if (totalBytes > maxSize) {
+                throw new Error("File size exceeded during streaming");
+              }
+              
+              res.write(value);
+            }
+            
+            res.end();
+            console.log(`✅ File streamed successfully: ${totalBytes} bytes for project ${project.id}`);
+            
+          } finally {
+            reader.releaseLock();
+          }
+          
+        } catch (fetchError: any) {
+          console.error("❌ Failed to download external file:", fetchError);
+          if (fetchError?.name === 'AbortError') {
+            return res.status(408).json({ message: "Download timeout" });
+          }
+          // Fallback to redirect for compatibility
+          console.log("🔄 Falling back to redirect...");
+          res.redirect(outputUrl);
+        }
       }
     } catch (error) {
       console.error("Error downloading project:", error);
