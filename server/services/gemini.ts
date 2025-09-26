@@ -224,10 +224,18 @@ export async function enhancePromptWithGemini(
 طلب المستخدم المحدد: "${userDescription}"
 
 ⚡ اكتب الآن تعليمات دقيقة بالإنجليزية للذكاء الاصطناعي تؤكد على:
-1. إزالة المنتج القديم كاملاً أولاً (DELETE/REMOVE/ERASE FIRST)
-2. وضع المنتج الجديد في نفس المكان ثانياً (ADD NEW SECOND)
-3. منع وجود منتجين معاً (NO OVERLAPPING - REPLACEMENT NOT ADDITION)
-4. التأكيد على أن النتيجة النهائية تحتوي منتج واحد فقط
+
+🚫 CRITICAL FAILURE POINTS TO AVOID:
+- NEVER have two products of the same category in final result
+- NEVER add new product while keeping old one  
+- NEVER place new product in empty space - must replace existing one
+
+✅ MANDATORY EXECUTION STEPS:
+1. FIRST: ERASE/DELETE old product completely (ZERO traces left)
+2. SECOND: ADD new product in exact same location
+3. FINAL CHECK: Only ONE product of that category exists in result
+
+⚡ START YOUR ENGLISH INSTRUCTIONS WITH: "CRITICAL: This is a REPLACEMENT operation, NOT addition. The final image must contain exactly ONE lighting fixture where the old chandelier was."
 
 `;
 
