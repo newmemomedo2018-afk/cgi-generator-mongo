@@ -114,7 +114,97 @@ export interface TranslationKeys {
   action_download: string;
   action_preview: string;
   action_play: string;
-
+  
+  // Toast messages
+  toast_unauthorized_title: string;
+  toast_unauthorized_description: string;
+  toast_project_created_title: string;
+  toast_project_created_description: string;
+  toast_project_created_success_title: string;
+  toast_project_created_success_description: string;
+  toast_image_uploaded_title: string;
+  toast_product_image_uploaded_description: string;
+  toast_scene_image_uploaded_description: string;
+  toast_interface_reset_title: string;
+  toast_interface_reset_description: string;
+  
+  // Dashboard content
+  dashboard_content_type_image: string;
+  dashboard_content_type_video: string;
+  dashboard_video_duration_5: string;
+  dashboard_video_duration_10: string;
+  dashboard_audio_settings: string;
+  dashboard_total_cost: string;
+  dashboard_current_balance: string;
+  dashboard_start_cgi_production: string;
+  dashboard_credits_deducted_note: string;
+  dashboard_all_projects: string;
+  dashboard_processing_filter: string;
+  dashboard_completed_filter: string;
+  dashboard_failed_filter: string;
+  dashboard_costs_tracking: string;
+  dashboard_total_actual_cost: string;
+  dashboard_total_projects: string;
+  dashboard_image_projects: string;
+  dashboard_video_projects: string;
+  dashboard_project_cost_details: string;
+  dashboard_no_projects: string;
+  dashboard_start_new_project: string;
+  dashboard_no_costs: string;
+  dashboard_start_project_to_track: string;
+  
+  // Form labels advanced
+  form_description_placeholder: string;
+  form_output_resolution: string;
+  form_processing_quality: string;
+  
+  // Error messages
+  error_upload_product_image: string;
+  error_upload_scene_image: string;
+  error_project_creation: string;
+  error_title_required: string;
+  error_files_required: string;
+  error_insufficient_credits: string;
+  error_scene_selection: string;
+  
+  // Form UI text
+  form_start_by_uploading: string;
+  form_drag_drop_product: string;
+  form_drag_drop_scene: string;
+  // Navigation and header
+  nav_home_link: string;
+  nav_dashboard_link: string;
+  nav_pricing_link: string;
+  button_admin_panel: string;
+  button_logout: string;
+  text_credits: string;
+  
+  // Dashboard page
+  dashboard_title: string;
+  dashboard_subtitle: string;
+  
+  // Upload section  
+  upload_section_title: string;
+  button_clear_all: string;
+  button_edit_image: string;
+  button_change_scene: string;
+  button_custom_upload: string;
+  
+  // Scene library
+  scene_library_title: string;
+  scene_library_description: string;
+  scene_ai_powered_badge: string;
+  
+  // Project settings
+  project_settings_title: string;
+  form_project_title_label: string;
+  
+  // Additional messages
+  toast_file_uploaded: string;
+  toast_scene_selected: string;
+  toast_files_required: string;
+  toast_insufficient_credits: string;
+  
   // Features
   features_title: string;
   features_ai_title: string;
@@ -124,28 +214,6 @@ export interface TranslationKeys {
   features_speed_title: string;
   features_speed_description: string;
 
-  // Dashboard
-  dashboard_new_project: string;
-  dashboard_my_projects: string;
-  dashboard_title: string;
-  dashboard_description: string;
-  dashboard_upload_product: string;
-  dashboard_upload_scene: string;
-  dashboard_content_type: string;
-  dashboard_image: string;
-  dashboard_video: string;
-  dashboard_duration: string;
-  dashboard_audio: string;
-  dashboard_generate: string;
-  dashboard_reset: string;
-  dashboard_credits_needed: string;
-  dashboard_credits_available: string;
-
-  // Project status
-  status_pending: string;
-  status_processing: string;
-  status_completed: string;
-  status_failed: string;
 
   // Pricing
   pricing_title: string;
@@ -160,8 +228,6 @@ export interface TranslationKeys {
   action_cancel: string;
   action_delete: string;
   action_edit: string;
-  action_download: string;
-  action_preview: string;
   action_upload: string;
   action_close: string;
   action_confirm: string;
@@ -291,7 +357,97 @@ export const translations: Record<Language, TranslationKeys> = {
     action_download: 'Download',
     action_preview: 'Preview',
     action_play: 'Play',
-
+    
+    // Toast messages
+    toast_unauthorized_title: 'Unauthorized',
+    toast_unauthorized_description: 'You have been logged out. Logging in again...',
+    toast_project_created_title: 'Project Created',
+    toast_project_created_description: 'Started processing your CGI project',
+    toast_project_created_success_title: 'Project Created ✅',
+    toast_project_created_success_description: 'Progress will be shown in "My Projects" tab',
+    toast_image_uploaded_title: 'Image Uploaded',
+    toast_product_image_uploaded_description: 'Product image uploaded successfully',
+    toast_scene_image_uploaded_description: 'Scene image uploaded successfully',
+    toast_interface_reset_title: '🔄 Interface Cleaned',
+    toast_interface_reset_description: 'Ready to start a new project',
+    
+    // Dashboard content
+    dashboard_content_type_image: 'CGI Image',
+    dashboard_content_type_video: 'CGI Video',
+    dashboard_video_duration_5: '5 seconds',
+    dashboard_video_duration_10: '10 seconds',
+    dashboard_audio_settings: 'Audio Settings',
+    dashboard_total_cost: 'Total Cost:',
+    dashboard_current_balance: 'Your current balance:',
+    dashboard_start_cgi_production: 'Start CGI Production',
+    dashboard_credits_deducted_note: 'Credits will only be deducted after successful processing',
+    dashboard_all_projects: 'All Projects',
+    dashboard_processing_filter: 'Processing',
+    dashboard_completed_filter: 'Completed',
+    dashboard_failed_filter: 'Failed',
+    dashboard_costs_tracking: 'Track the real cost of using AI services',
+    dashboard_total_actual_cost: 'Total Actual Cost',
+    dashboard_total_projects: 'Total Projects',
+    dashboard_image_projects: 'Image Projects',
+    dashboard_video_projects: 'Video Projects',
+    dashboard_project_cost_details: 'Project Cost Details',
+    dashboard_no_projects: 'No projects yet',
+    dashboard_start_new_project: 'Start creating a new CGI project',
+    dashboard_no_costs: 'No costs yet',
+    dashboard_start_project_to_track: 'Start creating a project to track actual costs',
+    
+    // Form labels advanced
+    form_description_placeholder: 'Write a description that helps AI blend the product better with the chosen scene',
+    form_output_resolution: 'Output Resolution',
+    form_processing_quality: 'Processing Quality',
+    
+    // Error messages
+    error_upload_product_image: 'Product Image Upload Error',
+    error_upload_scene_image: 'Scene Image Upload Error',
+    error_project_creation: 'Project Creation Error',
+    error_title_required: 'Project title is required',
+    error_files_required: 'Please upload product image and scene file (image or video)',
+    error_insufficient_credits: 'Insufficient Credits',
+    error_scene_selection: 'Please select a scene first',
+    
+    // Form UI text
+    form_start_by_uploading: 'Start by uploading a product image',
+    form_drag_drop_product: 'Drag and drop your product image here',
+    form_drag_drop_scene: 'Drag and drop your scene image here',
+    // Navigation and header
+    nav_home_link: 'Home',
+    nav_dashboard_link: 'Dashboard',
+    nav_pricing_link: 'Pricing',
+    button_admin_panel: 'Admin Panel',
+    button_logout: 'Logout',
+    text_credits: 'credits',
+    
+    // Dashboard page
+    dashboard_title: 'Dashboard',
+    dashboard_subtitle: 'Create a new CGI project or continue your previous projects',
+    
+    // Upload section  
+    upload_section_title: 'Upload Images',
+    button_clear_all: 'Clear All',
+    button_edit_image: 'Edit Image',
+    button_change_scene: 'Change Scene',
+    button_custom_upload: 'Custom Upload',
+    
+    // Scene library
+    scene_library_title: 'Choose from Library',
+    scene_library_description: 'Amazing collection of ready-made scenes designed specifically for your product',
+    scene_ai_powered_badge: 'AI Powered ✨',
+    
+    // Project settings
+    project_settings_title: 'Project Settings',
+    form_project_title_label: 'Project Title',
+    
+    // Additional messages
+    toast_file_uploaded: 'File Uploaded',
+    toast_scene_selected: 'Scene Selected',
+    toast_files_required: 'Files Required',
+    toast_insufficient_credits: 'Insufficient Credits',
+    
     // Features
     features_title: 'Powerful Features',
     features_ai_title: 'AI-Powered Generation',
@@ -442,7 +598,97 @@ export const translations: Record<Language, TranslationKeys> = {
     action_download: 'تحميل',
     action_preview: 'معاينة',
     action_play: 'تشغيل',
-
+    
+    // Toast messages
+    toast_unauthorized_title: 'غير مخول',
+    toast_unauthorized_description: 'تم تسجيل الخروج. جاري تسجيل الدخول مرة أخرى...',
+    toast_project_created_title: 'تم إنشاء المشروع',
+    toast_project_created_description: 'بدأت معالجة مشروع CGI الخاص بك',
+    toast_project_created_success_title: 'تم إنشاء المشروع ✅',
+    toast_project_created_success_description: 'سيتم عرض التقدم في تاب "مشاريعي"',
+    toast_image_uploaded_title: 'تم رفع الصورة',
+    toast_product_image_uploaded_description: 'تم رفع صورة المنتج بنجاح',
+    toast_scene_image_uploaded_description: 'تم رفع صورة المشهد بنجاح',
+    toast_interface_reset_title: '🔄 تم تنظيف الواجهة',
+    toast_interface_reset_description: 'جاهز للبدء في مشروع جديد',
+    
+    // Dashboard content
+    dashboard_content_type_image: 'صورة CGI',
+    dashboard_content_type_video: 'فيديو CGI',
+    dashboard_video_duration_5: '5 ثوانِ',
+    dashboard_video_duration_10: '10 ثوانِ',
+    dashboard_audio_settings: 'إعدادات الصوت',
+    dashboard_total_cost: 'إجمالي التكلفة:',
+    dashboard_current_balance: 'رصيدك الحالي:',
+    dashboard_start_cgi_production: 'ابدأ إنتاج CGI',
+    dashboard_credits_deducted_note: 'سيتم خصم الكريدت بعد نجاح المعالجة فقط',
+    dashboard_all_projects: 'جميع المشاريع',
+    dashboard_processing_filter: 'قيد المعالجة',
+    dashboard_completed_filter: 'مكتملة',
+    dashboard_failed_filter: 'فاشلة',
+    dashboard_costs_tracking: 'تتبع التكلفة الحقيقية لاستخدام خدمات الذكاء الاصطناعي',
+    dashboard_total_actual_cost: 'إجمالي التكلفة الفعلية',
+    dashboard_total_projects: 'إجمالي المشاريع',
+    dashboard_image_projects: 'مشاريع الصور',
+    dashboard_video_projects: 'مشاريع الفيديو',
+    dashboard_project_cost_details: 'تفاصيل تكلفة المشاريع',
+    dashboard_no_projects: 'لا توجد مشاريع بعد',
+    dashboard_start_new_project: 'ابدأ بإنشاء مشروع CGI جديد',
+    dashboard_no_costs: 'لا توجد تكاليف بعد',
+    dashboard_start_project_to_track: 'ابدأ بإنشاء مشروع لتتبع التكاليف الفعلية',
+    
+    // Form labels advanced
+    form_description_placeholder: 'اكتب وصف يساعد الذكاء الاصطناعي في دمج المنتج بشكل أفضل مع المشهد المختار',
+    form_output_resolution: 'دقة الإخراج',
+    form_processing_quality: 'جودة المعالجة',
+    
+    // Error messages
+    error_upload_product_image: 'خطأ في رفع صورة المنتج',
+    error_upload_scene_image: 'خطأ في رفع صورة المشهد',
+    error_project_creation: 'خطأ في إنشاء المشروع',
+    error_title_required: 'عنوان المشروع مطلوب',
+    error_files_required: 'يرجى رفع صورة المنتج وملف المشهد (صورة أو فيديو)',
+    error_insufficient_credits: 'رصيد غير كافي',
+    error_scene_selection: 'يرجى اختيار مشهد أولاً',
+    
+    // Form UI text
+    form_start_by_uploading: 'ابدأ برفع صورة المنتج',
+    form_drag_drop_product: 'اسحب وأفلت صورة المنتج هنا',
+    form_drag_drop_scene: 'اسحب وأفلت صورة المشهد هنا',
+    // Navigation and header
+    nav_home_link: 'الرئيسية',
+    nav_dashboard_link: 'لوحة التحكم',
+    nav_pricing_link: 'الأسعار',
+    button_admin_panel: 'لوحة الأدمن',
+    button_logout: 'تسجيل الخروج',
+    text_credits: 'كريدت',
+    
+    // Dashboard page
+    dashboard_title: 'لوحة التحكم',
+    dashboard_subtitle: 'أنشئ مشروع CGI جديد أو تابع مشاريعك السابقة',
+    
+    // Upload section  
+    upload_section_title: 'رفع الصور',
+    button_clear_all: 'مسح الكل',
+    button_edit_image: 'تعديل الصورة',
+    button_change_scene: 'تغيير المشهد',
+    button_custom_upload: 'رفع مخصوص',
+    
+    // Scene library
+    scene_library_title: 'اختيار من المكتبة',
+    scene_library_description: 'مجموعة مذهلة من المشاهد الجاهزة المصممة خصيصا لمنتجك',
+    scene_ai_powered_badge: 'مدعوم بالذكاء الاصطناعي ✨',
+    
+    // Project settings
+    project_settings_title: 'إعدادات المشروع',
+    form_project_title_label: 'عنوان المشروع',
+    
+    // Additional messages
+    toast_file_uploaded: 'تم رفع الملف',
+    toast_scene_selected: 'تم اختيار المشهد',
+    toast_files_required: 'ملفات مطلوبة',
+    toast_insufficient_credits: 'كريدت غير كافي',
+    
     // Features
     features_title: 'مميزات قوية',
     features_ai_title: 'توليد بالذكاء الاصطناعي',

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import UploadZone from "@/components/upload-zone";
@@ -24,6 +25,7 @@ import { CREDIT_COSTS } from "@shared/constants";
 export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
   
   // Calculate total credits needed for current project configuration
@@ -154,8 +156,8 @@ export default function Dashboard() {
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "غير مخول",
-          description: "تم تسجيل الخروج. جاري تسجيل الدخول مرة أخرى...",
+          title: t('toast_unauthorized_title'),
+          description: t('toast_unauthorized_description'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -164,7 +166,7 @@ export default function Dashboard() {
         return;
       }
       toast({
-        title: "خطأ في رفع صورة المنتج",
+        title: t('error_upload_product_image'),
         description: error.message,
         variant: "destructive",
       });
@@ -197,8 +199,8 @@ export default function Dashboard() {
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "غير مخول",
-          description: "تم تسجيل الخروج. جاري تسجيل الدخول مرة أخرى...",
+          title: t('toast_unauthorized_title'),
+          description: t('toast_unauthorized_description'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -207,7 +209,7 @@ export default function Dashboard() {
         return;
       }
       toast({
-        title: "خطأ في رفع صورة المشهد",
+        title: t('error_upload_scene_image'),
         description: error.message,
         variant: "destructive",
       });
@@ -224,8 +226,8 @@ export default function Dashboard() {
       console.log("🚀 About to show modal and switch tabs...");
       
       toast({
-        title: "تم إنشاء المشروع",
-        description: "بدأت معالجة مشروع CGI الخاص بك",
+        title: t('toast_project_created_title'),
+        description: t('toast_project_created_description'),
       });
       
       // 🚀 Auto-navigate to projects tab with clear visual feedback and localStorage persistence
@@ -235,8 +237,8 @@ export default function Dashboard() {
       
       // Show immediate toast feedback to user
       toast({
-        title: "تم إنشاء المشروع ✅",
-        description: "سيتم عرض التقدم في تاب 'مشاريعي'",
+        title: t('toast_project_created_success_title'),
+        description: t('toast_project_created_success_description'),
         duration: 3000,
       });
       
@@ -276,8 +278,8 @@ export default function Dashboard() {
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "غير مخول",
-          description: "تم تسجيل الخروج. جاري تسجيل الدخول مرة أخرى...",
+          title: t('toast_unauthorized_title'),
+          description: t('toast_unauthorized_description'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -286,7 +288,7 @@ export default function Dashboard() {
         return;
       }
       toast({
-        title: "خطأ في إنشاء المشروع",
+        title: t('error_project_creation'),
         description: error.message,
         variant: "destructive",
       });
@@ -296,8 +298,8 @@ export default function Dashboard() {
   useEffect(() => {
     if (!authLoading && !user) {
       toast({
-        title: "غير مخول",
-        description: "تم تسجيل الخروج. جاري تسجيل الدخول مرة أخرى...",
+        title: t('toast_unauthorized_title'),
+        description: t('toast_unauthorized_description'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -358,8 +360,8 @@ export default function Dashboard() {
     
     // 8. Show feedback to user
     toast({
-      title: "🔄 تم تنظيف الواجهة",
-      description: "جاهز للبدء في مشروع جديد",
+      title: t('toast_interface_reset_title'),
+      description: t('toast_interface_reset_description'),
       duration: 2000,
     });
   };
@@ -379,8 +381,8 @@ export default function Dashboard() {
       setProjectData(prev => ({ ...prev, productImageUrl: result.url }));
       setIsProductImageUploaded(true);
       toast({
-        title: "تم رفع الصورة",
-        description: "تم رفع صورة المنتج بنجاح",
+        title: t('toast_image_uploaded_title'),
+        description: t('toast_product_image_uploaded_description'),
       });
     } catch (error) {
       setProjectData(prev => ({ ...prev, productImageUrl: "" }));
@@ -396,8 +398,8 @@ export default function Dashboard() {
       setProjectData(prev => ({ ...prev, sceneImageUrl: result.url }));
       setIsSceneImageUploaded(true);
       toast({
-        title: "تم رفع الصورة",
-        description: "تم رفع صورة المشهد بنجاح",
+        title: t('toast_image_uploaded_title'),
+        description: t('toast_scene_image_uploaded_description'),
       });
     } catch (error) {
       setProjectData(prev => ({ ...prev, sceneImageUrl: "" }));
@@ -428,7 +430,7 @@ export default function Dashboard() {
       
       setIsSceneImageUploaded(true);
       toast({
-        title: "تم رفع الملف",
+        title: t('toast_file_uploaded'),
         description: `تم رفع ${file.type.startsWith('video/') ? 'فيديو' : 'صورة'} المشهد بنجاح`,
       });
     } catch (error) {
@@ -460,7 +462,7 @@ export default function Dashboard() {
     // Show success toast
     const sizeText = productSize === 'emphasized' ? 'مُبرز وبارز' : 'مناسب للغرفة';
     toast({
-      title: "تم اختيار المشهد",
+      title: t('toast_scene_selected'),
       description: `تم اختيار "${scene.name || scene.title}" بحجم ${sizeText}`,
     });
 
@@ -474,8 +476,8 @@ export default function Dashboard() {
     
     if (!projectData.title.trim()) {
       toast({
-        title: "عنوان مطلوب",
-        description: "يرجى إدخال عنوان للمشروع",
+        title: t('error_title_required'),
+        description: t('error_title_required'),
         variant: "destructive",
       });
       return;
@@ -484,8 +486,8 @@ export default function Dashboard() {
     const hasSceneFile = projectData.sceneImageUrl || projectData.sceneVideoUrl;
     if (!projectData.productImageUrl || !hasSceneFile) {
       toast({
-        title: "ملفات مطلوبة",
-        description: "يرجى رفع صورة المنتج وملف المشهد (صورة أو فيديو)",
+        title: t('toast_files_required'),
+        description: t('error_files_required'),
         variant: "destructive",
       });
       return;
@@ -494,7 +496,7 @@ export default function Dashboard() {
     const creditsNeeded = calculateTotalCredits();
     if (userData && userData.credits < creditsNeeded) {
       toast({
-        title: "كريدت غير كافي",
+        title: t('toast_insufficient_credits'),
         description: `تحتاج إلى ${creditsNeeded} كريدت لهذا المشروع`,
         variant: "destructive",
       });
@@ -524,14 +526,14 @@ export default function Dashboard() {
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-reverse space-x-8">
-              <a href="#home" className="text-sm font-medium hover:text-primary transition-colors">الرئيسية</a>
-              <a href="#dashboard" className="text-sm font-medium text-primary">لوحة التحكم</a>
-              <a href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">الأسعار</a>
+              <a href="#home" className="text-sm font-medium hover:text-primary transition-colors">{t('nav_home_link')}</a>
+              <a href="#dashboard" className="text-sm font-medium text-primary">{t('nav_dashboard_link')}</a>
+              <a href="/pricing" className="text-sm font-medium hover:text-primary transition-colors">{t('nav_pricing_link')}</a>
             </nav>
             <div className="flex items-center space-x-reverse space-x-4">
               <Badge className="credit-badge px-3 py-1 rounded-full text-sm font-bold text-white">
                 <Coins className="ml-2 h-4 w-4" />
-                <span data-testid="user-credits">{userData?.credits || 0}</span> كريدت
+                <span data-testid="user-credits">{userData?.credits || 0}</span> {t('text_credits')}
               </Badge>
               <Button 
                 onClick={() => window.location.href = "/admin"}
@@ -540,11 +542,11 @@ export default function Dashboard() {
                 data-testid="admin-button"
               >
                 <Wand2 className="ml-2 h-4 w-4" />
-                لوحة الأدمن
+                {t('button_admin_panel')}
               </Button>
               <Button onClick={handleLogout} variant="outline" className="glass-card" data-testid="logout-button">
                 <User className="ml-2 h-4 w-4" />
-                تسجيل الخروج
+                {t('button_logout')}
               </Button>
             </div>
           </div>
@@ -555,8 +557,8 @@ export default function Dashboard() {
         <section className="py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">لوحة التحكم</h2>
-              <p className="text-xl text-muted-foreground">أنشئ مشروع CGI جديد أو تابع مشاريعك السابقة</p>
+              <h2 className="text-4xl font-bold mb-4">{t('dashboard_title')}</h2>
+              <p className="text-xl text-muted-foreground">{t('dashboard_subtitle')}</p>
             </div>
 
             <Tabs value={activeTab} onValueChange={(tab) => {
@@ -574,17 +576,17 @@ export default function Dashboard() {
               <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 glass-card p-1">
                 <TabsTrigger value="new-project" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
                   <Plus className="ml-1 sm:ml-2 h-4 w-4" />
-                  <span className="hidden sm:inline">مشروع جديد</span>
-                  <span className="sm:hidden">جديد</span>
+                  <span className="hidden sm:inline">{t('dashboard_new_project')}</span>
+                  <span className="sm:hidden">{t('dashboard_new_project')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="my-projects" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
-                  <span className="hidden sm:inline">مشاريعي</span>
-                  <span className="sm:hidden">مشاريع</span>
+                  <span className="hidden sm:inline">{t('dashboard_my_projects')}</span>
+                  <span className="sm:hidden">{t('dashboard_projects')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="actual-costs" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
                   <Coins className="ml-1 sm:ml-2 h-4 w-4" />
-                  <span className="hidden sm:inline">التكاليف الفعلية</span>
-                  <span className="sm:hidden">تكاليف</span>
+                  <span className="hidden sm:inline">{t('dashboard_actual_costs')}</span>
+                  <span className="sm:hidden">{t('dashboard_actual_costs')}</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -593,7 +595,7 @@ export default function Dashboard() {
                   {/* Upload Section */}
                   <Card className="glass-card">
                     <CardHeader className="flex flex-row items-center justify-between">
-                      <CardTitle className="text-2xl">رفع الصور</CardTitle>
+                      <CardTitle className="text-2xl">{t('upload_section_title')}</CardTitle>
                       {/* Manual Reset Button */}
                       <Button 
                         variant="outline" 
@@ -603,14 +605,14 @@ export default function Dashboard() {
                         data-testid="button-reset-form"
                       >
                         <RotateCcw className="ml-1 h-4 w-4" />
-                        مسح الكل
+                        {t('button_clear_all')}
                       </Button>
                     </CardHeader>
                     <CardContent className="space-y-8">
                       {/* Product Image Section */}
                       <div className="space-y-4">
                         <Label className="block text-lg font-semibold text-primary mb-4">
-                          📸 صورة المنتج
+                          📸 {t('form_product_image')}
                         </Label>
                         
                         {!projectData.productImageUrl ? (
@@ -618,7 +620,7 @@ export default function Dashboard() {
                             onFileUpload={handleProductImageUpload}
                             isUploading={uploadProductImageMutation.isPending}
                             previewUrl={projectData.productImageUrl}
-                            label="اسحب وأفلت صورة المنتج هنا"
+                            label={t('form_drag_drop_product')}
                             sublabel="أو انقر للتصفح - PNG, JPG حتى 10MB"
                             testId="product-upload-zone"
                             resetKey={resetKey}
@@ -643,7 +645,7 @@ export default function Dashboard() {
                                   data-testid="edit-product-image"
                                 >
                                   <Wand2 className="ml-2 h-4 w-4" />
-                                  تعديل الصورة
+                                  {t('button_edit_image')}
                                 </Button>
                               </div>
                             </div>
@@ -655,7 +657,7 @@ export default function Dashboard() {
                       {projectData.productImageUrl && (
                         <div className="space-y-6 pt-6 border-t border-border/20">
                           <Label className="block text-lg font-semibold text-primary mb-4">
-                            🎬 صورة المشهد
+                            🎬 {t('form_scene_image')}
                           </Label>
                           
                           {/* Scene Image Display or Selection */}
@@ -674,14 +676,14 @@ export default function Dashboard() {
                                     </div>
                                     <div>
                                       <h3 className="text-xl font-bold text-primary group-hover:text-accent transition-colors duration-300">
-                                        اختيار من المكتبة
+                                        {t('scene_library_title')}
                                       </h3>
                                       <p className="text-sm text-muted-foreground mt-2">
-                                        مجموعة مذهلة من المشاهد الجاهزة المصممة خصيصاً لمنتجك
+                                        {t('scene_library_description')}
                                       </p>
                                     </div>
                                     <Badge className="bg-primary/20 text-primary border-0 px-4 py-1 text-sm font-medium">
-                                      مدعوم بالذكاء الاصطناعي ✨
+                                      {t('scene_ai_powered_badge')}
                                     </Badge>
                                   </div>
                                 </div>
@@ -737,7 +739,7 @@ export default function Dashboard() {
                                         data-testid="change-scene-button"
                                       >
                                         <Sparkles className="ml-2 h-4 w-4" />
-                                        تغيير المشهد
+                                        {t('button_change_scene')}
                                       </Button>
                                       <Button
                                         onClick={() => {
@@ -755,7 +757,7 @@ export default function Dashboard() {
                                         data-testid="remove-scene-button"
                                       >
                                         <Camera className="ml-2 h-4 w-4" />
-                                        رفع مخصوص
+                                        {t('button_custom_upload')}
                                       </Button>
                                     </div>
                                   </div>
@@ -775,7 +777,7 @@ export default function Dashboard() {
                             </div>
                             <div>
                               <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                                ابدأ برفع صورة المنتج
+                                {t('form_start_by_uploading')}
                               </h3>
                               <p className="text-sm text-muted-foreground">
                                 سنقوم بتحليل المنتج واقتراح المشاهد المناسبة تلقائياً
@@ -790,12 +792,12 @@ export default function Dashboard() {
                   {/* Project Settings */}
                   <Card className="glass-card">
                     <CardHeader>
-                      <CardTitle className="text-2xl">إعدادات المشروع</CardTitle>
+                      <CardTitle className="text-2xl">{t('project_settings_title')}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       {/* Project Title */}
                       <div>
-                        <Label htmlFor="title">عنوان المشروع</Label>
+                        <Label htmlFor="title">{t('form_project_title_label')}</Label>
                         <Input
                           id="title"
                           value={projectData.title}
@@ -808,7 +810,7 @@ export default function Dashboard() {
 
                       {/* Content Type Selection */}
                       <div>
-                        <Label className="block text-sm font-medium mb-4">نوع المحتوى</Label>
+                        <Label className="block text-sm font-medium mb-4">{t('form_content_type')}</Label>
                         <div className="grid grid-cols-2 gap-4">
                           <Card 
                             className={`cursor-pointer transition-all hover:bg-white/10 ${
@@ -1012,7 +1014,7 @@ export default function Dashboard() {
                         data-testid="generate-cgi-button"
                       >
                         <Wand2 className="ml-2 h-5 w-5" />
-                        {createProjectMutation.isPending ? "جاري الإنشاء..." : "ابدأ إنتاج CGI"}
+                        {createProjectMutation.isPending ? t('msg_loading') : t('dashboard_start_cgi_production')}
                       </Button>
                       
                       {/* Credit Warning */}
@@ -1020,7 +1022,7 @@ export default function Dashboard() {
                         <CardContent className="p-4">
                           <p className="text-sm text-accent-foreground flex items-center">
                             <Info className="ml-2 h-4 w-4" />
-                            سيتم خصم الكريدت بعد نجاح المعالجة فقط
+                            {t('dashboard_credits_deducted_note')}
                           </p>
                         </CardContent>
                       </Card>
@@ -1033,7 +1035,7 @@ export default function Dashboard() {
                 <Card className="glass-card">
                   <CardHeader>
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-2xl">مشاريعي</CardTitle>
+                      <CardTitle className="text-2xl">{t('dashboard_my_projects')}</CardTitle>
                       <Select defaultValue="all">
                         <SelectTrigger className="w-48 bg-input border-border">
                           <SelectValue />
