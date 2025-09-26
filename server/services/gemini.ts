@@ -203,9 +203,11 @@ export async function enhancePromptWithGemini(
 - نظف المنطقة تماماً بـ inpainting للخلفية
 - تأكد من الإزالة الكاملة قبل المتابعة للخطوة التالية
 
-خطوة 3: ضع المنتج الجديد في نفس المكان (تنفذ ثانياً)
-- ضع المنتج الجديد في **نفس المكان تماماً** الذي كان فيه القديم
-- احترم نفس الزاوية والمنظور والارتفاع
+خطوة 3: ضع المنتج الجديد في نفس المكان بالضبط (تنفذ ثانياً)
+- ضع المنتج الجديد في **نفس النقطة المركزية بالضبط** - وسط السقف
+- **نفس الارتفاع والعمق** - يجب أن يتعلق من نفس نقطة التعليق في السقف
+- **نفس المحاور X,Y,Z** - استخدم نفس الإحداثيات المكانية للمنتج القديم
+- احترم نفس الزاوية والمنظور والاتجاه للكاميرا
 - احسب الحجم المناسب للمكان والمسافة من الكاميرا
 - تطبيق إضاءة وظلال واقعية تطابق المشهد
 
@@ -235,7 +237,14 @@ export async function enhancePromptWithGemini(
 2. SECOND: ADD new product in exact same location
 3. FINAL CHECK: Only ONE product of that category exists in result
 
-⚡ START YOUR ENGLISH INSTRUCTIONS WITH: "CRITICAL: This is a REPLACEMENT operation, NOT addition. The final image must contain exactly ONE lighting fixture where the old chandelier was."
+⚡ START YOUR ENGLISH INSTRUCTIONS WITH: 
+"CRITICAL: This is a REPLACEMENT operation, NOT addition. The final image must contain exactly ONE lighting fixture hanging from the EXACT SAME ceiling point where the old chandelier was suspended. 
+
+🎯 PRECISE POSITIONING REQUIREMENTS:
+- SAME X,Y,Z coordinates as old chandelier
+- SAME central ceiling suspension point  
+- SAME depth and height perspective
+- DO NOT place in side areas, corners, or walls"
 
 `;
 
