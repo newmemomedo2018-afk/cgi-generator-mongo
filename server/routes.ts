@@ -12,7 +12,7 @@ import { enhancePromptWithGemini, generateImageWithGemini } from './services/gem
 import { uploadToCloudinary } from './services/cloudinary';
 import multer from 'multer';
 
-import { COSTS, CREDIT_PACKAGES } from '@shared/constants';
+import { COSTS, CREDIT_PACKAGES, ACTUAL_COSTS } from '@shared/constants';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
 import puppeteer from 'puppeteer';
@@ -1112,10 +1112,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalProjects: projects.length,
           imageProjects,
           videoProjects,
-          estimatedImageCostMillicents: imageProjects * 4, // 4 millicents per image project
-          estimatedVideoCostMillicents: videoProjects * 504, // 504 millicents per video project (includes image cost)
-          estimatedImageCostCents: (imageProjects * 4 / 10).toFixed(1), // backward compatibility
-          estimatedVideoCostCents: (videoProjects * 504 / 10).toFixed(1) // backward compatibility
+          estimatedImageCostMillicents: imageProjects * (ACTUAL_COSTS.GEMINI_PROMPT_ENHANCEMENT + ACTUAL_COSTS.GEMINI_IMAGE_GENERATION), // 41 millicents per image project
+          estimatedVideoCostMillicents: videoProjects * (ACTUAL_COSTS.GEMINI_PROMPT_ENHANCEMENT + ACTUAL_COSTS.GEMINI_IMAGE_GENERATION + ACTUAL_COSTS.GEMINI_VIDEO_ANALYSIS + ACTUAL_COSTS.VIDEO_GENERATION), // 304 millicents per video project
+          estimatedImageCostCents: (imageProjects * (ACTUAL_COSTS.GEMINI_PROMPT_ENHANCEMENT + ACTUAL_COSTS.GEMINI_IMAGE_GENERATION) / 10).toFixed(1), // backward compatibility
+          estimatedVideoCostCents: (videoProjects * (ACTUAL_COSTS.GEMINI_PROMPT_ENHANCEMENT + ACTUAL_COSTS.GEMINI_IMAGE_GENERATION + ACTUAL_COSTS.GEMINI_VIDEO_ANALYSIS + ACTUAL_COSTS.VIDEO_GENERATION) / 10).toFixed(1) // backward compatibility
         },
         projects: projectCosts
       });
@@ -1549,7 +1549,7 @@ async function processProjectFromJob(job: any) {
       }
     } finally {
       // Record cost even if call fails
-      totalCostMillicents += COSTS.GEMINI_PROMPT_ENHANCEMENT;
+      totalCostMillicents += ACTUAL_COSTS.GEMINI_PROMPT_ENHANCEMENT;
     }
 
     await storage.updateProject(projectId, { 
@@ -1581,7 +1581,7 @@ async function processProjectFromJob(job: any) {
       );
     } finally {
       // Record cost even if call fails
-      totalCostMillicents += COSTS.GEMINI_IMAGE_GENERATION;
+      totalCostMillicents += ACTUAL_COSTS.GEMINI_IMAGE_GENERATION;
     }
     
     console.log("Gemini image generation result:", {
@@ -1671,7 +1671,7 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
         audioPrompt = videoEnhancement.audioPrompt;
 
         // Add cost for video prompt enhancement
-        totalCostMillicents += COSTS.GEMINI_VIDEO_ANALYSIS;
+        totalCostMillicents += ACTUAL_COSTS.GEMINI_VIDEO_ANALYSIS;
 
         console.log("🎬 Video prompt enhanced successfully:", {
           originalPromptLength: enhancedPrompt.length,
@@ -1772,7 +1772,7 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
           
         } finally {
           // Record cost even if video generation fails
-          totalCostMillicents += COSTS.VIDEO_GENERATION;
+          totalCostMillicents += ACTUAL_COSTS.VIDEO_GENERATION;
         }
       } catch (videoError) {
         console.error("❌ VIDEO GENERATION FAILED:", {
