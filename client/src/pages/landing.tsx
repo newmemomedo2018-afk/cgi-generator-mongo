@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Rocket, Play, Camera, Bot, Film, Star, Check, Menu, X } from "lucide-react";
 import { AuthDialog } from "@/components/auth/AuthDialog";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/language-switcher";
 import { CREDIT_COSTS } from "@shared/constants";
 import productImage from "@assets/generated_images/Modern_smartphone_product_photo_8515c516.png";
 import sceneImage from "@assets/generated_images/Modern_living_room_scene_8d384239.png";
@@ -11,21 +13,22 @@ import resultImage from "@assets/generated_images/CGI_smartphone_composite_resul
 
 export default function Landing() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { t, isRTL } = useLanguage();
   return (
     <div className="min-h-screen">
       {/* Header */}
       <header className="fixed top-0 right-0 left-0 z-50 glass-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-reverse space-x-4">
+            <div className={`flex items-center space-x-4 ${isRTL ? 'space-x-reverse' : ''}`}>
               <div className="text-2xl font-bold gradient-text">
-                🎬 مولد CGI
+                🎬 {t('landing_title')}
               </div>
             </div>
-            <nav className="hidden md:flex items-center space-x-reverse space-x-8">
-              <a href="#home" className="text-sm font-medium hover:text-primary transition-colors">الرئيسية</a>
-              <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">المميزات</a>
-              <a href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">الأسعار</a>
+            <nav className={`hidden md:flex items-center space-x-8 ${isRTL ? 'space-x-reverse' : ''}`}>
+              <a href="#home" className="text-sm font-medium hover:text-primary transition-colors">{t('nav_home')}</a>
+              <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">{t('nav_features')}</a>
+              <a href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">{t('nav_pricing')}</a>
             </nav>
             {/* Mobile Navigation */}
             <div className="md:hidden">
@@ -44,11 +47,12 @@ export default function Landing() {
                 )}
               </button>
             </div>
-            <div className="flex items-center space-x-reverse space-x-4">
+            <div className={`flex items-center space-x-4 ${isRTL ? 'space-x-reverse' : ''}`}>
+              <LanguageSwitcher />
               <AuthDialog>
                 <Button className="gradient-button mobile-touch-target mobile-button-padding" data-testid="login-button">
-                  <i className="fas fa-user mr-2"></i>
-                  تسجيل الدخول
+                  <i className={`fas fa-user ${isRTL ? 'ml-2' : 'mr-2'}`}></i>
+                  {t('auth_login')}
                 </Button>
               </AuthDialog>
             </div>
@@ -71,7 +75,7 @@ export default function Landing() {
               onClick={() => setIsMobileMenuOpen(false)}
               data-testid="mobile-nav-home"
             >
-              الرئيسية
+              {t('nav_home')}
             </a>
             <a 
               href="#features" 
@@ -79,7 +83,7 @@ export default function Landing() {
               onClick={() => setIsMobileMenuOpen(false)}
               data-testid="mobile-nav-features"
             >
-              المميزات
+              {t('nav_features')}
             </a>
             <a 
               href="#pricing" 
@@ -87,7 +91,7 @@ export default function Landing() {
               onClick={() => setIsMobileMenuOpen(false)}
               data-testid="mobile-nav-pricing"
             >
-              الأسعار
+              {t('nav_pricing')}
             </a>
           </div>
         </nav>

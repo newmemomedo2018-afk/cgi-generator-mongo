@@ -83,15 +83,49 @@
     @apply font-sans antialiased bg-background text-foreground;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    direction: rtl;
+    /* Direction is now controlled by LanguageProvider dynamically */
   }
 
+  /* English (LTR) styling - Default */
+  [dir="ltr"] {
+    text-align: left;
+  }
+
+  /* Arabic (RTL) styling */
   [dir="rtl"] {
     text-align: right;
   }
 
+  /* Font families for different languages */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Cairo', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif; /* Default English font */
+  }
+
+  [dir="rtl"] h1, 
+  [dir="rtl"] h2, 
+  [dir="rtl"] h3, 
+  [dir="rtl"] h4, 
+  [dir="rtl"] h5, 
+  [dir="rtl"] h6 {
+    font-family: 'Cairo', 'Inter', system-ui, sans-serif; /* Arabic font */
+  }
+
+  /* Direction-aware flex layouts */
+  [dir="ltr"] .flex-dir-aware {
+    flex-direction: row;
+  }
+  
+  [dir="rtl"] .flex-dir-aware {
+    flex-direction: row-reverse;
+  }
+  
+  /* Direction-aware margins */
+  [dir="ltr"] .margin-start {
+    margin-left: 0.5rem;
+  }
+  
+  [dir="rtl"] .margin-start {
+    margin-right: 0.5rem;
   }
 }
 
