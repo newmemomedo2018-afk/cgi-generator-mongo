@@ -216,16 +216,23 @@ export default function Dashboard() {
       return response.json();
     },
     onSuccess: (data) => {
+      console.log("🎉 Project creation SUCCESS! Data:", data);
+      console.log("🚀 About to show modal and switch tabs...");
+      
       toast({
         title: "تم إنشاء المشروع",
         description: "بدأت معالجة مشروع CGI الخاص بك",
       });
+      
+      // 🚀 Auto-navigate to projects tab FIRST before modal
+      console.log("📍 Switching to my-projects tab...");
+      setActiveTab("my-projects");
+      
+      // Then show modal and refresh data
+      console.log("🔄 Showing progress modal...");
       setShowProgressModal(true);
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      
-      // 🚀 Auto-navigate to projects tab after generation starts
-      setActiveTab("my-projects");
       
       // Reset form
       setProjectData({
