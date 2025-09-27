@@ -44,6 +44,8 @@ export default function SceneSelectionModal({
   const [pinterestUrl, setPinterestUrl] = useState('');
   const [productSize, setProductSize] = useState<'normal' | 'emphasized'>('normal');
   const [extractedImageUrl, setExtractedImageUrl] = useState<string | null>(null);
+  const [extractedVideoUrl, setExtractedVideoUrl] = useState<string | null>(null);
+  const [isExtractedVideo, setIsExtractedVideo] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [smartSearchTerms, setSmartSearchTerms] = useState<string[]>([]);
   const [isAnalyzingProduct, setIsAnalyzingProduct] = useState(false);
@@ -86,6 +88,8 @@ export default function SceneSelectionModal({
       setPinterestUrl('');
       setProductSize('normal');
       setExtractedImageUrl(null);
+      setExtractedVideoUrl(null);
+      setIsExtractedVideo(false);
       setIsExtracting(false);
       setSmartSearchTerms([]);
       setIsAnalyzingProduct(false);
@@ -193,9 +197,11 @@ export default function SceneSelectionModal({
         throw new Error(isVideo ? 'لم يتم العثور على رابط فيديو صالح' : 'لم يتم العثور على رابط صورة صالح');
       }
       
-      // Show preview of extracted media (only if not reset)
+      // Set both image and video URLs for proper scene creation
       console.log('🎯 Setting extracted media URL:', mediaUrl);
-      setExtractedImageUrl(mediaUrl); // Still use this state variable for consistency
+      setExtractedImageUrl(imageUrl); // Always set image thumbnail for preview
+      setExtractedVideoUrl(videoUrl); // Set video URL if available
+      setIsExtractedVideo(isVideo || false); // Set video flag
       console.log('✅ State updated with extracted URL');
       setIsExtracting(false);
       
@@ -212,8 +218,8 @@ export default function SceneSelectionModal({
           id: `pinterest_${Date.now()}`,
           name: `مشهد Pinterest`,
           description: `مشهد ${mediaDescription} تم اختياره من Pinterest`,
-          imageUrl: isVideo ? undefined : mediaUrl,
-          videoUrl: isVideo ? mediaUrl : undefined,
+          imageUrl: imageUrl, // Always use thumbnail for preview
+          videoUrl: isVideo ? videoUrl : undefined, // Use video URL when available
           isVideo: isVideo || false,
           category: 'pinterest',
           style: 'user-selected',
@@ -251,8 +257,10 @@ export default function SceneSelectionModal({
     const customScene: SceneData = {
       id: `pinterest_${Date.now()}`,
       name: 'مشهد Pinterest',
-      description: 'مشهد تم اختياره من Pinterest',
-      imageUrl: extractedImageUrl,
+      description: isExtractedVideo ? 'مشهد فيديو Pinterest تم اختياره من Pinterest' : 'مشهد تم اختياره من Pinterest',
+      imageUrl: extractedImageUrl, // Always show thumbnail for preview
+      videoUrl: extractedVideoUrl || undefined, // Include video URL if available
+      isVideo: isExtractedVideo, // Include video flag
       category: 'pinterest',
       style: 'user-selected',
       keywords: ['pinterest'],
@@ -437,6 +445,8 @@ export default function SceneSelectionModal({
                         <Button
                           onClick={() => {
                             setExtractedImageUrl(null);
+                            setExtractedVideoUrl(null);
+                            setIsExtractedVideo(false);
                             setPinterestUrl('');
                           }}
                           variant="outline"
