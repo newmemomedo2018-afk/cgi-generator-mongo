@@ -289,26 +289,45 @@ export async function generateImageWithGemini(
           mimeType: sceneImageData.mimeType
         }
       },
-      `TASK: Intelligently analyze both images and create a realistic CGI integration.
+      `TASK: Intelligently analyze both images and create a realistic CGI integration with ENHANCED SCENE PRESERVATION.
 
-STEPS:
+🔍 SCENE ANALYSIS PHASE:
+1. Study the SCENE IMAGE atmosphere: lighting style, mood, color temperature, shadows direction
+2. Identify spatial relationships: furniture positions, room layout, perspective angles
+3. Analyze existing elements: textures, materials, architectural details, decorative items
+4. Detect potential conflicts: items that occupy the same space where product should be placed
+
+🎯 SMART INTEGRATION STEPS:
 1. Understand the exact product from the first image (shape, colors, materials, design)
-2. Find the best logical location in the scene where this product would naturally fit
-3. If there's any existing item in that location that conflicts with the new product - remove it completely  
-4. Place the product from the first image in that location with exact same appearance
-5. Ensure realistic lighting, shadows, and natural integration with the scene
+2. Find the most logical and natural location in the scene where this product would fit
+3. REMOVE any existing conflicting items completely (no traces, shadows, or outlines left behind)
+4. Place the product with exact same appearance from PRODUCT IMAGE
+5. Preserve the original scene's lighting characteristics, shadow patterns, and color temperature
+6. Maintain the scene's architectural features, room proportions, and spatial relationships
+7. Ensure the product follows the same perspective and viewing angle as the scene
+
+🌟 SCENE PRESERVATION REQUIREMENTS:
+- Keep the original room's lighting mood and atmosphere intact
+- Preserve wall colors, floor patterns, ceiling details, and architectural elements
+- Maintain the same camera angle, perspective, and depth of field
+- Respect the original scene's style (modern, classic, rustic, etc.)
+- Keep background elements positioned exactly as in the original scene
+- Preserve the natural flow and composition of the space
 
 USER CONTEXT: ${enhancedPrompt}
 
 ${productSize === 'emphasized' ? 
-'IMPORTANT: Make the product 25-30% larger than normal for emphasis and prominence in the scene' : 
-'IMPORTANT: Use natural proportions that match the scene scale'}
+'SIZING: Make the product 25-30% larger than normal while respecting scene proportions and perspective' : 
+'SIZING: Use natural proportions that perfectly match the scene scale and perspective'}
 
-CRITICAL REQUIREMENTS:
-- Use the exact product appearance from the PRODUCT IMAGE only (no modifications)
-- Final result must be photorealistic and natural
-- Do not add any extra products or elements
-- Return only an image output; do not include any text`
+🚨 CRITICAL QUALITY REQUIREMENTS:
+- Use the exact product appearance from the PRODUCT IMAGE only (no modifications to colors, textures, or design)
+- Final result must be photorealistic with professional CGI quality
+- No extra products, duplicate items, or additional elements beyond what's requested
+- Perfect anatomical proportions for any living creatures (if present)
+- Sharp focus and high detail matching the original scene quality
+- Natural lighting integration that follows the scene's established light sources
+- Return only an image output; do not include any text or descriptions`
     ]);
 
     const response = await result.response;
