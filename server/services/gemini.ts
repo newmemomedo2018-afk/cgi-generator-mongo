@@ -273,35 +273,37 @@ export async function generateImageWithGemini(
       getImageDataFromStorage(sceneImagePath)
     ]);
 
-    // Send request to Gemini with clearly labeled images and simple instructions
+    // Send request to Gemini with simplified Arabic instructions
     const result = await model.generateContent([
-      "PRODUCT IMAGE (reference for what to insert) - copy this item's exact appearance:",
+      "شوف الصورة الأولى دي - ده المنتج اللي عايز أحطه:",
       {
         inlineData: {
           data: productImageData.base64,
           mimeType: productImageData.mimeType
         }
       },
-      "SCENE IMAGE (background where to place it) - remove any existing similar item:",
+      "وشوف الصورة التانية دي - ده المشهد اللي هحط فيه المنتج:",
       {
         inlineData: {
           data: sceneImageData.base64,
           mimeType: sceneImageData.mimeType
         }
       },
-      `TASK: Replace the scene's existing item (if any) with the product from the first image. 
-      
-      Steps:
-      1. Find and completely remove any existing similar item in the scene
-      2. Place the product from the first image in the exact same location
-      3. Match the size, lighting, and perspective to fit naturally
-      4. Copy the exact colors, materials, and design from the PRODUCT IMAGE only
-      
-      ${productSize === 'emphasized' ? 
-      'Make the product 25-30% larger than normal for emphasis.' : 
-      'Use natural proportions that match the scene scale.'}
-      
-      Final result must contain only ONE item of this category, using the exact appearance from the PRODUCT IMAGE.`
+      `المطلوب منك:
+1. حلل الصورة الأولى كويس وافهم إيه هو المنتج ده بالظبط - شكله وألوانه وخاماته
+2. بص على الصورة التانية ولاقي أحسن مكان المنتج ده يبان فيه حلو ومنطقي
+3. لو لاقيت أي حاجة في المكان ده تعارض المنتج الجديد - شيلها تماماً وخلي المكان فاضي
+4. حط المنتج من الصورة الأولى في المكان ده بنفس الشكل والألوان بالظبط
+5. خلي الإضاءة والظلال تطلع طبيعية ومتناسقة مع باقي المشهد
+
+${productSize === 'emphasized' ? 
+'مهم: اجعل المنتج أكبر بنسبة 25-30% من الطبيعي عشان يبرز أكتر في المشهد' : 
+'مهم: استخدم الحجم الطبيعي المتناسق مع المشهد'}
+
+مهم جداً: 
+- استخدم نفس المنتج من الصورة الأولى بالظبط (مش تعدل عليه)
+- خلي الصورة النهائية تطلع realistic وطبيعية
+- ماتضيفش أي منتجات تانية من دماغك`
     ]);
 
     const response = await result.response;
