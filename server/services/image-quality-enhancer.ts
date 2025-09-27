@@ -150,45 +150,38 @@ export async function enhanceImageWithCloudinary(imageUrl: string, assessment: I
     ];
     const enhancementApplied: string[] = ['Full HD WebP Format'];
 
-    // AI-based enhancement
-    if (assessment.qualityScore < 7) {
+    // SIMPLIFIED enhancement strategy - apply only ONE critical improvement
+    // to prevent transformation chain overload that causes HTTP 400 errors
+    
+    // Priority 1: AI-based enhancement (only for very poor quality)
+    if (assessment.qualityScore < 5) {
       transformations.push({ effect: 'improve' });
       enhancementApplied.push('AI Enhancement');
     }
-
-    // Upscaling for low resolution
-    if (assessment.issues.some(issue => issue.includes('دقة') || issue.includes('resolution'))) {
-      transformations.push({ effect: 'upscale' });
-      enhancementApplied.push('Upscaling');
+    // Priority 2: Choose ONE most important enhancement (not multiple)
+    else if (assessment.qualityScore < 7) {
+      // Choose the most important single enhancement based on main issue
+      if (assessment.issues.some(issue => issue.includes('دقة') || issue.includes('resolution'))) {
+        transformations.push({ effect: 'upscale' });
+        enhancementApplied.push('Upscaling');
+      } else if (assessment.issues.some(issue => issue.includes('ضوضاء') || issue.includes('noise'))) {
+        transformations.push({ effect: 'noise_reduction' });
+        enhancementApplied.push('Noise Reduction');
+      } else if (assessment.issues.some(issue => issue.includes('تباين') || issue.includes('contrast'))) {
+        transformations.push({ effect: 'auto_contrast' });
+        enhancementApplied.push('Auto Contrast');
+      } else if (assessment.issues.some(issue => issue.includes('إضاءة') || issue.includes('lighting'))) {
+        transformations.push({ effect: 'auto_brightness' });
+        enhancementApplied.push('Auto Brightness');
+      }
     }
 
-    // Noise reduction
-    if (assessment.issues.some(issue => issue.includes('ضوضاء') || issue.includes('noise'))) {
-      transformations.push({ effect: 'noise_reduction' });
-      enhancementApplied.push('Noise Reduction');
+    // REMOVED: Multiple stacked transformations that cause HTTP 400 errors
+    // Only apply auto_color if specifically needed, not always
+    if (assessment.qualityScore < 6 && assessment.issues.some(issue => issue.includes('ألوان') || issue.includes('color'))) {
+      transformations.push({ effect: 'auto_color' });
+      enhancementApplied.push('Auto Color');
     }
-
-    // Contrast and color enhancement
-    if (assessment.issues.some(issue => issue.includes('تباين') || issue.includes('contrast'))) {
-      transformations.push({ effect: 'auto_contrast' });
-      enhancementApplied.push('Auto Contrast');
-    }
-
-    // Brightness adjustment
-    if (assessment.issues.some(issue => issue.includes('إضاءة') || issue.includes('lighting'))) {
-      transformations.push({ effect: 'auto_brightness' });
-      enhancementApplied.push('Auto Brightness');
-    }
-
-    // Sharpening
-    if (assessment.issues.some(issue => issue.includes('وضوح') || issue.includes('sharp'))) {
-      transformations.push({ effect: 'sharpen' });
-      enhancementApplied.push('Sharpening');
-    }
-
-    // Apply color enhancement for better AI processing
-    transformations.push({ effect: 'auto_color' });
-    enhancementApplied.push('Auto Color');
 
     // Build enhanced URL with proper transformation objects
     const enhancedUrl = cloudinary.url(publicId, {
