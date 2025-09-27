@@ -273,37 +273,42 @@ export async function generateImageWithGemini(
       getImageDataFromStorage(sceneImagePath)
     ]);
 
-    // Send request to Gemini with simplified Arabic instructions
+    // Send request to Gemini with clear English instructions (Arabic prompts cause text responses instead of images)
     const result = await model.generateContent([
-      "شوف الصورة الأولى دي - ده المنتج اللي عايز أحطه:",
+      "PRODUCT IMAGE - analyze this item that needs to be placed:",
       {
         inlineData: {
           data: productImageData.base64,
           mimeType: productImageData.mimeType
         }
       },
-      "وشوف الصورة التانية دي - ده المشهد اللي هحط فيه المنتج:",
+      "SCENE IMAGE - analyze this background where the item should be placed:",
       {
         inlineData: {
           data: sceneImageData.base64,
           mimeType: sceneImageData.mimeType
         }
       },
-      `المطلوب منك:
-1. حلل الصورة الأولى كويس وافهم إيه هو المنتج ده بالظبط - شكله وألوانه وخاماته
-2. بص على الصورة التانية ولاقي أحسن مكان المنتج ده يبان فيه حلو ومنطقي
-3. لو لاقيت أي حاجة في المكان ده تعارض المنتج الجديد - شيلها تماماً وخلي المكان فاضي
-4. حط المنتج من الصورة الأولى في المكان ده بنفس الشكل والألوان بالظبط
-5. خلي الإضاءة والظلال تطلع طبيعية ومتناسقة مع باقي المشهد
+      `TASK: Intelligently analyze both images and create a realistic CGI integration.
+
+STEPS:
+1. Understand the exact product from the first image (shape, colors, materials, design)
+2. Find the best logical location in the scene where this product would naturally fit
+3. If there's any existing item in that location that conflicts with the new product - remove it completely  
+4. Place the product from the first image in that location with exact same appearance
+5. Ensure realistic lighting, shadows, and natural integration with the scene
+
+USER CONTEXT: ${enhancedPrompt}
 
 ${productSize === 'emphasized' ? 
-'مهم: اجعل المنتج أكبر بنسبة 25-30% من الطبيعي عشان يبرز أكتر في المشهد' : 
-'مهم: استخدم الحجم الطبيعي المتناسق مع المشهد'}
+'IMPORTANT: Make the product 25-30% larger than normal for emphasis and prominence in the scene' : 
+'IMPORTANT: Use natural proportions that match the scene scale'}
 
-مهم جداً: 
-- استخدم نفس المنتج من الصورة الأولى بالظبط (مش تعدل عليه)
-- خلي الصورة النهائية تطلع realistic وطبيعية
-- ماتضيفش أي منتجات تانية من دماغك`
+CRITICAL REQUIREMENTS:
+- Use the exact product appearance from the PRODUCT IMAGE only (no modifications)
+- Final result must be photorealistic and natural
+- Do not add any extra products or elements
+- Return only an image output; do not include any text`
     ]);
 
     const response = await result.response;
