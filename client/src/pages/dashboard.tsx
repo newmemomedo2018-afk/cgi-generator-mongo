@@ -726,10 +726,7 @@ export default function Dashboard() {
                               <div className="space-y-3">
                                 <div className="relative group">
                                   <img 
-                                    src={projectData.contentType === "video" ? 
-                                      (projectData.sceneVideoUrl || projectData.sceneImageUrl) : 
-                                      projectData.sceneImageUrl
-                                    } 
+                                    src={projectData.sceneImageUrl} 
                                     alt="صورة المشهد" 
                                     className="w-full h-48 object-cover rounded-lg border border-border"
                                   />
