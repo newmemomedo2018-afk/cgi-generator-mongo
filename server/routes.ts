@@ -61,19 +61,34 @@ async function extractPinterestMedia(pinterestUrl: string): Promise<{ imageUrl: 
     let extractedVideoUrl = null;
     
     if (isVideoPost) {
-      // NEW: Try to extract actual video URL for motion analysis
-      const videoUrlMatches = html.match(/"videoUrl":"([^"]+)"/g);
+      // NEW: Extract actual video URLs using updated patterns for Pinterest videos
+      console.log('🎥 Searching for Pinterest video URLs...');
       
-      if (videoUrlMatches) {
-        const videoUrls = videoUrlMatches.map(match => {
-          const urlMatch = match.match(/"videoUrl":"([^"]+)"/);
-          return urlMatch ? urlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '') : null;
-        }).filter(url => url && url.includes('pinimg.com'));
+      // Look for MP4 videos and HLS streams from Pinterest video CDN
+      const mp4Matches = html.match(/https:\/\/v\d*\.pinimg\.com\/videos\/[^"'\s]*\.mp4[^"'\s]*/gi);
+      const hlsMatches = html.match(/https:\/\/v\d*\.pinimg\.com\/videos\/[^"'\s]*\.m3u8[^"'\s]*/gi);
+      
+      let videoUrls = [];
+      
+      if (mp4Matches) {
+        videoUrls.push(...mp4Matches);
+        console.log('🎬 Found', mp4Matches.length, 'MP4 video URLs');
+      }
+      
+      if (hlsMatches) {
+        videoUrls.push(...hlsMatches);
+        console.log('🎬 Found', hlsMatches.length, 'HLS video streams');
+      }
+      
+      if (videoUrls.length > 0) {
+        // Prefer MP4 over HLS for motion analysis (easier to process)
+        const mp4Videos = videoUrls.filter(url => url.includes('.mp4'));
+        extractedVideoUrl = mp4Videos.length > 0 ? mp4Videos[0] : videoUrls[0];
         
-        if (videoUrls.length > 0) {
-          extractedVideoUrl = videoUrls[0]; // Use first valid video URL
-          console.log('🎥 Found Pinterest video URL for motion analysis:', extractedVideoUrl?.substring(0, 100) + '...');
-        }
+        console.log('🎥 Selected Pinterest video URL for motion analysis:', extractedVideoUrl?.substring(0, 100) + '...');
+        console.log('🎯 Video type:', extractedVideoUrl?.includes('.mp4') ? 'MP4' : 'HLS Stream');
+      } else {
+        console.log('⚠️ No Pinterest video URLs found in HTML');
       }
     } else {
       console.log('🖼️ Detected Pinterest image post - extracting image');
@@ -519,12 +534,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ 
         imageUrl: qualityResult.finalUrl,
+        videoUrl: mediaResult.videoUrl,
+        isVideo: mediaResult.isVideo,
+        mediaType: mediaResult.isVideo ? 'video' : 'image',
         qualityInfo: {
           originalQuality: qualityResult.assessment.qualityScore,
           enhancementApplied: !!qualityResult.enhancement,
           enhancementTypes: qualityResult.enhancement?.enhancementApplied || [],
           qualityImprovement: qualityResult.enhancement?.qualityImprovement || 0
-        }
+        },
+        motionAnalysis: mediaResult.isVideo ? {
+          available: !!mediaResult.videoUrl,
+          videoFormat: mediaResult.videoUrl?.includes('.mp4') ? 'MP4' : 'HLS',
+          readyForAnalysis: true
+        } : null
       });
     } catch (error) {
       console.error('❌ Pinterest image extraction failed:', error);
