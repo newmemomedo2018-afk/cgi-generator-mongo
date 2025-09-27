@@ -144,9 +144,9 @@ export async function enhanceImageWithCloudinary(imageUrl: string, assessment: I
 
     // Apply enhancement transformations based on assessment - FIXED for proper Cloudinary SDK
     const transformations: any[] = [
-      // Enforce consistent Full HD output format
-      { width: 1920, height: 1080, crop: 'fill', gravity: 'auto' },
-      { fetch_format: 'webp', quality: 'auto:good' }
+      // High quality output format (preserve aspect ratio)
+      { width: 1920, crop: 'limit' },
+      { fetch_format: 'webp', quality: '90' }
     ];
     const enhancementApplied: string[] = ['Full HD WebP Format'];
 

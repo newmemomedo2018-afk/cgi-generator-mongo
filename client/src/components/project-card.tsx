@@ -85,6 +85,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const formatTimeAgo = (date: Date | string) => {
     const now = new Date();
     const projectDate = new Date(date);
+    
+    // Ensure we're working with UTC times for consistent calculation
     const diffInMinutes = Math.floor((now.getTime() - projectDate.getTime()) / (1000 * 60));
     
     if (diffInMinutes < 1) return "الآن";
@@ -94,7 +96,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     if (diffInHours < 24) return `منذ ${diffInHours} ساعة`;
     
     const diffInDays = Math.floor(diffInHours / 24);
-    return `منذ ${diffInDays} يوم`;
+    if (diffInDays > 0) return `منذ ${diffInDays} يوم`;
+    return `منذ ${diffInHours} ساعة`; // Fallback for edge cases
   };
 
   return (

@@ -16,10 +16,8 @@ function getFullHDImageUrl(urls: any): string {
       // Use proper URL construction to avoid & vs ? issues
       const url = new URL(urls.raw);
       url.searchParams.set('w', '1920');
-      url.searchParams.set('h', '1080');
-      url.searchParams.set('fit', 'crop');
-      url.searchParams.set('crop', 'center');
-      url.searchParams.set('q', '80');
+      url.searchParams.set('fit', 'max');
+      url.searchParams.set('q', '90');
       url.searchParams.set('fm', 'webp');
       return url.toString();
     } catch (e) {
@@ -47,12 +45,10 @@ function getOptimizedImageUrl(baseUrl: string): string {
     try {
       const url = new URL(baseUrl);
       url.searchParams.set('w', '1920');
-      url.searchParams.set('h', '1080');
-      url.searchParams.set('fit', 'crop');
-      url.searchParams.set('crop', 'center');
-      url.searchParams.set('q', '80');
+      url.searchParams.set('fit', 'max');
+      url.searchParams.set('q', '90');
       url.searchParams.set('fm', 'webp');
-      console.log('🎯 Optimized Unsplash URL to Full HD WebP');
+      console.log('🎯 Optimized Unsplash URL to HD WebP (preserving aspect ratio)');
       return url.toString();
     } catch (e) {
       console.warn('⚠️ Cannot optimize Unsplash URL, using Cloudinary fallback:', baseUrl);
@@ -79,9 +75,9 @@ function getCloudinaryOptimizedUrl(originalUrl: string): string {
     return originalUrl;
   }
   
-  // Build Cloudinary fetch URL with Full HD transformations
+  // Build Cloudinary fetch URL with quality transformations (preserve aspect ratio)
   const encodedUrl = encodeURIComponent(originalUrl);
-  const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/fetch/c_fill,g_auto,f_webp,q_auto:good,w_1920,h_1080/${encodedUrl}`;
+  const cloudinaryUrl = `https://res.cloudinary.com/${cloudName}/image/fetch/c_limit,w_1920,f_webp,q_90/${encodedUrl}`;
   
   console.log('✨ Created Cloudinary Full HD URL:', cloudinaryUrl.substring(0, 100) + '...');
   return cloudinaryUrl;
