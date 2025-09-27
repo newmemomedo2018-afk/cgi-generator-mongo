@@ -450,10 +450,11 @@ export default function Dashboard() {
     console.log('🎬 Scene selected from modal:', { scene, productSize });
     
     // Update project data with selected scene and product size
+    // Handle both image and video scenes from Pinterest
     setProjectData(prev => ({
       ...prev,
-      sceneImageUrl: scene.imageUrl,
-      sceneVideoUrl: "", // Clear video URL when scene image is selected
+      sceneImageUrl: scene.isVideo ? "" : (scene.imageUrl || ""),
+      sceneVideoUrl: scene.isVideo ? (scene.videoUrl || "") : "",
       productSize: productSize // Store product size preference
     }));
     
@@ -461,9 +462,10 @@ export default function Dashboard() {
     
     // Show success toast
     const sizeText = productSize === 'emphasized' ? 'مُبرز وبارز' : 'مناسب للغرفة';
+    const mediaType = scene.isVideo ? 'فيديو' : 'مشهد';
     toast({
       title: t('toast_scene_selected'),
-      description: `تم اختيار "${scene.name || scene.title}" بحجم ${sizeText}`,
+      description: `تم اختيار ${mediaType} "${scene.name || scene.title}" بحجم ${sizeText}`,
     });
 
     // Close the modal

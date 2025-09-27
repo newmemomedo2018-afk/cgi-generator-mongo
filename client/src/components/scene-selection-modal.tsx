@@ -14,7 +14,9 @@ interface SceneData {
   id: string;
   name: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  isVideo?: boolean;
   category: string;
   style: string;
   keywords: string[];
@@ -174,21 +176,31 @@ export default function SceneSelectionModal({
         return;
       }
       
-      const { imageUrl } = result;
-      console.log('✅ Pinterest image extracted:', { original: pinterestUrl, extracted: imageUrl });
+      const { imageUrl, videoUrl, isVideo, mediaType } = result;
+      console.log('✅ Pinterest media extracted:', { 
+        original: pinterestUrl, 
+        imageUrl: imageUrl?.substring(0, 50) + '...', 
+        videoUrl: videoUrl?.substring(0, 50) + '...',
+        isVideo,
+        mediaType 
+      });
       
-      if (!imageUrl) {
-        throw new Error('لم يتم العثور على رابط صورة صالح');
+      // Use video URL if it's a video post, otherwise use image URL
+      const mediaUrl = isVideo && videoUrl ? videoUrl : imageUrl;
+      const mediaDescription = isVideo ? 'فيديو Pinterest' : 'صورة Pinterest';
+      
+      if (!mediaUrl) {
+        throw new Error(isVideo ? 'لم يتم العثور على رابط فيديو صالح' : 'لم يتم العثور على رابط صورة صالح');
       }
       
-      // Show preview of extracted image (only if not reset)
-      console.log('🎯 Setting extracted image URL:', imageUrl);
-      setExtractedImageUrl(imageUrl);
+      // Show preview of extracted media (only if not reset)
+      console.log('🎯 Setting extracted media URL:', mediaUrl);
+      setExtractedImageUrl(mediaUrl); // Still use this state variable for consistency
       console.log('✅ State updated with extracted URL');
       setIsExtracting(false);
       
       // Auto-confirm and close modal after successful extraction (with race condition guard)
-      console.log('🚀 Auto-confirming Pinterest image selection...');
+      console.log('🚀 Auto-confirming Pinterest media selection...');
       setTimeout(() => {
         // 🔄 Final check before applying scene selection
         if (currentResetKeyRef.current !== startResetKey) {
@@ -198,9 +210,11 @@ export default function SceneSelectionModal({
         
         const customScene: SceneData = {
           id: `pinterest_${Date.now()}`,
-          name: 'مشهد Pinterest',
-          description: 'مشهد تم اختياره من Pinterest',
-          imageUrl: imageUrl,
+          name: `مشهد Pinterest`,
+          description: `مشهد ${mediaDescription} تم اختياره من Pinterest`,
+          imageUrl: isVideo ? undefined : mediaUrl,
+          videoUrl: isVideo ? mediaUrl : undefined,
+          isVideo: isVideo || false,
           category: 'pinterest',
           style: 'user-selected',
           keywords: ['pinterest'],
@@ -208,10 +222,11 @@ export default function SceneSelectionModal({
           colors: ['متنوع']
         };
         
+        console.log('🎬 Scene selected from modal:', { scene: customScene, productSize });
         onSceneSelect(customScene, productSize);
         onClose();
         console.log('✅ Pinterest scene auto-selected and modal closed');
-      }, 500); // Small delay to let user see the extracted image briefly
+      }, 500); // Small delay to let user see the extracted media briefly
       
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {

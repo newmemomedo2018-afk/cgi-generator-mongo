@@ -10,7 +10,9 @@ export interface SceneData {
   id: string;
   name: string;
   description: string;
-  imageUrl: string;
+  imageUrl?: string;
+  videoUrl?: string;
+  isVideo?: boolean;
   category: string;
   style: string;
   keywords: string[];
