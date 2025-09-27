@@ -114,7 +114,8 @@ export async function setupAuth(app: Express) {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          credits: user.credits
+          credits: user.credits,
+          isAdmin: user.isAdmin || false
         },
         token
       });
@@ -153,7 +154,8 @@ export async function setupAuth(app: Express) {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
-          credits: user.credits
+          credits: user.credits,
+          isAdmin: user.isAdmin || false
         },
         token
       });
@@ -175,7 +177,8 @@ export async function setupAuth(app: Express) {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        credits: user.credits
+        credits: user.credits,
+        isAdmin: user.isAdmin || false
       });
     } catch (error) {
       console.error("Error fetching user:", error);
