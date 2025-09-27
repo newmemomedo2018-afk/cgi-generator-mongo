@@ -451,9 +451,10 @@ export default function Dashboard() {
     
     // Update project data with selected scene and product size
     // Handle both image and video scenes from Pinterest
+    // For Pinterest videos, keep both image URL (for preview) and video URL (for processing)
     setProjectData(prev => ({
       ...prev,
-      sceneImageUrl: scene.isVideo ? "" : (scene.imageUrl || ""),
+      sceneImageUrl: scene.imageUrl || "", // Always show thumbnail for preview
       sceneVideoUrl: scene.isVideo ? (scene.videoUrl || "") : "",
       productSize: productSize // Store product size preference
     }));
