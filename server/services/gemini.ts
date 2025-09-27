@@ -1000,11 +1000,25 @@ async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotion
       model: "gemini-2.0-flash-exp"
     });
 
-    // Step 1: Download the video
+    // Step 1: Download the video with proper headers for Pinterest
     console.log("🔽 Downloading Pinterest video...");
-    const videoResponse = await fetch(videoUrl);
+    const videoResponse = await fetch(videoUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'video/mp4,video/*,*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
+        'Referer': 'https://www.pinterest.com/'
+      }
+    });
+    
     if (!videoResponse.ok) {
-      throw new Error(`Failed to download video: ${videoResponse.status}`);
+      console.error("❌ Pinterest video download failed:", {
+        status: videoResponse.status,
+        statusText: videoResponse.statusText,
+        url: videoUrl.substring(0, 100) + "..."
+      });
+      throw new Error(`Failed to download video: ${videoResponse.status} ${videoResponse.statusText}`);
     }
     
     const videoArrayBuffer = await videoResponse.arrayBuffer();
