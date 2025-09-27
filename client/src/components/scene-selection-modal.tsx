@@ -157,15 +157,8 @@ export default function SceneSelectionModal({
       setIsExtracting(true);
       setExtractedImageUrl(null);
       
-      // Extract real image URL from Pinterest post with AbortController
-      const response = await fetch('/api/extract-pinterest-image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ pinterestUrl }),
-        signal: abortController.signal
-      });
+      // Extract real image URL from Pinterest post using apiRequest with authentication
+      const response = await apiRequest('POST', '/api/extract-pinterest-image', { pinterestUrl });
 
       if (!response.ok) {
         const error = await response.json();
