@@ -8,7 +8,7 @@ const genAI = new GoogleGenerativeAI(
 // ObjectStorage removed - using Cloudinary/direct file access
 
 // Function to get image from Object Storage with correct MIME type detection
-async function getImageDataFromStorage(filePath: string): Promise<{base64: string; mimeType: string}> {
+export async function getImageDataFromStorage(filePath: string): Promise<{base64: string; mimeType: string}> {
   try {
     console.log("Getting image from storage:", filePath);
     

@@ -79,44 +79,16 @@ export async function analyzeProductForScenes(imageUrl: string): Promise<Product
       }
     });
 
-    // تحميل الصورة مع timeout وsize limits
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    // استخدم نفس طريقة تحميل الصور الآمنة المستخدمة في gemini.ts
+    const { getImageDataFromStorage } = await import('./gemini');
     
-    const imageResponse = await fetch(imageUrl, { 
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'CGI-Generator-Bot/1.0',
-      }
-    });
-    clearTimeout(timeoutId);
+    console.log('📥 Loading image using secure method...');
+    const imageDataResult = await getImageDataFromStorage(imageUrl);
     
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to fetch image: ${imageResponse.status}`);
-    }
-    
-    // Check content type
-    const contentType = imageResponse.headers.get('content-type');
-    if (!contentType || !contentType.startsWith('image/')) {
-      throw new Error('URL does not point to a valid image');
-    }
-    
-    // Check content length (max 10MB)
-    const contentLength = imageResponse.headers.get('content-length');
-    if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
-      throw new Error('Image too large (max 10MB)');
-    }
-
-    const imageBuffer = await imageResponse.arrayBuffer();
-    
-    // Additional size check after download
-    if (imageBuffer.byteLength > 10 * 1024 * 1024) {
-      throw new Error('Image too large (max 10MB)');
-    }
     const imageData = {
       inlineData: {
-        data: Buffer.from(imageBuffer).toString('base64'),
-        mimeType: imageResponse.headers.get('content-type') || 'image/jpeg'
+        data: imageDataResult.base64,
+        mimeType: imageDataResult.mimeType
       }
     };
 
