@@ -469,7 +469,7 @@ export default function AdminDashboard() {
                                        project.status === "failed" ? "فاشل" : "قيد المعالجة"}
                                     </Badge>
                                   </td>
-                                  <td className="py-3">{project.userId.substring(0, 8)}...</td>
+                                  <td className="py-3">{project.userId.toString().substring(0, 8)}...</td>
                                   <td className="py-3">{project.creditsUsed}</td>
                                   <td className="py-3">{formatDate(project.createdAt)}</td>
                                 </tr>
