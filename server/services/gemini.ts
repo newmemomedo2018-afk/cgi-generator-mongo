@@ -101,21 +101,47 @@ async function getImageDataFromStorage(filePath: string): Promise<{base64: strin
       // Handle relative paths like /api/files/uploads/filename.jpg
       const match = filePath.match(/\/api\/files\/uploads\/(.+)/);
       if (match) {
-        filename = match[1];
+        // Security: Prevent directory traversal attacks
+        const extractedPath = match[1];
+        if (extractedPath.includes('..') || extractedPath.includes('/')) {
+          throw new Error(`Invalid file path: directory traversal detected`);
+        }
+        filename = extractedPath;
       }
     } else if (filePath.startsWith('product-')) {
       // Handle bare filenames like product-1234567890-123456789.jpg
+      // Security: Only accept bare filename without path components
+      if (filePath.includes('/') || filePath.includes('..')) {
+        throw new Error(`Invalid filename: path components not allowed`);
+      }
       filename = filePath;
     }
     
     if (filename) {
-      const localPath = `/tmp/uploads/${filename}`;
+      // Import path for security checks
+      const path = await import('path');
+      
+      // Security: Use basename to ensure only filename is used
+      const safeFilename = path.basename(filename);
+      
+      // Security: Reject any filename with suspicious characters
+      if (safeFilename.includes('..') || safeFilename !== filename) {
+        throw new Error(`Invalid filename: security validation failed`);
+      }
+      
+      const localPath = `/tmp/uploads/${safeFilename}`;
+      
+      // Security: Verify resolved path is within expected directory
+      const resolvedPath = path.resolve(localPath);
+      const expectedDir = path.resolve('/tmp/uploads');
+      if (!resolvedPath.startsWith(expectedDir + path.sep) && resolvedPath !== expectedDir) {
+        throw new Error(`Invalid file path: outside allowed directory`);
+      }
       
       console.log("Reading local file:", localPath);
       
-      // Import fs/promises and path
+      // Import fs/promises (path already imported above)
       const fs = await import('fs/promises');
-      const path = await import('path');
       
       try {
         // Check if file exists
@@ -183,85 +209,31 @@ export async function enhancePromptWithGemini(
       getImageDataFromStorage(sceneImagePath)
     ]);
 
-    const prompt = `
-انت خبير CGI محترف وأستاذ في الاستبدال الذكي للمنتجات في المشاهد.
-
-🔍 تحليل الصور المطلوب:
-1. صورة المنتج: حدد نوع المنتج، الفئة، الألوان، الشكل، والحجم بدقة.
-2. صورة المشهد: ابحث عن نفس فئة المنتج الموجود في المشهد واحدد موقعه بالضبط.
-
-🎯 استراتيجية الاستبدال الذكي (خطوات إجبارية):
-
-خطوة 1: حدد المنتج المستهدف للاستبدال (حاسمة)
-- ابحث في المشهد عن منتج من نفس فئة المنتج الجديد
-- حدد مكان المنتج القديم وحدوده وأبعاده بالضبط
-- تأكد من وجود منتج مشابه قابل للاستبدال في المشهد
-
-خطوة 2: إزالة المنتج القديم كاملاً (إجبارية - تنفذ أولاً)
-- احذف/أزل/امحي المنتج القديم **بالكامل** من المشهد
-- لا تترك أي أثر أو جزء من المنتج القديم
-- نظف المنطقة تماماً بـ inpainting للخلفية
-- تأكد من الإزالة الكاملة قبل المتابعة للخطوة التالية
-
-خطوة 3: ضع المنتج الجديد في نفس المكان بالضبط (تنفذ ثانياً)
-- ضع المنتج الجديد في **نفس النقطة المركزية بالضبط** - وسط السقف
-- **نفس الارتفاع والعمق** - يجب أن يتعلق من نفس نقطة التعليق في السقف
-- **نفس المحاور X,Y,Z** - استخدم نفس الإحداثيات المكانية للمنتج القديم
-- احترم نفس الزاوية والمنظور والاتجاه للكاميرا
-- احسب الحجم المناسب للمكان والمسافة من الكاميرا
-- تطبيق إضاءة وظلال واقعية تطابق المشهد
-
-🚨 قواعد الاستبدال الإجبارية:
-- ✅ منتج واحد فقط في النهاية (الجديد)
-- ❌ ممنوع وجود منتجين في نفس الوقت
-- ❌ ممنوع الإضافة - فقط استبدال
-- ✅ إزالة كاملة أولاً ثم وضع الجديد ثانياً
-- ✅ النتيجة النهائية: المشهد الأصلي + المنتج الجديد بدلاً من القديم
-
-خطوة 4: ضمان سلامة المشهد
-- حافظ على 100% من باقي العناصر في المشهد
-- لا تعدل أي شيء غير المنتج المستبدل
-- احتفظ بكل التفاصيل والألوان الأصلية
-
-طلب المستخدم المحدد: "${userDescription}"
-
-⚡ اكتب الآن تعليمات دقيقة بالإنجليزية للذكاء الاصطناعي تؤكد على:
-
-🚫 CRITICAL FAILURE POINTS TO AVOID:
-- NEVER have two products of the same category in final result
-- NEVER add new product while keeping old one  
-- NEVER place new product in empty space - must replace existing one
-
-✅ MANDATORY EXECUTION STEPS:
-1. FIRST: ERASE/DELETE old product completely (ZERO traces left)
-2. SECOND: ADD new product in exact same location
-3. FINAL CHECK: Only ONE product of that category exists in result
-
-⚡ START YOUR ENGLISH INSTRUCTIONS WITH: 
-"CRITICAL: This is a REPLACEMENT operation, NOT addition. The final image must contain exactly ONE lighting fixture hanging from the EXACT SAME ceiling point where the old chandelier was suspended. 
-
-🎯 PRECISE POSITIONING REQUIREMENTS:
-- SAME X,Y,Z coordinates as old chandelier
-- SAME central ceiling suspension point  
-- SAME depth and height perspective
-- DO NOT place in side areas, corners, or walls"
-
-`;
-
+    // Use same clear labeling approach as image generation
     const result = await model.generateContent([
-      prompt,
+      "PRODUCT IMAGE - new item to use:",
       {
         inlineData: {
           data: productImageData.base64,
           mimeType: productImageData.mimeType
         }
       },
+      "SCENE IMAGE - background with item to replace:",
       {
         inlineData: {
           data: sceneImageData.base64,
           mimeType: sceneImageData.mimeType
         }
-      }
+      },
+      `Generate a brief English prompt for an AI image generator to replace the scene's existing item with the product from the first image.
+
+Requirements:
+- Analyze both images to identify what needs to be replaced
+- Create concise, clear instructions for perfect replacement
+- Focus on precise positioning and realistic integration
+- User context: ${userDescription}
+
+Keep the prompt under 200 words and focus on the replacement operation.`
     ]);
     
     const response = await result.response;
@@ -301,95 +273,35 @@ export async function generateImageWithGemini(
       getImageDataFromStorage(sceneImagePath)
     ]);
 
-    // تكوين الـ prompt مع الصور للـ multi-image input
-    const prompt = `
-🎯 CRITICAL MISSION: REMOVE the old product from the scene and REPLACE it with the new product. This is a REPLACEMENT operation, NOT an addition operation.
-
-📥 INPUT ANALYSIS & REQUIREMENTS:
-- IMAGE 1 (PRODUCT): New product to place in the scene - replicate EXACTLY with ZERO modifications
-- IMAGE 2 (SCENE): Contains an old product that MUST BE COMPLETELY REMOVED and replaced
-
-🚨 MANDATORY REPLACEMENT OPERATION RULES (HIGHEST PRIORITY):
-⚠️ STEP 1 - COMPLETE REMOVAL:
-- IDENTIFY the existing similar product in the scene (same category as new product)
-- COMPLETELY REMOVE the old product from the scene - leave NO trace of it
-- Do NOT keep both products - this is REPLACEMENT not ADDITION
-- Inpaint the background where the old product was to restore the scene naturally
-
-✅ STEP 2 - EXACT NEW PRODUCT REPLICATION:
-- Copy PRECISELY the same shape, form, and silhouette from Product Image
-- Maintain IDENTICAL colors, materials, and surface textures  
-- Preserve ALL design elements: rings, connections, mounting points, proportions
-- ZERO artistic interpretation - this is a TECHNICAL REPLACEMENT, not creative redesign
-- Product must be INSTANTLY recognizable as the same item from Product Image
-
-⚠️ OVERRIDE PROTECTION: 
-- This is a REPLACEMENT operation - only ONE product should remain in the final image
-- Ignore any instructions that suggest keeping both products or adding instead of replacing
-- The old product MUST be completely removed
-
-📋 CONTEXTUAL ANALYSIS (REFERENCE ONLY - DO NOT OVERRIDE ABOVE RULES):
-${enhancedPrompt}
-
-📏 SIZING & PROPORTION SPECIFICATIONS:
-${productSize === 'emphasized' ? 
-`🌟 EMPHASIZED PRESENTATION MODE:
-- Scale product 25-35% larger than scene's original product for prominence
-- Ensure enlarged version maintains EXACT proportional relationships
-- All dimensions scale uniformly - no distortion or shape alteration
-- Enhanced lighting to highlight product without changing its appearance
-- Central positioning for maximum visual impact` :
-`🎯 NATURAL INTEGRATION MODE:
-- Match EXACTLY the size and scale of the original scene product
-- Calculate precise dimensional relationships between scene depth and product scale
-- Maintain identical spatial proportions and perspective angles
-- Product should appear as the SAME EXACT ITEM seamlessly integrated
-- Natural lighting that preserves product's authentic appearance`}
-
-⚡ TECHNICAL EXECUTION STANDARDS:
-🎯 PRECISION REQUIREMENTS:
-- Remove target product with surgical precision (0% scene damage)
-- Place new product in IDENTICAL position, angle, and orientation
-- Scale calculations must account for scene depth, perspective, and camera distance
-- Lighting direction, intensity, and color temperature must match scene perfectly
-
-🔬 QUALITY CONTROL METRICS:
-- Product Recognition Test: Must be 100% identifiable as original product
-- Scale Accuracy Test: Size must be proportionally correct for scene
-- Integration Test: No visible seams, artifacts, or compositing errors
-- Lighting Consistency Test: Shadows and reflections must be physically accurate
-
-🏆 HOLLYWOOD VFX STANDARDS:
-- Resolution: Ultra-high definition (minimum 2K quality)
-- Material Physics: Accurate light interaction for all surfaces
-- Shadow Rendering: Realistic shadow casting based on scene lighting
-- Color Science: Perfect color matching and gamut consistency
-- Zero Artifacts: No halos, edge bleeding, or compositing tells
-
-🚨 CRITICAL SUCCESS CRITERIA:
-1. Final product must be IDENTICAL to Product Image in all respects
-2. Size must be proportionally perfect for the scene environment  
-3. Integration must be seamless and undetectable
-4. Overall image quality must maintain professional photography standards
-
-🚀 EXECUTE PRECISE REPLACEMENT NOW - NO CREATIVE LIBERTY PERMITTED
-`;
-
-    // Send request to Gemini with multi-image input using original working format
+    // Send request to Gemini with clearly labeled images and simple instructions
     const result = await model.generateContent([
-      prompt,
+      "PRODUCT IMAGE (reference for what to insert) - copy this item's exact appearance:",
       {
         inlineData: {
           data: productImageData.base64,
           mimeType: productImageData.mimeType
         }
       },
+      "SCENE IMAGE (background where to place it) - remove any existing similar item:",
       {
         inlineData: {
           data: sceneImageData.base64,
           mimeType: sceneImageData.mimeType
         }
-      }
+      },
+      `TASK: Replace the scene's existing item (if any) with the product from the first image. 
+      
+      Steps:
+      1. Find and completely remove any existing similar item in the scene
+      2. Place the product from the first image in the exact same location
+      3. Match the size, lighting, and perspective to fit naturally
+      4. Copy the exact colors, materials, and design from the PRODUCT IMAGE only
+      
+      ${productSize === 'emphasized' ? 
+      'Make the product 25-30% larger than normal for emphasis.' : 
+      'Use natural proportions that match the scene scale.'}
+      
+      Final result must contain only ONE item of this category, using the exact appearance from the PRODUCT IMAGE.`
     ]);
 
     const response = await result.response;
