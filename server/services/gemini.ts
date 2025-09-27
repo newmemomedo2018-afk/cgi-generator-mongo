@@ -3,6 +3,8 @@ import { GoogleAIFileManager } from '@google/generative-ai/server';
 import fs from 'fs';
 import fetch from 'node-fetch';
 // ObjectStorage removed - using Cloudinary now
+import { VideoMotionPattern, VideoKeyFrame, MotionTimeline } from '@shared/schema';
+import { extractVideoFrames, createMotionTimelineFromPattern, VideoFrameExtractionResult } from './video-frame-extractor';
 
 const genAI = new GoogleGenerativeAI(
   process.env.GEMINI_API_KEY || ""
@@ -450,6 +452,8 @@ export async function enhanceVideoPromptWithGemini(
   imageScenePrompt?: string; // NEW: For static scene generation
   videoMotionPrompt?: string; // NEW: For motion/animation only
   qualityNegativePrompt?: string; // NEW: Anti-distortion negative prompt
+  frameExtractionResult?: VideoFrameExtractionResult; // NEW: Extracted frames from Pinterest video
+  motionTimeline?: MotionTimeline; // NEW: Structured motion timeline
 }> {
   try {
     console.log("Gemini Video Prompt Enhancement:", {
@@ -470,15 +474,49 @@ export async function enhanceVideoPromptWithGemini(
     // Enhanced: Process both images and videos for scene analysis
     let sceneImageData = null;
     let extractedMotionPattern = null;
+    let frameExtractionResult: VideoFrameExtractionResult | undefined = undefined;
+    let motionTimeline: MotionTimeline | undefined = undefined;
     
     if (options.isSceneVideo) {
-      // NEW: Pinterest Video Motion Analysis
-      console.log("🎬 Analyzing Pinterest video for motion patterns...");
+      // NEW: Pinterest Video Motion Analysis + Frame Extraction
+      console.log("🎬 Starting comprehensive Pinterest video analysis...");
+      
+      // Step 1: Extract motion patterns using Gemini AI
+      console.log("🧠 Analyzing motion patterns with Gemini AI...");
       extractedMotionPattern = await analyzeVideoMotionPatterns(sceneMediaPath);
-      console.log("✅ Video motion analysis completed:", {
+      
+      // Step 2: Extract keyframes for visual reference  
+      console.log("📸 Extracting keyframes for visual reference...");
+      try {
+        frameExtractionResult = await extractVideoFrames(sceneMediaPath);
+        console.log("✅ Frame extraction completed:", {
+          framesExtracted: frameExtractionResult.frames.length,
+          gridImageUrl: !!frameExtractionResult.gridImageUrl,
+          videoDuration: frameExtractionResult.duration
+        });
+        
+        // Step 3: Create structured motion timeline
+        if (extractedMotionPattern && frameExtractionResult) {
+          motionTimeline = createMotionTimelineFromPattern(
+            extractedMotionPattern,
+            frameExtractionResult.duration,
+            frameExtractionResult.frames
+          );
+          console.log("⏰ Motion timeline created with", motionTimeline.segments.length, "segments");
+        }
+        
+      } catch (frameError) {
+        console.warn("⚠️ Frame extraction failed, continuing with motion analysis only:", frameError);
+        // Continue without frame extraction - motion analysis is still valuable
+      }
+      
+      console.log("✅ Comprehensive video analysis completed:", {
         hasMotionData: !!extractedMotionPattern,
+        hasFrames: !!frameExtractionResult,
+        hasTimeline: !!motionTimeline,
         motionType: extractedMotionPattern?.primaryMotion || 'none'
       });
+      
       // For video analysis, we still use null for sceneImageData since we're analyzing motion
       sceneImageData = null;
     } else {
@@ -740,7 +778,9 @@ RESPOND ONLY WITH VALID JSON - NO OTHER TEXT BEFORE OR AFTER THE JSON
       shotList,
       imageScenePrompt, // NEW: Static scene description
       videoMotionPrompt, // NEW: Motion-only description
-      qualityNegativePrompt // NEW: Anti-distortion negative prompt
+      qualityNegativePrompt, // NEW: Anti-distortion negative prompt
+      frameExtractionResult, // NEW: Extracted frames from Pinterest video
+      motionTimeline // NEW: Structured motion timeline
     };
     
   } catch (error) {
@@ -947,26 +987,6 @@ ${projectDetails.userDescription}
   }
 }
 
-// NEW: Pinterest Video Motion Analysis Interface
-interface VideoMotionPattern {
-  primaryMotion: string;
-  cameraMovements: string[];
-  objectMotions: string[];
-  timing: {
-    duration: number;
-    keyMoments: Array<{ time: number; action: string }>;
-  };
-  cinematography: {
-    shotTypes: string[];
-    transitions: string[];
-    lightingChanges: string[];
-  };
-  applicableToProduct: {
-    recommended: boolean;
-    adaptations: string[];
-    preserveElements: string[];
-  };
-}
 
 /**
  * Analyze Pinterest video for motion patterns using Gemini AI
@@ -987,7 +1007,8 @@ async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotion
       throw new Error(`Failed to download video: ${videoResponse.status}`);
     }
     
-    const videoBuffer = await videoResponse.buffer();
+    const videoArrayBuffer = await videoResponse.arrayBuffer();
+    const videoBuffer = Buffer.from(videoArrayBuffer);
     const localVideoPath = `./temp-video-${Date.now()}.mp4`;
     fs.writeFileSync(localVideoPath, videoBuffer);
     

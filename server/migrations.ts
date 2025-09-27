@@ -58,6 +58,10 @@ const EXPECTED_SCHEMA: TableColumns = {
     { name: 'kling_sound_task_id', type: 'varchar(255)', nullable: true },
     { name: 'include_audio', type: 'boolean', nullable: false, defaultValue: 'false' },
     { name: 'full_task_details', type: 'text', nullable: true },
+    // NEW: Enhanced Motion Analysis fields
+    { name: 'motion_timeline', type: 'text', nullable: true },
+    { name: 'key_frame_urls', type: 'text', nullable: true },
+    { name: 'frame_grid_url', type: 'varchar(500)', nullable: true },
     { name: 'created_at', type: 'timestamp', nullable: false, defaultValue: 'CURRENT_TIMESTAMP' },
     { name: 'updated_at', type: 'timestamp', nullable: false, defaultValue: 'CURRENT_TIMESTAMP' },
   ],

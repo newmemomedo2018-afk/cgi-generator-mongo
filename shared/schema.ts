@@ -70,6 +70,11 @@ export const projects = pgTable('projects', {
   klingSoundTaskId: varchar('kling_sound_task_id', { length: 255 }),
   includeAudio: boolean('include_audio').default(false).notNull(),
   fullTaskDetails: text('full_task_details'), // JSON string
+  
+  // NEW: Enhanced Motion Analysis fields
+  motionTimeline: text('motion_timeline'), // JSON string of MotionTimeline
+  keyFrameUrls: text('key_frame_urls'), // JSON array of extracted frame URLs
+  frameGridUrl: varchar('frame_grid_url', { length: 500 }), // Composed 2x2 grid image
   createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
@@ -219,3 +224,75 @@ export type NewTransaction = z.infer<typeof insertTransactionSchema>;
 export type Job = typeof jobs.$inferSelect;
 export type NewJob = z.infer<typeof insertJobSchema>;
 export type CreateJobInput = z.infer<typeof createJobInputSchema>;
+
+// Enhanced Motion Analysis Interfaces
+export interface VideoMotionPattern {
+  primaryMotion: string;
+  cameraMovements: string[];
+  objectMotions: string[];
+  timing: {
+    duration: number;
+    keyMoments: Array<{
+      time: number;
+      action: string;
+    }>;
+  };
+  cinematography: {
+    shotTypes: string[];
+    transitions: string[];
+    lightingChanges: string[];
+  };
+  applicableToProduct: {
+    recommended: boolean;
+    adaptations: string[];
+    preserveElements: string[];
+  };
+}
+
+// NEW: Enhanced Motion Timeline for frame-based video generation
+export interface MotionTimelineSegment {
+  startTime: number; // in seconds
+  endTime: number;   // in seconds  
+  camera: {
+    movement: 'static' | 'pan' | 'tilt' | 'zoom' | 'dolly' | 'orbit';
+    direction?: 'left' | 'right' | 'up' | 'down' | 'in' | 'out' | 'clockwise' | 'counter-clockwise';
+    speed: 'slow' | 'medium' | 'fast';
+    amount: number; // percentage or degrees
+  };
+  subject: {
+    motion: 'static' | 'rotation' | 'translation' | 'scaling' | 'floating';
+    axis?: 'x' | 'y' | 'z';
+    amount: number;
+    easing: 'linear' | 'ease-in' | 'ease-out' | 'ease-in-out';
+  };
+  lighting: {
+    type: 'static' | 'dynamic';
+    changes?: string[];
+    intensity: number; // 0-1
+  };
+  keyDescription: string; // Human-readable description for this segment
+}
+
+export interface MotionTimeline {
+  totalDuration: number;
+  fps: number;
+  segments: MotionTimelineSegment[];
+  keyFrames: Array<{
+    timestamp: number;
+    description: string;
+    visualCues: string[];
+  }>;
+  globalStyle: {
+    colorTone: string;
+    lightingMood: string;
+    cameraStyle: string;
+  };
+}
+
+// Video Frame Extraction Interface
+export interface VideoKeyFrame {
+  timestamp: number; // in seconds
+  frameUrl: string;  // URL of extracted frame
+  description: string; // AI-generated description of this frame
+  visualCues: string[]; // Key visual elements in this frame
+}
