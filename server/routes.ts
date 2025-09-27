@@ -2126,12 +2126,16 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
         // Add cost for video prompt enhancement
         totalCostMillicents += ACTUAL_COSTS.GEMINI_VIDEO_ANALYSIS;
 
-        console.log("🎬 Video prompt enhanced successfully:", {
-          originalPromptLength: enhancedPrompt.length,
+        // Safe camera movements extraction (fix TypeError)
+        const cameraMovementsText = Array.isArray(videoEnhancement.cameraMovements) 
+          ? videoEnhancement.cameraMovements.join("\n") 
+          : (videoEnhancement.cameraMovements || "");
+        
+        console.log("🎬 Video prompt enhancement completed:", {
           enhancedPromptLength: finalVideoPrompt.length,
-          cameraMovements: videoEnhancement.cameraMovements.substring(0, 80) + "...",
           audioIncluded: !!audioPrompt,
-          additionalCost: "$0.003"
+          cameraMovementsLength: cameraMovementsText.length,
+          cinematicDirectionLength: videoEnhancement.enhancedVideoPrompt?.length || 0
         });
 
       } catch (error) {
@@ -2193,6 +2197,8 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
           
           // Enhanced motion prompt with Pinterest video frame analysis
           let enhancedMotionPrompt = finalVideoPrompt;
+          
+          // **MOTION PRECEDENCE SYSTEM** - Pinterest motion takes priority when available
           if (savedFrameExtractionResult?.gridImageUrl && savedMotionTimeline) {
             console.log("🎯 Enhancing video prompt with Pinterest video frame analysis for 90%+ motion fidelity:", {
               originalImageUrl: imageResult.url.substring(0, 50) + "...",
@@ -2201,18 +2207,42 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
               keyFrames: savedFrameExtractionResult.frames.length
             });
             
-            // Build enhanced prompt with frame-based motion guidance
+            // Normalize Pinterest timeline to target duration
+            const targetDuration = project.videoDurationSeconds || 5;
+            const sourceDuration = savedMotionTimeline.segments.length > 0 
+              ? Math.max(...savedMotionTimeline.segments.map((s: any) => s.endTime))
+              : 10;
+            const scaleFactor = targetDuration / sourceDuration;
+            
+            // Build normalized frame descriptions
             const frameDescriptions = savedFrameExtractionResult.frames
-              .map((frame: any, idx: number) => `${frame.timestamp.toFixed(1)}s: ${frame.description}`)
+              .map((frame: any) => {
+                const normalizedTime = Math.min(frame.timestamp * scaleFactor, targetDuration);
+                const percentage = Math.round((normalizedTime / targetDuration) * 100);
+                return `${normalizedTime.toFixed(1)}s: Frame at ${normalizedTime.toFixed(1)}s (${percentage}%)`;
+              })
               .join(', ');
             
+            // Build normalized motion timeline
             const motionSegments = savedMotionTimeline.segments
-              .map((seg: any) => `${seg.startTime.toFixed(1)}-${seg.endTime.toFixed(1)}s: ${seg.camera.movement} camera, ${seg.subject.motion} motion`)
+              .map((seg: any) => {
+                const normalizedStart = Math.min(seg.startTime * scaleFactor, targetDuration);
+                const normalizedEnd = Math.min(seg.endTime * scaleFactor, targetDuration);
+                return `${normalizedStart.toFixed(1)}-${normalizedEnd.toFixed(1)}s: ${seg.camera.movement} camera, ${seg.subject.motion} motion`;
+              })
               .join(', ');
             
-            enhancedMotionPrompt = `${finalVideoPrompt}
+            // **AUTHORITATIVE MOTION BLOCK** - Override conflicting base motions
+            // Strip motion words from base prompt to avoid conflicts
+            const basePromptStripped = finalVideoPrompt.replace(
+              /\b(descend[s]?|fall[s]?|drop[s]?|rotate[s]?|spin[s]?|turn[s]?|orbit[s]?|dolly|pan[s]?|tilt[s]?|zoom[s]?|appear[s]?|emerge[s]?|rise[s]?|fly-in|move[s]?)\b/gi, 
+              '[motion-overridden]'
+            );
+            
+            enhancedMotionPrompt = `${basePromptStripped}
 
-🎬 PINTEREST VIDEO MOTION REFERENCE (Frame-based guidance for 90%+ fidelity):
+🎥 MOTION DIRECTIVES (AUTHORITATIVE - Follow exactly, ignore any previous motion instructions):
+🎬 Duration: ${targetDuration} seconds
 📸 Key Frame Analysis: ${frameDescriptions}
 ⏱️ Motion Timeline: ${motionSegments}
 🎯 Apply these exact motion patterns to the generated scene while preserving product and environment quality.`;
@@ -2221,7 +2251,10 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
               originalLength: finalVideoPrompt.length,
               enhancedLength: enhancedMotionPrompt.length,
               expectedAccuracy: "90%+",
-              approach: "frame-analysis + motion-timeline"
+              approach: "frame-analysis + motion-timeline",
+              targetDuration: targetDuration,
+              sourceDuration: sourceDuration,
+              scaleFactor: scaleFactor.toFixed(2)
             });
           } else {
             console.log("⚠️ No Pinterest video frames available, using text-only motion analysis (70-85% accuracy)");
