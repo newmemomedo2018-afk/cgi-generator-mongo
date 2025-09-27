@@ -107,13 +107,13 @@ export default function Dashboard() {
     if (!projects || projects.length === 0) return;
     
     const hasProcessingProjects = projects.some((project: Project) => 
-      project.status && ["pending", "processing", "enhancing_prompt", "generating_image", "generating_video"].includes(project.status)
+      project.status && ["pending", "processing", "enhancing_prompt", "generating_image", "generating_video", "under_review"].includes(project.status)
     );
     
     console.log('🔍 Checking polling status:', {
       projectsCount: projects.length,
       hasProcessingProjects,
-      processingStatuses: projects.filter(p => p.status && ["pending", "processing", "enhancing_prompt", "generating_image", "generating_video"].includes(p.status)).map(p => ({ id: p.id, status: p.status }))
+      processingStatuses: projects.filter(p => p.status && ["pending", "processing", "enhancing_prompt", "generating_image", "generating_video", "under_review"].includes(p.status)).map(p => ({ id: p.id, status: p.status }))
     });
     
     if (hasProcessingProjects) {
