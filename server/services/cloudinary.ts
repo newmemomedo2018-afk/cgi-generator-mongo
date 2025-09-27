@@ -38,3 +38,4 @@ export async function uploadToCloudinary(buffer: Buffer, filename: string): Prom
     ).end(buffer);
   });
 }
+
