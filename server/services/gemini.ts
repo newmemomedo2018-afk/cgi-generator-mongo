@@ -1,9 +1,13 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleAIFileManager } from '@google/generative-ai/server';
+import fs from 'fs';
+import fetch from 'node-fetch';
 // ObjectStorage removed - using Cloudinary now
 
 const genAI = new GoogleGenerativeAI(
   process.env.GEMINI_API_KEY || ""
 );
+const fileManager = new GoogleAIFileManager(process.env.GEMINI_API_KEY || "");
 
 // ObjectStorage removed - using Cloudinary/direct file access
 
@@ -50,7 +54,7 @@ export async function getImageDataFromStorage(filePath: string): Promise<{base64
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         const response = await fetch(filePath, { 
-          signal: controller.signal,
+          signal: controller.signal as any,
           headers: {
             'User-Agent': 'CGI-Generator/1.0'
           }
@@ -971,80 +975,124 @@ interface VideoMotionPattern {
  */
 async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotionPattern | null> {
   try {
-    console.log("🎬 Starting Pinterest video motion analysis...", {
+    console.log("🎬 Starting REAL Pinterest video motion analysis...", {
       videoUrl: videoUrl.substring(0, 100) + "...",
-      model: "gemini-2.5-flash"
+      model: "gemini-2.0-flash-exp"
     });
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // Step 1: Download the video
+    console.log("🔽 Downloading Pinterest video...");
+    const videoResponse = await fetch(videoUrl);
+    if (!videoResponse.ok) {
+      throw new Error(`Failed to download video: ${videoResponse.status}`);
+    }
+    
+    const videoBuffer = await videoResponse.buffer();
+    const localVideoPath = `./temp-video-${Date.now()}.mp4`;
+    fs.writeFileSync(localVideoPath, videoBuffer);
+    
+    console.log(`✅ Video downloaded (${videoBuffer.length} bytes)`);
 
-    // For now, we'll analyze using the video URL directly
-    // Gemini AI can accept video URLs for analysis
+    // Step 2: Upload to Gemini
+    console.log("⬆️ Uploading video to Gemini...");
+    const uploadResult = await fileManager.uploadFile(localVideoPath, {
+      mimeType: 'video/mp4',
+      displayName: 'Pinterest Video Motion Analysis'
+    });
+    
+    console.log('✅ Video uploaded:', uploadResult.file.name);
+
+    // Step 3: Wait for processing
+    console.log('⏳ Waiting for video processing...');
+    let file = await fileManager.getFile(uploadResult.file.name);
+    while (file.state === 'PROCESSING') {
+      console.log('🔄 Still processing...');
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      file = await fileManager.getFile(uploadResult.file.name);
+    }
+    
+    if (file.state === 'FAILED') {
+      throw new Error('Video processing failed');
+    }
+    
+    console.log('✅ Video processed successfully!');
+
+    // Step 4: Analyze with Gemini
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+
     const prompt = `
-🎬 ADVANCED VIDEO MOTION ANALYSIS
+🎬 تحليل فيديو Pinterest للحركة والديناميكية
 
-Analyze this Pinterest video and extract detailed motion patterns:
+تحليل هذا الفيديو بدقة واستخراج جميع patterns الحركة:
 
-VIDEO URL: ${videoUrl}
+📋 تحليل مطلوب:
 
-📋 EXTRACTION REQUIREMENTS:
+1. الحركة الأساسية:
+   - نوع حركة الكاميرا (pan, tilt, zoom, dolly, static)
+   - اتجاه وسرعة الحركة
+   - سلاسة وثبات الحركة
 
-1. PRIMARY MOTION ANALYSIS:
-   - What is the main camera movement? (pan, tilt, zoom, dolly, static, etc.)
-   - Direction and speed of movement
-   - Smoothness and stability assessment
+2. حركة الأشياء:
+   - ما هي الأشياء المتحركة؟
+   - نوع واتجاه الحركة
+   - توقيت الحركات
 
-2. OBJECT MOTION TRACKING:
-   - What objects move in the video?
-   - Direction and type of object movement
-   - Timing of object animations
+3. العناصر السينمائية:
+   - نوع اللقطات (wide, medium, close-up)
+   - أسلوب الانتقالات
+   - تغييرات الإضاءة
 
-3. CINEMATOGRAPHY ELEMENTS:
-   - Shot types used (wide, medium, close-up, etc.)
-   - Transition styles between shots
-   - Lighting changes throughout video
+4. التوقيت:
+   - مدة الفيديو
+   - اللحظات المهمة
+   - إيقاع التغييرات
 
-4. TIMING ANALYSIS:
-   - Duration of video
-   - Key moments and their timestamps
-   - Rhythm and pacing patterns
+5. تطبيق على منتج:
+   - هل يمكن تطبيق هذه الحركة على منتج آخر؟
+   - ما التعديلات المطلوبة؟
+   - أي عناصر يجب الحفاظ عليها؟
 
-5. PRODUCT APPLICATION ASSESSMENT:
-   - Can these motions be applied to a new product?
-   - What adaptations would be needed?
-   - Which elements should be preserved?
-
-RESPOND IN STRUCTURED JSON FORMAT:
+أجب بصيغة JSON:
 {
-  "primaryMotion": "description of main camera movement",
-  "cameraMovements": ["list", "of", "specific", "movements"],
-  "objectMotions": ["list", "of", "object", "animations"],
+  "primaryMotion": "وصف الحركة الأساسية",
+  "cameraMovements": ["قائمة", "الحركات", "المحددة"],
+  "objectMotions": ["قائمة", "حركات", "الأشياء"],
   "timing": {
-    "duration": number_in_seconds,
+    "duration": رقم_بالثواني,
     "keyMoments": [
-      {"time": timestamp_seconds, "action": "what happens"}
+      {"time": وقت_بالثواني, "action": "ما يحدث"}
     ]
   },
   "cinematography": {
     "shotTypes": ["wide", "medium", "close"],
     "transitions": ["cut", "fade", "pan"],
-    "lightingChanges": ["description of lighting"]
+    "lightingChanges": ["وصف الإضاءة"]
   },
   "applicableToProduct": {
     "recommended": true/false,
-    "adaptations": ["needed changes for product"],
-    "preserveElements": ["elements to keep"]
+    "adaptations": ["تعديلات مطلوبة"],
+    "preserveElements": ["عناصر للحفاظ عليها"]
   }
 }
-
-🎯 Focus on extracting motion patterns that can be applied to product showcase videos.
 `;
 
-    console.log("🚀 Sending Pinterest video to Gemini for motion analysis...");
+    console.log("🚀 Analyzing video with Gemini AI...");
 
-    const result = await model.generateContent([prompt]);
-    const response = result.response;
-    const text = response.text();
+    const result = await model.generateContent([
+      prompt,
+      {
+        fileData: {
+          mimeType: uploadResult.file.mimeType,
+          fileUri: uploadResult.file.uri
+        }
+      }
+    ]);
+    
+    const analysisResponse = result.response;
+    const text = analysisResponse.text();
+
+    // Clean up local file
+    fs.unlinkSync(localVideoPath);
 
     console.log("✅ Gemini video analysis response received:", {
       responseLength: text.length,
