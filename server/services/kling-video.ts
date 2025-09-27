@@ -174,6 +174,26 @@ async function addAudioToVideo(
         soundTaskId: taskId,
         saved: "immediately"
       });
+      
+      // 🎯 INSTANT STATUS UPDATE: Change to "under_review" immediately after audio task submission
+      try {
+        await storage.updateProject(projectId, { 
+          status: "under_review",
+          progress: 90
+        });
+        console.log("🎯 INSTANT UPDATE: Project status changed to 'under_review' for audio generation:", {
+          projectId,
+          soundTaskId: taskId,
+          newStatus: "under_review",
+          progress: 90,
+          benefit: "User sees immediate feedback for audio processing!"
+        });
+      } catch (statusError) {
+        console.warn("⚠️ Failed to update audio status to under_review (continuing anyway):", {
+          projectId,
+          error: statusError instanceof Error ? statusError.message : "Unknown error"
+        });
+      }
     } catch (saveError) {
       console.error("⚠️ WARNING: Failed to save audio task ID for recovery (continuing anyway):", {
         projectId,
@@ -418,6 +438,26 @@ export async function generateVideoWithKling(
           includeAudio,
           saved: "immediately"
         });
+        
+        // 🎯 INSTANT STATUS UPDATE: Change to "under_review" immediately after task submission
+        try {
+          await storage.updateProject(projectId, { 
+            status: "under_review",
+            progress: 85
+          });
+          console.log("🎯 INSTANT UPDATE: Project status changed to 'under_review' immediately after Kling submission:", {
+            projectId,
+            taskId,
+            newStatus: "under_review",
+            progress: 85,
+            benefit: "User sees immediate feedback instead of waiting 4 minutes!"
+          });
+        } catch (statusError) {
+          console.warn("⚠️ Failed to update status to under_review (continuing anyway):", {
+            projectId,
+            error: statusError instanceof Error ? statusError.message : "Unknown error"
+          });
+        }
       } catch (saveError) {
         console.error("⚠️ WARNING: Failed to save task ID for recovery (continuing anyway):", {
           projectId,

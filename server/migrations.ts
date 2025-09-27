@@ -98,7 +98,7 @@ const EXPECTED_SCHEMA: TableColumns = {
 
 // Required enums with their values
 const REQUIRED_ENUMS = {
-  project_status: ['pending', 'processing', 'enhancing_prompt', 'generating_image', 'generating_video', 'completed', 'failed'],
+  project_status: ['pending', 'processing', 'enhancing_prompt', 'generating_image', 'generating_video', 'under_review', 'completed', 'failed'],
   content_type: ['image', 'video'],
   transaction_status: ['pending', 'completed', 'failed'],
   job_status: ['pending', 'processing', 'completed', 'failed']

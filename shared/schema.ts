@@ -9,6 +9,7 @@ export const projectStatusEnum = pgEnum('project_status', [
   'enhancing_prompt', 
   'generating_image', 
   'generating_video', 
+  'under_review',
   'completed', 
   'failed'
 ]);

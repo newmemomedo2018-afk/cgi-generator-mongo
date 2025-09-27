@@ -24,6 +24,13 @@ export default function ProjectCard({ project }: ProjectCardProps) {
             قيد المعالجة
           </Badge>
         );
+      case "under_review":
+        return (
+          <Badge className="status-under-review bg-gradient-to-r from-purple-500 to-indigo-500">
+            <Eye className="h-3 w-3 ml-1" />
+            قيد المراجعة
+          </Badge>
+        );
       case "completed":
         return (
           <Badge className="status-completed bg-gradient-to-r from-blue-500 to-cyan-500">
@@ -56,6 +63,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         return "إنتاج الصورة";
       case "generating_video":
         return "إنتاج الفيديو";
+      case "under_review":
+        return "قيد المراجعة";
       case "processing":
         return "قيد المعالجة";
       case "completed":
