@@ -538,15 +538,17 @@ export default function Dashboard() {
                 <Coins className="ml-2 h-4 w-4" />
                 <span data-testid="user-credits">{userData?.credits || 0}</span> {t('text_credits')}
               </Badge>
-              <Button 
-                onClick={() => window.location.href = "/admin"}
-                variant="outline" 
-                className="glass-card text-yellow-400 border-yellow-400/30 hover:bg-yellow-400/10" 
-                data-testid="admin-button"
-              >
-                <Wand2 className="ml-2 h-4 w-4" />
-                {t('button_admin_panel')}
-              </Button>
+              {userData?.isAdmin && (
+                <Button 
+                  onClick={() => window.location.href = "/admin-dashboard"}
+                  variant="outline" 
+                  className="glass-card text-yellow-400 border-yellow-400/30 hover:bg-yellow-400/10" 
+                  data-testid="admin-button"
+                >
+                  <Wand2 className="ml-2 h-4 w-4" />
+                  لوحة الإدارة
+                </Button>
+              )}
               <Button onClick={handleLogout} variant="outline" className="glass-card" data-testid="logout-button">
                 <User className="ml-2 h-4 w-4" />
                 {t('button_logout')}
