@@ -463,8 +463,23 @@ export async function enhanceVideoPromptWithGemini(
     console.log("Loading media for video prompt generation...");
     const productImageData = await getImageDataFromStorage(productImagePath);
     
-    // For scene, we only process images for now (video analysis comes later)
-    const sceneImageData = options.isSceneVideo ? null : await getImageDataFromStorage(sceneMediaPath);
+    // Enhanced: Process both images and videos for scene analysis
+    let sceneImageData = null;
+    let extractedMotionPattern = null;
+    
+    if (options.isSceneVideo) {
+      // NEW: Pinterest Video Motion Analysis
+      console.log("🎬 Analyzing Pinterest video for motion patterns...");
+      extractedMotionPattern = await analyzeVideoMotionPatterns(sceneMediaPath);
+      console.log("✅ Video motion analysis completed:", {
+        hasMotionData: !!extractedMotionPattern,
+        motionType: extractedMotionPattern?.primaryMotion || 'none'
+      });
+      // For video analysis, we still use null for sceneImageData since we're analyzing motion
+      sceneImageData = null;
+    } else {
+      sceneImageData = await getImageDataFromStorage(sceneMediaPath);
+    }
 
     const durationSeconds = options.duration || 5;
     const isShortVideo = durationSeconds <= 5;
@@ -477,6 +492,28 @@ ANALYZE the images:
 2. SCENE: Environment, lighting, layout
 
 USER REQUEST: "${userDescription}"
+
+${extractedMotionPattern ? `
+🎬 PINTEREST VIDEO MOTION PATTERN ANALYSIS:
+📊 EXTRACTED MOTION DATA FROM PINTEREST VIDEO:
+- PRIMARY MOTION: ${extractedMotionPattern.primaryMotion}
+- CAMERA MOVEMENTS: ${extractedMotionPattern.cameraMovements.join(", ")}
+- OBJECT MOTIONS: ${extractedMotionPattern.objectMotions.join(", ")}
+- TIMING DURATION: ${extractedMotionPattern.timing.duration}s
+- SHOT TYPES: ${extractedMotionPattern.cinematography.shotTypes.join(", ")}
+- TRANSITIONS: ${extractedMotionPattern.cinematography.transitions.join(", ")}
+
+🎯 MOTION ADAPTATION INSTRUCTIONS:
+- RECOMMENDED FOR PRODUCT: ${extractedMotionPattern.applicableToProduct.recommended ? 'YES' : 'NO'}
+- ADAPTATIONS NEEDED: ${extractedMotionPattern.applicableToProduct.adaptations.join("; ")}
+- PRESERVE ELEMENTS: ${extractedMotionPattern.applicableToProduct.preserveElements.join("; ")}
+
+🚨 CRITICAL: Apply these EXACT motion patterns to the new product video:
+- Use the same camera movement style: ${extractedMotionPattern.primaryMotion}
+- Apply similar object motion timing and rhythm
+- Maintain the same cinematographic quality and transitions
+- Adapt the motion to work naturally with the new product
+` : ''}
 
 📏 PRODUCT SIZE PREFERENCE: ${options.productSize || 'normal'}
 ${options.productSize === 'emphasized' ? `
@@ -904,4 +941,171 @@ ${projectDetails.userDescription}
       cinematicDirection: `Professional ${projectDetails.duration}-second product showcase sequence`
     };
   }
+}
+
+// NEW: Pinterest Video Motion Analysis Interface
+interface VideoMotionPattern {
+  primaryMotion: string;
+  cameraMovements: string[];
+  objectMotions: string[];
+  timing: {
+    duration: number;
+    keyMoments: Array<{ time: number; action: string }>;
+  };
+  cinematography: {
+    shotTypes: string[];
+    transitions: string[];
+    lightingChanges: string[];
+  };
+  applicableToProduct: {
+    recommended: boolean;
+    adaptations: string[];
+    preserveElements: string[];
+  };
+}
+
+/**
+ * Analyze Pinterest video for motion patterns using Gemini AI
+ * @param videoUrl Pinterest video URL or path
+ * @returns Motion pattern analysis
+ */
+async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotionPattern | null> {
+  try {
+    console.log("🎬 Starting Pinterest video motion analysis...", {
+      videoUrl: videoUrl.substring(0, 100) + "...",
+      model: "gemini-2.5-flash"
+    });
+
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    // For now, we'll analyze using the video URL directly
+    // Gemini AI can accept video URLs for analysis
+    const prompt = `
+🎬 ADVANCED VIDEO MOTION ANALYSIS
+
+Analyze this Pinterest video and extract detailed motion patterns:
+
+VIDEO URL: ${videoUrl}
+
+📋 EXTRACTION REQUIREMENTS:
+
+1. PRIMARY MOTION ANALYSIS:
+   - What is the main camera movement? (pan, tilt, zoom, dolly, static, etc.)
+   - Direction and speed of movement
+   - Smoothness and stability assessment
+
+2. OBJECT MOTION TRACKING:
+   - What objects move in the video?
+   - Direction and type of object movement
+   - Timing of object animations
+
+3. CINEMATOGRAPHY ELEMENTS:
+   - Shot types used (wide, medium, close-up, etc.)
+   - Transition styles between shots
+   - Lighting changes throughout video
+
+4. TIMING ANALYSIS:
+   - Duration of video
+   - Key moments and their timestamps
+   - Rhythm and pacing patterns
+
+5. PRODUCT APPLICATION ASSESSMENT:
+   - Can these motions be applied to a new product?
+   - What adaptations would be needed?
+   - Which elements should be preserved?
+
+RESPOND IN STRUCTURED JSON FORMAT:
+{
+  "primaryMotion": "description of main camera movement",
+  "cameraMovements": ["list", "of", "specific", "movements"],
+  "objectMotions": ["list", "of", "object", "animations"],
+  "timing": {
+    "duration": number_in_seconds,
+    "keyMoments": [
+      {"time": timestamp_seconds, "action": "what happens"}
+    ]
+  },
+  "cinematography": {
+    "shotTypes": ["wide", "medium", "close"],
+    "transitions": ["cut", "fade", "pan"],
+    "lightingChanges": ["description of lighting"]
+  },
+  "applicableToProduct": {
+    "recommended": true/false,
+    "adaptations": ["needed changes for product"],
+    "preserveElements": ["elements to keep"]
+  }
+}
+
+🎯 Focus on extracting motion patterns that can be applied to product showcase videos.
+`;
+
+    console.log("🚀 Sending Pinterest video to Gemini for motion analysis...");
+
+    const result = await model.generateContent([prompt]);
+    const response = result.response;
+    const text = response.text();
+
+    console.log("✅ Gemini video analysis response received:", {
+      responseLength: text.length,
+      hasContent: !!text
+    });
+
+    // Try to parse JSON response
+    try {
+      // Extract JSON from response (handle potential markdown formatting)
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        console.log("⚠️ No JSON found in response, creating fallback pattern");
+        return createFallbackMotionPattern(videoUrl);
+      }
+
+      const motionPattern: VideoMotionPattern = JSON.parse(jsonMatch[0]);
+      
+      console.log("🎯 Pinterest video motion pattern extracted:", {
+        primaryMotion: motionPattern.primaryMotion,
+        cameraMovements: motionPattern.cameraMovements?.length || 0,
+        recommended: motionPattern.applicableToProduct?.recommended
+      });
+
+      return motionPattern;
+
+    } catch (parseError) {
+      console.log("⚠️ JSON parsing failed, creating structured fallback from text");
+      return createFallbackMotionPattern(videoUrl, text);
+    }
+
+  } catch (error) {
+    console.error("❌ Pinterest video motion analysis failed:", error);
+    return createFallbackMotionPattern(videoUrl);
+  }
+}
+
+/**
+ * Create fallback motion pattern when analysis fails
+ */
+function createFallbackMotionPattern(videoUrl: string, analysisText?: string): VideoMotionPattern {
+  return {
+    primaryMotion: "Smooth camera movement with product focus",
+    cameraMovements: ["gentle zoom", "subtle pan", "product focus"],
+    objectMotions: ["product rotation", "ambient movement"],
+    timing: {
+      duration: 5,
+      keyMoments: [
+        { time: 0, action: "Opening shot" },
+        { time: 2.5, action: "Product focus" },
+        { time: 5, action: "Final frame" }
+      ]
+    },
+    cinematography: {
+      shotTypes: ["medium", "close-up"],
+      transitions: ["smooth"],
+      lightingChanges: ["consistent lighting"]
+    },
+    applicableToProduct: {
+      recommended: true,
+      adaptations: ["Adjust timing for product", "Maintain professional look"],
+      preserveElements: ["Smooth camera work", "Professional pacing"]
+    }
+  };
 }

@@ -21,7 +21,7 @@ import puppeteer from 'puppeteer';
  * Extract image URL from Pinterest post URL by parsing HTML
  * Simple and reliable approach without browser automation
  */
-async function extractImageFromPinterestPost(pinterestUrl: string): Promise<string | null> {
+async function extractPinterestMedia(pinterestUrl: string): Promise<{ imageUrl: string | null; videoUrl: string | null; isVideo: boolean }> {
   try {
     console.log('🔍 Extracting Pinterest image from HTML...');
     
@@ -40,7 +40,7 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
 
     if (!response.ok) {
       console.log('❌ Failed to fetch Pinterest page:', response.status);
-      return null;
+      return { imageUrl: null, videoUrl: null, isVideo: false };
     }
 
     const html = await response.text();
@@ -55,6 +55,26 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
     
     if (isVideoPost) {
       console.log('🎬 Detected Pinterest video post - extracting video thumbnail');
+      
+    }
+    
+    let extractedVideoUrl = null;
+    
+    if (isVideoPost) {
+      // NEW: Try to extract actual video URL for motion analysis
+      const videoUrlMatches = html.match(/"videoUrl":"([^"]+)"/g);
+      
+      if (videoUrlMatches) {
+        const videoUrls = videoUrlMatches.map(match => {
+          const urlMatch = match.match(/"videoUrl":"([^"]+)"/);
+          return urlMatch ? urlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '') : null;
+        }).filter(url => url && url.includes('pinimg.com'));
+        
+        if (videoUrls.length > 0) {
+          extractedVideoUrl = videoUrls[0]; // Use first valid video URL
+          console.log('🎥 Found Pinterest video URL for motion analysis:', extractedVideoUrl?.substring(0, 100) + '...');
+        }
+      }
     } else {
       console.log('🖼️ Detected Pinterest image post - extracting image');
     }
@@ -172,7 +192,12 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
       } else {
         console.log('✅ Selected main pin image from group with', maxCount, 'variations');
       }
-      return enhancePinterestImageQuality(prioritizedUrls[0]);
+      const imageUrl = enhancePinterestImageQuality(prioritizedUrls[0]);
+      return { 
+        imageUrl, 
+        videoUrl: extractedVideoUrl, 
+        isVideo: isVideoPost 
+      };
     }
 
     // Fallback to original logic if grouping fails
@@ -180,7 +205,7 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
     
     if (validUrls.length === 0) {
       console.log('❌ No valid Pinterest images found in HTML');
-      return null;
+      return { imageUrl: null, videoUrl: extractedVideoUrl, isVideo: isVideoPost };
     }
 
     // Prioritize higher resolution images as fallback
@@ -201,11 +226,16 @@ async function extractImageFromPinterestPost(pinterestUrl: string): Promise<stri
     const bestImageUrl = prioritizedUrls[0];
     console.log('✅ Selected fallback Pinterest image:', bestImageUrl);
     
-    return enhancePinterestImageQuality(bestImageUrl);
+    const imageUrl = enhancePinterestImageQuality(bestImageUrl);
+    return { 
+      imageUrl, 
+      videoUrl: extractedVideoUrl, 
+      isVideo: isVideoPost 
+    };
     
   } catch (error) {
     console.error('❌ Pinterest HTML extraction error:', error);
-    return null;
+    return { imageUrl: null, videoUrl: null, isVideo: false };
   }
 }
 
@@ -465,8 +495,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Extract image URL from Pinterest post URL using puppeteer
-      const imageUrl = await extractImageFromPinterestPost(pinterestUrl);
+      // Extract media from Pinterest post URL 
+      const mediaResult = await extractPinterestMedia(pinterestUrl);
+      const imageUrl = mediaResult.imageUrl;
       
       if (!imageUrl) {
         return res.status(404).json({ error: 'Could not extract image from Pinterest post' });
