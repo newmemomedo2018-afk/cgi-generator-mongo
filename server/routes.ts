@@ -11,6 +11,7 @@ import path from 'path';
 import { enhancePromptWithGemini, generateImageWithGemini } from './services/gemini';
 import { uploadToCloudinary } from './services/cloudinary';
 import multer from 'multer';
+import { errorHandler, asyncHandler, CustomError, handleValidationError, handleMulterError } from './utils/errorHandler';
 
 import { COSTS, CREDIT_PACKAGES, ACTUAL_COSTS, CREDIT_COSTS } from '@shared/constants';
 import { db } from './db';
@@ -361,7 +362,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload endpoint for product images - using Cloudinary with Quality Enhancement
-  app.post('/api/upload-product-image', isAuthenticated, uploadProductImage.single('productImage'), async (req: any, res) => {
+  app.post('/api/upload-product-image', isAuthenticated, uploadProductImage.single('productImage'), handleMulterError, asyncHandler(async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -404,12 +405,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("❌ Error uploading file:", error);
-      res.status(500).json({ error: "Failed to upload file" });
+      throw new CustomError("Failed to upload file", 500, "فشل في رفع الملف. يرجى المحاولة مرة أخرى.");
     }
-  });
+  }));
 
   // Upload endpoint for scene images - using Cloudinary with Quality Enhancement  
-  app.post('/api/upload-scene-image', isAuthenticated, upload.single('sceneImage'), async (req: any, res) => {
+  app.post('/api/upload-scene-image', isAuthenticated, upload.single('sceneImage'), handleMulterError, asyncHandler(async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No scene file uploaded" });
@@ -462,9 +463,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("❌ Error uploading scene file:", error);
-      res.status(500).json({ error: "Failed to upload scene file" });
+      throw new CustomError("Failed to upload scene file", 500, "فشل في رفع ملف المشهد. يرجى المحاولة مرة أخرى.");
     }
-  });
+  }));
 
   // Pinterest image URL extraction endpoint - SECURED with authentication
   app.post('/api/extract-pinterest-image', isAuthenticated, async (req: any, res) => {
@@ -1449,56 +1450,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoint to make yourself admin (DEVELOPMENT ONLY - DISABLED IN PRODUCTION)
-  app.post('/api/admin/make-admin', isAuthenticated, async (req: any, res) => {
-    // Security: NEVER allow this in production
+  app.post('/api/admin/make-admin', isAuthenticated, asyncHandler(async (req: any, res) => {
+    // Security: NEVER allow this in production - Multiple layers of protection
     if (process.env.NODE_ENV === 'production') {
-      return res.status(403).json({ error: 'Admin elevation disabled in production for security' });
+      console.warn(`⚠️ SECURITY ALERT: Attempted admin elevation in production from user ${req.user.id}`);
+      throw new CustomError("Admin elevation disabled in production", 403, "هذه الخدمة غير متاحة في الإنتاج لأسباب أمنية.");
+    }
+
+    // Additional security: Only allow if explicitly enabled in development
+    if (!process.env.ALLOW_ADMIN_ELEVATION || process.env.ALLOW_ADMIN_ELEVATION !== 'true') {
+      console.warn(`⚠️ SECURITY ALERT: Attempted admin elevation without explicit permission from user ${req.user.id}`);
+      throw new CustomError("Admin elevation not enabled", 403, "تم تعطيل رفع صلاحيات الأدمن.");
     }
     
-    try {
-      const userId = req.user.id;
-      
-      // Update user to be admin (development only)
-      await storage.updateUser(userId, { isAdmin: true });
-      
-      res.json({ message: "Admin privileges granted", isAdmin: true });
-    } catch (error) {
-      console.error("Error granting admin:", error);
-      res.status(500).json({ message: "Failed to grant admin privileges" });
-    }
-  });
+    const userId = req.user.id;
+    
+    // Update user to be admin (development only)
+    await storage.updateUser(userId, { isAdmin: true });
+    
+    console.log(`🛡️ Admin privileges granted to user ${userId} in development mode`);
+    res.json({ 
+      message: "Admin privileges granted", 
+      isAdmin: true,
+      note: "Development mode only - this endpoint is disabled in production"
+    });
+  }));
 
   // Admin endpoint to get all users
-  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
-    try {
-      const user = await storage.getUser(req.user.id);
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-      
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      console.error("Error getting users:", error);
-      res.status(500).json({ message: "Failed to get users" });
+  app.get('/api/admin/users', isAuthenticated, asyncHandler(async (req: any, res) => {
+    const user = await storage.getUser(req.user.id);
+    if (!user?.isAdmin) {
+      throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
     }
-  });
+    
+    const users = await storage.getAllUsers();
+    res.json(users);
+  }));
 
   // Admin endpoint to get all projects
-  app.get('/api/admin/projects', isAuthenticated, async (req: any, res) => {
-    try {
-      const user = await storage.getUser(req.user.id);
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-      
-      const projects = await storage.getAllProjects();
-      res.json(projects);
-    } catch (error) {
-      console.error("Error getting projects:", error);
-      res.status(500).json({ message: "Failed to get projects" });
+  app.get('/api/admin/projects', isAuthenticated, asyncHandler(async (req: any, res) => {
+    const user = await storage.getUser(req.user.id);
+    if (!user?.isAdmin) {
+      throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
     }
-  });
+    
+    const projects = await storage.getAllProjects();
+    res.json(projects);
+  }));
 
   // Endpoint to get actual costs for user projects
   app.get('/api/actual-costs', isAuthenticated, async (req: any, res) => {
@@ -1551,20 +1549,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoint to get platform stats
-  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
-    try {
-      const user = await storage.getUser(req.user.id);
-      if (!user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-      
-      const stats = await storage.getPlatformStats();
-      res.json(stats);
-    } catch (error) {
-      console.error("Error getting stats:", error);
-      res.status(500).json({ message: "Failed to get platform stats" });
+  app.get('/api/admin/stats', isAuthenticated, asyncHandler(async (req: any, res) => {
+    const user = await storage.getUser(req.user.id);
+    if (!user?.isAdmin) {
+      throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
     }
-  });
+    
+    const stats = await storage.getPlatformStats();
+    res.json(stats);
+  }));
+
+  // Admin endpoint to manage user credits
+  app.post('/api/admin/users/:id/credits', isAuthenticated, asyncHandler(async (req: any, res) => {
+    const user = await storage.getUser(req.user.id);
+    if (!user?.isAdmin) {
+      throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
+    }
+
+    // Server-side validation with Zod
+    const adminCreditSchema = z.object({
+      amount: z.number({
+        required_error: "كمية الكريديت مطلوبة",
+        invalid_type_error: "يجب أن تكون كمية الكريديت رقم صحيح",
+      }).min(1, "يجب أن تكون كمية الكريديت أكبر من صفر").max(1000, "الحد الأقصى 1000 كريديت"),
+      action: z.enum(["add", "subtract"], {
+        required_error: "يجب اختيار نوع العملية (add أو subtract)",
+      }),
+      reason: z.string().optional(),
+    });
+
+    const userIdSchema = z.number().int().positive();
+
+    // Validate user ID
+    const userId = userIdSchema.parse(parseInt(req.params.id));
+    
+    // Validate request body
+    const validatedData = adminCreditSchema.parse(req.body);
+
+    // Get target user
+    const targetUser = await storage.getUser(userId);
+    if (!targetUser) {
+      throw new CustomError("User not found", 404, "المستخدم غير موجود.");
+    }
+
+    // Calculate new credit amount
+    const currentCredits = targetUser.credits || 0;
+    const newCredits = validatedData.action === 'add' 
+      ? currentCredits + validatedData.amount 
+      : Math.max(0, currentCredits - validatedData.amount);
+
+    // Update user credits
+    await storage.updateUserCredits(userId, newCredits);
+
+    // Create transaction record for admin action
+    await storage.createTransaction({
+      userId: userId,
+      amount: validatedData.action === 'add' ? validatedData.amount : -validatedData.amount,
+      credits: validatedData.action === 'add' ? validatedData.amount : -validatedData.amount,
+      stripePaymentIntentId: `admin_${validatedData.action}_${Date.now()}`,
+      status: 'completed',
+      processedAt: new Date(),
+    });
+
+    console.log(`🛡️ Admin ${user.email} ${validatedData.action}ed ${validatedData.amount} credits for user ${targetUser.email}. Reason: ${validatedData.reason || 'No reason provided'}`);
+
+    res.json({
+      success: true,
+      message: `Successfully ${validatedData.action}ed ${validatedData.amount} credits`,
+      user: {
+        id: targetUser.id,
+        email: targetUser.email,
+        previousCredits: currentCredits,
+        newCredits: newCredits,
+        action: validatedData.action,
+        amount: validatedData.amount,
+        reason: validatedData.reason || 'No reason provided'
+      }
+    });
+  }));
+
+  // Admin endpoint to get user transactions
+  app.get('/api/admin/users/:id/transactions', isAuthenticated, asyncHandler(async (req: any, res) => {
+    const user = await storage.getUser(req.user.id);
+    if (!user?.isAdmin) {
+      throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
+    }
+
+    // Server-side validation with Zod
+    const userIdSchema = z.number().int().positive();
+    const userId = userIdSchema.parse(parseInt(req.params.id));
+
+    // Get target user
+    const targetUser = await storage.getUser(userId);
+    if (!targetUser) {
+      throw new CustomError("User not found", 404, "المستخدم غير موجود.");
+    }
+
+    // Get user transactions
+    const transactions = await storage.getUserTransactions(userId);
+
+    // Get user projects for spending history
+    const projects = await storage.getUserProjects(userId);
+
+    res.json({
+      user: {
+        id: targetUser.id,
+        email: targetUser.email,
+        currentCredits: targetUser.credits || 0,
+        isAdmin: targetUser.isAdmin || false,
+      },
+      transactions: transactions,
+      projects: projects.map(project => ({
+        id: project.id,
+        title: project.title,
+        creditsUsed: project.creditsUsed,
+        contentType: project.contentType,
+        status: project.status,
+        createdAt: project.createdAt,
+        completedAt: project.updatedAt
+      })),
+      summary: {
+        totalTransactions: transactions.length,
+        totalCreditsSpent: projects.reduce((sum, p) => sum + (p.creditsUsed || 0), 0),
+        totalProjects: projects.length,
+        completedProjects: projects.filter(p => p.status === 'completed').length
+      }
+    });
+  }));
 
   // Scene Selection APIs
   // Default Scenes API
@@ -1821,6 +1932,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // Add enhanced error handling middleware as the last middleware
+  app.use(errorHandler);
 
   const httpServer = createServer(app);
 

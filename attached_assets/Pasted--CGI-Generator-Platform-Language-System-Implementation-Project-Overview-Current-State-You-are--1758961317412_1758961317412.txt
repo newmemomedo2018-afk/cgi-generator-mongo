@@ -1,0 +1,204 @@
+🎬 CGI Generator Platform - Language System Implementation
+Project Overview & Current State
+You are working on a comprehensive CGI video generation platform that integrates Gemini AI for intelligent product replacement, Kling AI for video generation, and Pinterest for scene selection. The platform features a credit-based pricing system with 300% profit margins and is implementing a comprehensive 14-task enhancement plan.
+
+CRITICAL CURRENT STATUS:
+
+8/14 major enhancement tasks completed with architect approval
+Language system implementation: 60% complete (changed from Arabic-first to English-first for international market expansion)
+System running successfully with all major services healthy and no breaking changes
+What Has Been Completed Successfully
+✅ Core Infrastructure (100% Complete)
+Production-ready health monitoring system for 7 external services
+Rate limiting, caching, and timeout protection
+Mobile responsiveness implementation
+Credit system overhaul with 300% profit margins
+API auditing and comprehensive services health check
+Interface reset system
+✅ Language System Foundation (60% Complete)
+Created comprehensive i18n system (client/src/lib/i18n.ts)
+
+English as default language (changed from Arabic)
+Arabic as secondary option for broader market appeal
+Comprehensive translation keys structure
+Type-safe translation interface
+Language Context Provider (client/src/contexts/LanguageContext.tsx)
+
+React context for language state management
+RTL/LTR direction handling
+localStorage persistence
+Translation function t()
+Language Switcher Component (client/src/components/language-switcher.tsx)
+
+Dropdown selector for EN/AR switching
+Icons and proper styling
+Real-time language switching
+CSS Direction & Font Configuration
+
+Fixed CSS direction handling in client/src/index.css
+Inter font configured as default (replaced Cairo)
+RTL support maintained for Arabic
+Proper font family hierarchy
+Landing Page Conversion (40% Complete)
+
+✅ Header navigation converted to translation keys
+✅ Hero section converted (title, description, CTA buttons)
+✅ "How it Works" section converted
+✅ Examples section converted
+✅ Features section title/subtitle converted
+✅ CTA section converted
+✅ Translation Keys Added (Dashboard Ready)
+Dashboard tabs and navigation
+Table headers and project statuses
+Project form labels and progress modal
+Upload zone text and time formatting
+Action buttons (download, preview, play)
+Complete Arabic translations maintained
+Technical Architecture Details
+Frontend Stack
+React + TypeScript with Vite build tool
+Tailwind CSS for styling with shadcn/ui components
+Wouter for client-side routing
+TanStack Query for server state management
+JWT authentication with localStorage persistence
+Backend Architecture
+Node.js + Express REST API
+MongoDB with native driver for flexible document storage
+JWT-based authentication with bcrypt password hashing
+Multer for file upload handling
+Environment variables for API keys and database connections
+External Integrations
+Gemini AI: Prompt enhancement and image generation ($0.001-$0.003 per request)
+Kling AI: Video generation service with polling system
+Cloudinary: Image and video storage/optimization
+Stripe: Payment processing (configured but not fully implemented)
+MongoDB Atlas: Cloud database hosting
+Key Configuration Files
+client/src/lib/i18n.ts - Translation system
+client/src/contexts/LanguageContext.tsx - Language state management
+client/src/index.css - CSS variables and direction handling
+tailwind.config.ts - Font family configuration
+shared/constants.ts - Credit costs and system constants
+URGENT: Current Issue to Fix First
+🚨 Duplicate Key Warning in i18n.ts - There are duplicate translation keys causing build warnings. Must be fixed immediately before continuing.
+
+Issue Location: client/src/lib/i18n.ts
+Problem: Duplicate keys in English translations section causing Vite warnings
+Solution: Remove duplicate entries while preserving the correct translation keys structure
+
+IMMEDIATE NEXT STEPS (Priority Order)
+1. Fix Duplicate Keys Issue (CRITICAL)
+Open client/src/lib/i18n.ts
+Remove duplicate entries in English translations
+Ensure no duplicate keys exist in both English and Arabic sections
+Verify build warnings are cleared
+2. Complete Dashboard Components Conversion (HIGH PRIORITY)
+Convert these hardcoded Arabic texts to translation keys:
+
+A. Dashboard Page (client/src/pages/dashboard.tsx)
+
+Tab triggers: "المستخدمين", "المشاريع", "التكاليف الفعلية"
+Table headers: "العنوان", "النوع", "الحالة", "المستخدم", "الكريدت المستخدم", "التاريخ"
+Toast messages and error messages
+Form labels and project creation texts
+B. Project Card Component (client/src/components/project-card.tsx)
+
+Status badges: "قيد المعالجة", "مكتمل", "فاشل", "في الانتظار"
+Action buttons: "تحميل", "معاينة", "تشغيل"
+Time formatting: "الآن", "منذ ... دقيقة", etc.
+C. Progress Modal (client/src/components/progress-modal.tsx)
+
+Modal title and description
+Step titles: "تحسين الوصف", "إنتاج الصورة", etc.
+Status texts: "مكتمل", "قيد التنفيذ", "فشل"
+D. Upload Zone (client/src/components/upload-zone.tsx)
+
+Upload messages: "جاري رفع الصورة...", "يرجى الانتظار"
+Preview and interaction texts
+3. Convert Pricing Page (client/src/pages/pricing.tsx)
+Section titles and descriptions
+Package features and pricing information
+FAQ section content
+Error and success messages
+4. Convert Authentication Components
+Login/register forms and validation messages
+Error handling and toast notifications
+Auth-related UI text
+5. System Testing & Verification
+Test language switching functionality
+Verify RTL/LTR direction changes
+Test all translated components
+Ensure no hardcoded text remains
+Translation Keys Pattern to Follow
+// Use this naming pattern:
+page_section_element: string;
+ 
+// Examples:
+dashboard_users: string; // Tab names
+form_product_image: string; // Form labels
+status_processing: string; // Status badges
+action_download: string; // Action buttons
+msg_success: string; // Messages
+validation_required: string; // Validation
+ 
+Code Conversion Pattern
+Before:
+
+<h1>مرحباً بك في لوحة التحكم</h1>
+ 
+After:
+
+<h1>{t('dashboard_welcome')}</h1>
+ 
+Important Development Guidelines
+Always use useLanguage() hook in components
+Import translation function: const { t } = useLanguage();
+Preserve existing styling and component structure
+Test language switching after each conversion
+Check for TypeScript errors when adding new keys
+Use descriptive, hierarchical key names
+File Structure Reference
+client/src/
+├── lib/i18n.ts # Translation system (MAIN FILE)
+├── contexts/LanguageContext.tsx # Language state management
+├── components/
+│ ├── language-switcher.tsx # Language dropdown
+│ ├── project-card.tsx # Needs conversion
+│ ├── progress-modal.tsx # Needs conversion
+│ └── upload-zone.tsx # Needs conversion
+├── pages/
+│ ├── dashboard.tsx # Needs conversion
+│ ├── pricing.tsx # Needs conversion
+│ ├── landing.tsx # 40% converted
+│ └── auth/ # Needs conversion
+└── index.css # Font and direction config
+ 
+System Health & Architecture Notes
+Database: MongoDB with comprehensive schema reconciliation
+Authentication: JWT-based with 7-day expiration
+File Upload: Cloudinary integration with multer handling
+Payment: Stripe configured with credit-based system
+AI Services: Gemini + Kling integration with retry logic
+Health Monitoring: 7 external services monitored
+Credit System Architecture
+Image generation: 2 credits
+Short video (5s): 13 credits
+Long video (10s): 18 credits
+Audio enhancement: +5 credits
+300% profit margin implemented
+Final Success Criteria
+✅ All hardcoded Arabic text converted to translation keys
+✅ English as default language, Arabic as secondary
+✅ Seamless language switching without page reload
+✅ RTL/LTR direction changes properly
+✅ Inter font used for English, Cairo for Arabic
+✅ No TypeScript or build errors
+✅ All components tested in both languages
+Commands to Use
+npm run dev - Start development server
+npm run db:push - Sync database schema
+Check logs with refresh_all_logs tool
+PRIORITY: Fix duplicate keys issue first, then systematically convert remaining components starting with dashboard. The system is stable and working - just needs completion of language conversion.
+
+اشياء اضافية للعمل عايز اعمل error handling يعني لو مثلا طلع اي error غريب او اي شيء يحصل مشكله يتم رجوع error للعميل او مبرر غير المبرر بتاع السيستم بتاعنا! يعني زي توجيه كدا لليوزر مش الايرور بتاع البرمجه فاهمني؟
+عايز اعمل داشبورد للأدمن الي هو انا فقط يكون موجود فيه تفاصيل لكل اليوزرز بحيث اعرف منه كام واحد دفع ومعاك كاف وفاضل كام واقدر اضيف او اخصم كريديت من رصيده كدا يعني فاهم؟
