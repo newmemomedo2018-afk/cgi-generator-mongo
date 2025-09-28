@@ -79,14 +79,27 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   const handleDownload = async () => {
     if (project.status === "completed") {
       try {
+        // Check if we have auth token
+        const authToken = localStorage.getItem('auth_token');
+        if (!authToken) {
+          console.error('No auth token found');
+          // Could redirect to login here if needed
+          return;
+        }
+
         const response = await fetch(`/api/projects/${project.id}/download`, {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+            'Authorization': `Bearer ${authToken}`
           }
         });
         
         if (!response.ok) {
-          throw new Error('فشل في تحميل الملف');
+          if (response.status === 401) {
+            console.error('Authentication failed during download');
+            // Could trigger re-login here
+            return;
+          }
+          throw new Error(`فشل في تحميل الملف: ${response.status}`);
         }
         
         const blob = await response.blob();
@@ -99,9 +112,14 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         let filename = `${project.title}_${project.id}`;
         
         if (contentDisposition) {
-          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-          if (filenameMatch) {
-            filename = filenameMatch[1];
+          // Try to extract filename from both standard and RFC5987 format
+          const standardMatch = contentDisposition.match(/filename="([^"]+)"/);
+          const rfc5987Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
+          
+          if (rfc5987Match) {
+            filename = decodeURIComponent(rfc5987Match[1]);
+          } else if (standardMatch) {
+            filename = standardMatch[1];
           }
         } else {
           // Default extension based on content type
@@ -113,10 +131,12 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         link.click();
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
+        
+        console.log(`✅ Download completed: ${filename}`);
       } catch (error) {
         console.error('Download error:', error);
-        // Fallback to direct download if fetch fails
-        window.open(`/api/projects/${project.id}/download`, '_blank');
+        // Show user-friendly error message instead of fallback
+        // Don't use window.open as it won't include auth headers
       }
     }
   };

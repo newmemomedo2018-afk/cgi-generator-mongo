@@ -1397,9 +1397,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const fileName = `${safeTitle}_${project.id}.${fileExt}`;
           const encodedFileName = encodeURIComponent(fileName);
           
+          // Create ASCII-safe fallback filename
+          const asciiFallback = `project_${project.id}.${fileExt}`;
+          
           // Set headers for download with Unicode support
           res.setHeader('Content-Type', mimeType);
-          res.setHeader('Content-Disposition', `attachment; filename="${fileName}"; filename*=UTF-8''${encodedFileName}`);
+          res.setHeader('Content-Disposition', `attachment; filename="${asciiFallback}"; filename*=UTF-8''${encodedFileName}`);
           if (contentLength) {
             res.setHeader('Content-Length', contentLength);
           }
