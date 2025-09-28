@@ -18,7 +18,7 @@ import UploadZone from "@/components/upload-zone";
 import ProjectCard from "@/components/project-card";
 import ProgressModal from "@/components/progress-modal";
 import SceneSelectionModal from "@/components/scene-selection-modal";
-import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera, RotateCcw, Search, Filter, SortAsc, SortDesc, Calendar, DollarSign } from "lucide-react";
+import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera, RotateCcw, Search, Filter, SortAsc, SortDesc, Calendar, DollarSign, Folder, RefreshCw } from "lucide-react";
 import type { User as UserType, Project } from "@shared/schema";
 import { CREDIT_COSTS } from "@shared/constants";
 
@@ -370,9 +370,9 @@ export default function Dashboard() {
     }
   }, [user, authLoading, toast]);
 
-  // 🔄 COMPREHENSIVE INTERFACE RESET SYSTEM
-  const resetInterfaceState = () => {
-    console.log("🔄 Resetting interface state for new project...");
+  // 🔄 ENHANCED COMPREHENSIVE INTERFACE RESET SYSTEM
+  const resetInterfaceState = (showToast: boolean = true, resetLevel: 'partial' | 'full' = 'partial') => {
+    console.log(`🔄 Starting ${resetLevel} interface reset for new project...`);
     
     // 1. Reset main project form data
     setProjectData({
@@ -392,39 +392,77 @@ export default function Dashboard() {
     setIsProductImageUploaded(false);
     setIsSceneImageUploaded(false);
     
-    // 3. Generate new reset key to clear UploadZone previews and component state
+    // 3. Reset dashboard search and filter states
+    setSearchQuery("");
+    setStatusFilter("all");
+    setContentTypeFilter("all");
+    setSortBy("date-desc");
+    setShowAdvancedFilters(false);
+    
+    // 4. Generate new reset key to clear UploadZone previews and component state
     setResetKey(Date.now().toString());
     
-    // 4. Close any open modals
+    // 5. Close any open modals
     setShowProgressModal(false);
     setShowSceneSelector(false);
     
-    // 5. Clear Pinterest/scene selection related localStorage
+    // 6. Clear Pinterest/scene selection related localStorage
     localStorage.removeItem('pinterest_copied_url');
     localStorage.removeItem('pinterest_copied_timestamp');
     
-    // 6. Refresh user data to get latest credits
+    // 7. Full reset: Reset tab preference to default
+    if (resetLevel === 'full') {
+      localStorage.setItem('dashboard-active-tab', 'new-project');
+      setActiveTab('new-project');
+    }
+    
+    // 8. Clear session storage if any exists
+    try {
+      // Clear any session-based temporary data
+      sessionStorage.removeItem('temp_scene_data');
+      sessionStorage.removeItem('temp_upload_progress');
+      sessionStorage.removeItem('temp_processing_status');
+    } catch (e) {
+      console.log('📝 No session storage to clear');
+    }
+    
+    // 9. Refresh user data to get latest credits
     queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     
-    // 7. Cancel and clear scene search caches to prevent stale results
-    queryClient.cancelQueries({ queryKey: ["/api/analyze-product"] });
-    queryClient.cancelQueries({ queryKey: ["/api/pinterest"] }); 
-    queryClient.cancelQueries({ queryKey: ["/api/scenes"] });
-    queryClient.cancelQueries({ queryKey: ["/api/extract-pinterest-image"] });
+    // 10. Cancel and clear ALL search caches to prevent stale results
+    const searchQueries = [
+      ["/api/analyze-product"],
+      ["/api/pinterest"], 
+      ["/api/scenes"],
+      ["/api/extract-pinterest-image"],
+      ["/api/projects"], // Refresh projects list
+      ["/api/actual-costs"], // Refresh costs data
+      ["/api/health"], // Clear health check cache
+      ["/api/upload"] // Clear upload cache
+    ];
     
-    queryClient.removeQueries({ queryKey: ["/api/analyze-product"] });
-    queryClient.removeQueries({ queryKey: ["/api/pinterest"] }); 
-    queryClient.removeQueries({ queryKey: ["/api/scenes"] });
-    queryClient.removeQueries({ queryKey: ["/api/extract-pinterest-image"] });
-    
-    console.log("✅ Interface state reset completed");
-    
-    // 8. Show feedback to user
-    toast({
-      title: t('toast_interface_reset_title'),
-      description: t('toast_interface_reset_description'),
-      duration: 2000,
+    searchQueries.forEach(queryKey => {
+      queryClient.cancelQueries({ queryKey });
+      queryClient.removeQueries({ queryKey });
     });
+    
+    console.log("✅ Enhanced interface state reset completed");
+    console.log(`📊 Reset summary: Form cleared, ${searchQueries.length} cache groups cleared, localStorage cleaned`);
+    
+    // 11. Show feedback to user
+    if (showToast) {
+      toast({
+        title: resetLevel === 'full' ? 'تم إعادة تعيين النظام بالكامل' : t('toast_interface_reset_title'),
+        description: resetLevel === 'full' ? 'تم تنظيف جميع البيانات والعودة للوضع الافتراضي' : t('toast_interface_reset_description'),
+        duration: 2500,
+      });
+    }
+  };
+
+  // 🔄 Quick reset for manual user control
+  const handleManualReset = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    resetInterfaceState(true, 'full');
   };
 
   const handleLogout = () => {
@@ -626,9 +664,23 @@ export default function Dashboard() {
             </nav>
             <div className="flex items-center space-x-reverse space-x-4">
               <Badge className="credit-badge px-3 py-1 rounded-full text-sm font-bold text-white">
-                <Coins className="ml-2 h-4 w-4" />
+                <Coins className="me-2 h-4 w-4" />
                 <span data-testid="user-credits">{userData?.credits || 0}</span> {t('text_credits')}
               </Badge>
+              
+              {/* 🔄 Manual Reset Button */}
+              <Button 
+                onClick={handleManualReset}
+                variant="outline" 
+                size="sm"
+                className="glass-card text-blue-400 border-blue-400/30 hover:bg-blue-400/10 hidden sm:flex" 
+                data-testid="reset-button"
+                title="إعادة تعيين النظام بالكامل"
+              >
+                <RefreshCw className="me-2 h-4 w-4" />
+                تنظيف
+              </Button>
+              
               {userData?.isAdmin && (
                 <Button 
                   onClick={() => window.location.href = "/admin-dashboard"}
@@ -636,12 +688,12 @@ export default function Dashboard() {
                   className="glass-card text-yellow-400 border-yellow-400/30 hover:bg-yellow-400/10" 
                   data-testid="admin-button"
                 >
-                  <Wand2 className="ml-2 h-4 w-4" />
+                  <Wand2 className="me-2 h-4 w-4" />
                   لوحة الإدارة
                 </Button>
               )}
               <Button onClick={handleLogout} variant="outline" className="glass-card" data-testid="logout-button">
-                <User className="ml-2 h-4 w-4" />
+                <User className="me-2 h-4 w-4" />
                 {t('button_logout')}
               </Button>
             </div>
@@ -649,12 +701,12 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="pt-20">
-        <section className="py-20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">{t('dashboard_title')}</h2>
-              <p className="text-xl text-muted-foreground">{t('dashboard_subtitle')}</p>
+      <div className="pt-16 sm:pt-20">
+        <section className="py-6 sm:py-12 lg:py-16">
+          <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-7xl">
+            <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 leading-tight">{t('dashboard_title')}</h2>
+              <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto">{t('dashboard_subtitle')}</p>
             </div>
 
             <Tabs value={activeTab} onValueChange={(tab) => {
@@ -669,20 +721,21 @@ export default function Dashboard() {
                 }, 300); // Small delay to ensure tab switch completes first
               }
             }} className="w-full">
-              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-1 sm:grid-cols-3 glass-card p-1 gap-1 sm:gap-0">
-                <TabsTrigger value="new-project" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
-                  <Plus className="ml-1 sm:ml-2 h-4 w-4" />
+              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-1 sm:grid-cols-3 glass-card p-1.5 gap-1 h-auto sm:h-12 md:h-14">
+                <TabsTrigger value="new-project" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm font-medium transition-all duration-200">
+                  <Plus className="me-1 sm:me-2 h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{t('dashboard_new_project')}</span>
-                  <span className="sm:hidden">{t('dashboard_new_project')}</span>
+                  <span className="sm:hidden">جديد</span>
                 </TabsTrigger>
-                <TabsTrigger value="my-projects" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
+                <TabsTrigger value="my-projects" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm font-medium transition-all duration-200">
+                  <Folder className="me-1 sm:me-2 h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{t('dashboard_my_projects')}</span>
-                  <span className="sm:hidden">{t('dashboard_projects')}</span>
+                  <span className="sm:hidden">مشاريعي</span>
                 </TabsTrigger>
-                <TabsTrigger value="actual-costs" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
-                  <Coins className="ml-1 sm:ml-2 h-4 w-4" />
+                <TabsTrigger value="actual-costs" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm font-medium transition-all duration-200">
+                  <Coins className="me-1 sm:me-2 h-3 w-3 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">{t('dashboard_actual_costs')}</span>
-                  <span className="sm:hidden">{t('dashboard_actual_costs')}</span>
+                  <span className="sm:hidden">التكاليف</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -1247,7 +1300,7 @@ export default function Dashboard() {
                         ))}
                       </div>
                     ) : filteredProjects.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mobile-form-spacing" data-testid="projects-grid">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 auto-rows-fr" data-testid="projects-grid">
                         {filteredProjects.map((project) => (
                           <ProjectCard key={project.id} project={project} />
                         ))}

@@ -14,6 +14,7 @@ import {
   transactions,
   jobs,
 } from "@shared/schema";
+import { NEW_CREDIT_SYSTEM } from "@shared/constants";
 import { db, connectToDatabase } from "./db";
 import { eq, desc, and, sql } from "drizzle-orm";
 
@@ -167,6 +168,11 @@ export class PostgreSQLStorage implements IStorage {
         isAdmin: row.is_admin,
         stripeCustomerId: null,
         stripeSubscriptionId: null,
+        hasAddedCard: false,
+        trialStartDate: null,
+        trialCreditsUsed: 0,
+        isSubscribed: false,
+        subscriptionStartDate: null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
@@ -255,6 +261,11 @@ export class PostgreSQLStorage implements IStorage {
         isAdmin: row.is_admin,
         stripeCustomerId: null,
         stripeSubscriptionId: null,
+        hasAddedCard: false,
+        trialStartDate: null,
+        trialCreditsUsed: 0,
+        isSubscribed: false,
+        subscriptionStartDate: null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       };
@@ -267,8 +278,12 @@ export class PostgreSQLStorage implements IStorage {
       password: userData.password,
       firstName: userData.firstName,
       lastName: userData.lastName,
-      credits: userData.credits ?? 5,
+      credits: userData.credits ?? 2, // NEW CREDIT SYSTEM: Start with 2 credits
       isAdmin: userData.isAdmin ?? false,
+      // Initialize new credit system fields with defaults
+      hasAddedCard: false,
+      trialCreditsUsed: 0,
+      isSubscribed: false,
     };
 
     const result = await db.insert(users).values(newUser).returning();
@@ -514,7 +529,7 @@ export class PostgreSQLStorage implements IStorage {
         
         // 1. Check user credits first (within transaction)
         const userResult = await tx.execute(sql`
-          SELECT id, credits, is_admin 
+          SELECT id, credits, is_admin, trial_start_date, trial_credits_used
           FROM users 
           WHERE id = ${projectData.userId}
           FOR UPDATE
@@ -527,9 +542,27 @@ export class PostgreSQLStorage implements IStorage {
         const user = userResult.rows[0] as any;
         const currentCredits = user.credits;
         
-        // Check if user has sufficient credits (unless admin)
-        if (!isAdmin && currentCredits < projectData.creditsUsed) {
-          throw new Error(`Insufficient credits. Need ${projectData.creditsUsed}, have ${currentCredits}`);
+        // NEW CREDIT SYSTEM: Check if user has sufficient credits (unless admin)
+        if (!isAdmin) {
+          let availableCredits = currentCredits;
+          
+          // Check if trial is active and add trial credits
+          const trialStartDate = user.trial_start_date;
+          if (trialStartDate) {
+            const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const isTrialActive = new Date(trialStartDate) > sevenDaysAgo;
+            
+            if (isTrialActive) {
+              const trialCreditsUsed = user.trial_credits_used || 0;
+              const remainingTrialCredits = Math.max(0, NEW_CREDIT_SYSTEM.TRIAL_CREDITS_LIMIT - trialCreditsUsed);
+              availableCredits += remainingTrialCredits;
+              console.log(`🎁 Trial user: ${currentCredits} regular + ${remainingTrialCredits} trial = ${availableCredits} total`);
+            }
+          }
+          
+          if (availableCredits < projectData.creditsUsed) {
+            throw new Error(`Insufficient credits. Need ${projectData.creditsUsed}, have ${availableCredits}`);
+          }
         }
 
         // 2. Create project using raw SQL within transaction
@@ -598,17 +631,49 @@ export class PostgreSQLStorage implements IStorage {
         const project = projectResult.rows[0] as Project;
         console.log(`✅ Project created in transaction: ${project.id}`);
 
-        // 3. Deduct credits from user (unless admin in production)
+        // 3. SMART CREDIT DEDUCTION: Deduct from regular credits first, then trial credits
         // In development, always deduct credits for better testing
         const shouldDeductCredits = !isAdmin || process.env.NODE_ENV === 'development';
         if (shouldDeductCredits) {
-          const newCredits = currentCredits - projectData.creditsUsed;
+          let remainingToDeduct = projectData.creditsUsed;
+          let newCredits = currentCredits;
+          let newTrialCreditsUsed = user.trial_credits_used || 0;
+          
+          // First: Deduct from regular credits (up to available amount)
+          const regularCreditsToDeduct = Math.min(remainingToDeduct, currentCredits);
+          newCredits -= regularCreditsToDeduct;
+          remainingToDeduct -= regularCreditsToDeduct;
+          
+          // Second: If still need to deduct, use trial credits
+          if (remainingToDeduct > 0) {
+            const trialStartDate = user.trial_start_date;
+            if (trialStartDate) {
+              const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+              const isTrialActive = new Date(trialStartDate) > sevenDaysAgo;
+              
+              if (isTrialActive) {
+                const remainingTrialCredits = Math.max(0, NEW_CREDIT_SYSTEM.TRIAL_CREDITS_LIMIT - newTrialCreditsUsed);
+                const trialCreditsToUse = Math.min(remainingToDeduct, remainingTrialCredits);
+                newTrialCreditsUsed += trialCreditsToUse;
+                remainingToDeduct -= trialCreditsToUse;
+                
+                console.log(`🎁 Trial credits used: ${trialCreditsToUse}, total trial used: ${newTrialCreditsUsed}`);
+              }
+            }
+          }
+          
+          // Update both regular credits and trial credits used
           await tx.execute(sql`
             UPDATE users 
-            SET credits = ${newCredits}, updated_at = CURRENT_TIMESTAMP 
+            SET credits = ${newCredits}, 
+                trial_credits_used = ${newTrialCreditsUsed},
+                updated_at = CURRENT_TIMESTAMP 
             WHERE id = ${projectData.userId}
           `);
-          console.log(`💰 Credits deducted in transaction: ${projectData.creditsUsed} (${currentCredits} → ${newCredits})`);
+          
+          console.log(`💰 Smart credit deduction: ${regularCreditsToDeduct} regular + ${newTrialCreditsUsed - (user.trial_credits_used || 0)} trial = ${projectData.creditsUsed} total`);
+          console.log(`📊 New balances: ${newCredits} regular, ${newTrialCreditsUsed} trial used`);
+          
           if (isAdmin) {
             console.log(`🔧 Development mode: Credits deducted from admin for testing`);
           }
@@ -815,8 +880,8 @@ export class PostgreSQLStorage implements IStorage {
       const isActive = await this.isTrialActive(userId);
       if (!isActive) return 0;
       
-      // During trial, users get unlimited credits (practical limit: 100)
-      const trialCreditsLimit = 100;
+      // During trial, users get unlimited credits (practical limit from constants)
+      const trialCreditsLimit = NEW_CREDIT_SYSTEM.TRIAL_CREDITS_LIMIT;
       const usedCredits = user.trialCreditsUsed || 0;
       return Math.max(0, trialCreditsLimit - usedCredits);
     } catch (error) {

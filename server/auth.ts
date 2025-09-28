@@ -96,14 +96,18 @@ export async function setupAuth(app: Express) {
       // Hash password
       const hashedPassword = await hashPassword(password);
 
-      // Create user
+      // Create user with NEW CREDIT SYSTEM
       const user = await storage.createUser({
         email,
         password: hashedPassword,
         firstName,
         lastName,
-        credits: 5 // Free credits
+        credits: 2 // NEW SYSTEM: Start with 2 credits
       });
+
+      // Start 7-day trial automatically for new users
+      await storage.startTrial(user.id);
+      console.log(`🎁 New user ${user.email} registered with 2 credits + 7-day trial`);
 
       // Generate token
       const token = generateToken(user.id.toString(), user.email);

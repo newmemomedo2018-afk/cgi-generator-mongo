@@ -6,6 +6,156 @@
 
 import { randomUUID } from 'crypto';
 
+/**
+ * Truncate and optimize prompt for Kling AI's 2500 character limit
+ * Intelligently preserves the most important parts of the prompt
+ */
+function optimizePromptForKling(prompt: string, maxLength = 2500): string {
+  if (prompt.length <= maxLength) {
+    return prompt;
+  }
+
+  console.log(`⚠️ Prompt too long (${prompt.length} chars), optimizing for Kling AI limit (${maxLength} chars)...`);
+
+  // Strategy: Smart content prioritization with robust fallback
+  const lines = prompt.split('\n').filter(line => line.trim().length > 0);
+  
+  // Enhanced section classification with scoring
+  const coreSections = [];        // Core motion/action descriptions
+  const technicalSections = [];   // Technical/camera/quality directives
+  const contextSections = [];     // Arabic context/branding
+  const genericSections = [];     // Catch-all for unmatched content
+  
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) continue;
+    
+    const lowerLine = trimmedLine.toLowerCase();
+    
+    // Score and classify lines by importance
+    let score = 0;
+    let category = 'generic';
+    
+    // Core motion/action keywords (highest priority)
+    if (/(camera|movement|motion|zoom|rotate|dolly|pan|tilt|orbital|smooth|slow|gradual|animation|cinematic)/i.test(trimmedLine)) {
+      score += 10;
+      category = 'core';
+    }
+    
+    // Technical/quality keywords (high priority)
+    if (/(cgi|quality|resolution|lighting|professional|commercial|ultra.*realistic|photorealistic|aspect|duration)/i.test(trimmedLine)) {
+      score += 8;
+      category = 'technical';
+    }
+    
+    // Product/scene keywords (medium priority)
+    if (/(product|scene|object|background|environment|showcase|display|highlight)/i.test(trimmedLine)) {
+      score += 6;
+      if (category === 'generic') category = 'core';
+    }
+    
+    // Enhanced English detection (expanded punctuation support)
+    const isEnglishPrimary = /^[a-zA-Z0-9\s.,!?():;'"\/+%&_-]+$/.test(trimmedLine);
+    const hasArabic = /[\u0600-\u06FF]/.test(trimmedLine);
+    
+    if (isEnglishPrimary && !hasArabic) {
+      score += 5; // Boost English content for Kling AI
+    }
+    
+    // Classify into buckets
+    if (category === 'core' || (isEnglishPrimary && score >= 6)) {
+      coreSections.push({ text: trimmedLine, score });
+    } else if (category === 'technical' || (score >= 8)) {
+      technicalSections.push({ text: trimmedLine, score });
+    } else if (hasArabic) {
+      contextSections.push({ text: trimmedLine, score });
+    } else {
+      genericSections.push({ text: trimmedLine, score });
+    }
+  }
+  
+  // Sort sections by score (descending)
+  coreSections.sort((a, b) => b.score - a.score);
+  technicalSections.sort((a, b) => b.score - a.score);
+  contextSections.sort((a, b) => b.score - a.score);
+  genericSections.sort((a, b) => b.score - a.score);
+  
+  // Budget allocation (60% core, 25% technical, 15% context/generic)
+  let optimizedPrompt = '';
+  const coreBudget = Math.floor(maxLength * 0.6);
+  const technicalBudget = Math.floor(maxLength * 0.25);
+  const contextBudget = maxLength - coreBudget - technicalBudget;
+  
+  // 1. Add core sections (highest priority)
+  let usedLength = 0;
+  for (const section of coreSections) {
+    if (usedLength + section.text.length + 1 <= coreBudget) {
+      optimizedPrompt += (optimizedPrompt ? ' ' : '') + section.text;
+      usedLength += section.text.length + 1;
+    }
+  }
+  
+  // 2. Add technical sections
+  const remainingAfterCore = maxLength - optimizedPrompt.length;
+  const technicalAllowed = Math.min(technicalBudget, remainingAfterCore - contextBudget - 50);
+  let technicalUsed = 0;
+  
+  for (const section of technicalSections) {
+    if (technicalUsed + section.text.length + 1 <= technicalAllowed) {
+      optimizedPrompt += ' ' + section.text;
+      technicalUsed += section.text.length + 1;
+    }
+  }
+  
+  // 3. Add context (Arabic keywords extraction + top generic content)
+  const finalRemaining = maxLength - optimizedPrompt.length - 20;
+  if (finalRemaining > 50) {
+    // Extract key Arabic motion words
+    const arabicText = contextSections.map(s => s.text).join(' ');
+    const arabicKeywords = arabicText.match(/(دوران|حركة|زووم|كاميرا|توهج|سلس|بطيء|تدريجي|مدار|تثبيت|انسيابية)/g) || [];
+    
+    if (arabicKeywords.length > 0) {
+      const keywordSummary = ` Motion: ${arabicKeywords.slice(0, 5).join(', ')}`;
+      if (optimizedPrompt.length + keywordSummary.length <= maxLength - 10) {
+        optimizedPrompt += keywordSummary;
+      }
+    }
+    
+    // Add top generic content if space remains
+    const stillRemaining = maxLength - optimizedPrompt.length - 10;
+    for (const section of genericSections) {
+      if (stillRemaining > section.text.length + 1) {
+        optimizedPrompt += ' ' + section.text;
+        break;
+      }
+    }
+  }
+  
+  // Robust fallback: if result is too short, use trimmed original
+  if (optimizedPrompt.length < maxLength * 0.3) {
+    console.log(`⚠️ Optimized prompt too short (${optimizedPrompt.length} chars), using trimmed fallback...`);
+    optimizedPrompt = prompt.substring(0, maxLength - 3) + '...';
+  }
+  
+  // Final safety truncation
+  if (optimizedPrompt.length > maxLength) {
+    optimizedPrompt = optimizedPrompt.substring(0, maxLength - 3) + '...';
+  }
+  
+  console.log(`✅ Smart prompt optimization completed:`, {
+    originalLength: prompt.length,
+    optimizedLength: optimizedPrompt.length,
+    reductionPercent: Math.round((1 - optimizedPrompt.length / prompt.length) * 100),
+    coreSelected: coreSections.length,
+    technicalSelected: technicalSections.length,
+    contextSelected: contextSections.length,
+    genericAvailable: genericSections.length,
+    fallbackUsed: optimizedPrompt.endsWith('...') && optimizedPrompt.length >= maxLength * 0.8
+  });
+  
+  return optimizedPrompt;
+}
+
 
 interface KlingVideoResult {
   url: string;
@@ -322,12 +472,15 @@ export async function generateVideoWithKling(
       throw new Error("KLING_API_KEY environment variable is required");
     }
 
+    // ⚠️ CRITICAL: Optimize prompt for Kling AI's 2500 character limit
+    const optimizedPrompt = optimizePromptForKling(prompt, 2500);
+    
     // Create Kling AI image-to-video request (PiAPI v1 format)
     const requestPayload = {
       model: "kling",
       task_type: "video_generation", 
       input: {
-        prompt: prompt,
+        prompt: optimizedPrompt,
         image_url: imageUrl,  // Send direct image URL
         duration: durationSeconds,
         aspect_ratio: "16:9",
@@ -347,8 +500,11 @@ export async function generateVideoWithKling(
       aspectRatio: requestPayload.input.aspect_ratio,
       imageUrl: imageUrl,
       imageUrlLength: imageUrl.length,
-      promptCharacters: prompt.length,
-      promptBytes: Buffer.byteLength(prompt, 'utf8'),
+      originalPromptLength: prompt.length,
+      optimizedPromptLength: optimizedPrompt.length,
+      promptOptimized: prompt.length !== optimizedPrompt.length,
+      promptReduction: prompt.length > optimizedPrompt.length ? `${Math.round((1 - optimizedPrompt.length / prompt.length) * 100)}%` : 'none',
+      promptBytes: Buffer.byteLength(optimizedPrompt, 'utf8'),
       payloadSizeBytes,
       payloadSizeKB: Math.round(payloadSizeBytes / 1024),
       METHOD: "DIRECT_URL_NO_BASE64",

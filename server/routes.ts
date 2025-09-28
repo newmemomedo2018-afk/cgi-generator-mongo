@@ -762,8 +762,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const isAdmin = user.isAdmin === true;
       
-      if (!isAdmin && user.credits < creditsNeeded) {
-        return res.status(400).json({ message: "Insufficient credits" });
+      // NEW CREDIT SYSTEM: Check credits including trial credits
+      if (!isAdmin) {
+        const isTrialActive = await storage.isTrialActive(userId);
+        let availableCredits = user.credits;
+        
+        if (isTrialActive) {
+          const remainingTrialCredits = await storage.getRemainingTrialCredits(userId);
+          availableCredits += remainingTrialCredits;
+          console.log(`🎁 User in trial: ${user.credits} regular + ${remainingTrialCredits} trial = ${availableCredits} total credits`);
+        }
+        
+        if (availableCredits < creditsNeeded) {
+          return res.status(400).json({ message: "Insufficient credits" });
+        }
       }
 
       // Prepare project data and job data for atomic transaction
