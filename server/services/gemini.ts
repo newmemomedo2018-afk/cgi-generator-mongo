@@ -315,7 +315,7 @@ export async function generateImageWithGemini(
     });
 
     // استخدام Gemini 2.5 Flash Image model
- const model = genAI.getGenerativeModel({ model: "gemini-2.0-image" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
     // Load images with correct MIME types from Object Storage
     console.log("Loading images for Gemini Image Generation...");
