@@ -152,7 +152,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
   const formatTimeAgo = (date: Date | string) => {
     const now = new Date();
-    const projectDate = new Date(date);
+    const projectDate = new Date(date + "Z");
     
     // Ensure we're working with UTC times for consistent calculation
     const diffInMinutes = Math.floor((now.getTime() - projectDate.getTime()) / (1000 * 60));
