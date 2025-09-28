@@ -1,0 +1,59 @@
+~/workspace$ # 1. صلح الـ GitHub remote (أهم حاجة!)
+git remote set-url origin https://github.com/newmemomedo2018-afk/cgi-generator-mongo.git
+
+# 2. انشئ commit جديد نظيف
+git reset --soft HEAD~10  # ارجع 10 commits
+git add .
+git commit -m "🔒 Clean project without any secrets or tokens"
+
+# 3. ارفع مع force push لمسح التاريخ القديم
+git push --force origin main
+error: could not lock config file .git/config: File exists
+fatal: could not set 'remote.origin.url' to 'https://github.com/newmemomedo2018-afk/cgi-generator-mongo.git'
+[main 973f163] 🔒 Clean project without any secrets or tokens
+ 11 files changed, 539 insertions(+), 113 deletions(-)
+ create mode 100644 attached_assets/Pasted--workspace-git-status-git-add--1759036355108_1759036355109.txt
+ create mode 100644 "attached_assets/Screenshot 2025-09-28 at 7.31.36\342\200\257AM_1759033898705.png"
+ create mode 100644 "attached_assets/Screenshot 2025-09-28 at 7.31.48\342\200\257AM_1759033910666.png"
+Enumerating objects: 1284, done.
+Counting objects: 100% (1284/1284), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (1243/1243), done.
+Writing objects: 100% (1247/1247), 24.62 MiB | 5.94 MiB/s, done.
+Total 1247 (delta 991), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (991/991), completed with 26 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Pinterest Access Token ————————————————————————————
+remote:        locations:
+remote:          - commit: a178a1a655225119ad72697bdd77e3741279a428
+remote:            path: server/services/pinterest-scraper.ts:28
+remote:          - commit: 371e917f65542b5a2cb65e89c2d5f28545ddcc3f
+remote:            path: server/services/pinterest-scraper.ts:28
+remote:          - commit: b7915c31acf8f07446af17b4cc5a35dc890dd63e
+remote:            path: server/services/pinterest-scraper.ts:28
+remote:          - commit: 253553337727528ae34ad0a4b419308bf9c5e84a
+remote:            path: server/services/pinterest-scraper.ts:28
+remote:          - commit: e37ba8331bd025da26c2f5e8d8cfd20c19968355
+remote:            path: server/services/pinterest-scraper.ts:34
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/newmemomedo2018-afk/cgi-generator-mongo/security/secret-scanning/unblock-secret/33JXqLL4Yor2t99HjhUlq7LZXrQ
+remote:     
+remote: 
+remote: 
+To https://github.com/newmemomedo2018-afk/cgi-generator-mongo.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/newmemomedo2018-afk/cgi-generator-mongo.git'
+~/workspace$ 
