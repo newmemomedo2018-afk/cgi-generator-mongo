@@ -296,6 +296,31 @@ export async function generateImageWithGemini(
     ]);
 
     // Send request to Gemini with clear English instructions (Arabic prompts cause text responses instead of images)
+    const strictReplacementPrompt = `
+CRITICAL OPERATION: COMPLETE PRODUCT REPLACEMENT (NOT LOGO SWAP)
+
+IMAGE_1 = PRODUCT (the exact item to insert)
+IMAGE_2 = SCENE (contains the old item to be removed)
+
+STEP 1 — TOTAL REMOVAL:
+• Find the old product in IMAGE_2 and remove it COMPLETELY.
+• Erase bottle/can, cap, label, liquid, shadows, reflections — leave a clean area.
+
+STEP 2 — FULL INSERTION:
+• Insert the product from IMAGE_1 into the EXACT same location/angle/scale of the removed item.
+• Keep ALL branding, colors, shape, cap, label — no alterations.
+
+LIGHTING & INTEGRATION:
+• Match scene lighting and reflections precisely.
+• Cast natural, realistic shadows.
+• Preserve ALL other scene elements unchanged.
+
+USER_DIRECTIVES (highest priority): ${enhancedPrompt}
+
+OUTPUT: Return ONLY the final image (no text).
+`;
+
+
     const result = await model.generateContent([
       "PRODUCT IMAGE - analyze this item that needs to be placed:",
       {
