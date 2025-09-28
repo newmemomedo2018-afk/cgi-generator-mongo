@@ -608,7 +608,7 @@ export default function Dashboard() {
                 }, 300); // Small delay to ensure tab switch completes first
               }
             }} className="w-full">
-              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 glass-card p-1">
+              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-1 sm:grid-cols-3 glass-card p-1 gap-1 sm:gap-0">
                 <TabsTrigger value="new-project" className="data-[state=active]:gradient-button mobile-touch-target text-xs sm:text-sm">
                   <Plus className="ml-1 sm:ml-2 h-4 w-4" />
                   <span className="hidden sm:inline">{t('dashboard_new_project')}</span>
@@ -626,7 +626,7 @@ export default function Dashboard() {
               </TabsList>
 
               <TabsContent value="new-project" className="mt-8">
-                <div className="grid lg:grid-cols-2 gap-8 mb-12">
+                <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-8 sm:mb-12 mobile-form-spacing">
                   {/* Upload Section */}
                   <Card className="glass-card">
                     <CardHeader className="flex flex-row items-center justify-between">
@@ -1094,7 +1094,7 @@ export default function Dashboard() {
                         ))}
                       </div>
                     ) : projects && projects.length > 0 ? (
-                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="projects-grid">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mobile-form-spacing" data-testid="projects-grid">
                         {projects.map((project) => (
                           <ProjectCard key={project.id} project={project} />
                         ))}
@@ -1129,9 +1129,9 @@ export default function Dashboard() {
                       <div className="animate-pulse">
                         <div className="h-6 bg-muted rounded mb-4 w-1/3"></div>
                         <div className="h-4 bg-muted rounded mb-6 w-1/2"></div>
-                        <div className="grid md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mobile-form-spacing">
                           {[1, 2, 3].map((i) => (
-                            <div key={i} className="glass-card p-4 rounded-xl">
+                            <div key={i} className="glass-card p-3 sm:p-4 rounded-xl mobile-card-padding">
                               <div className="h-4 bg-muted rounded mb-2"></div>
                               <div className="h-6 bg-muted rounded"></div>
                             </div>

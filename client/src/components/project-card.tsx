@@ -150,9 +150,9 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <Card className="project-card glass-card" data-testid={`project-card-${project.id}`}>
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-bold truncate flex-1" title={project.title}>{project.title}</h4>
+      <CardContent className="p-4 sm:p-6 mobile-card-padding">
+        <div className="flex items-center justify-between mb-3 sm:mb-4">
+          <h4 className="font-bold truncate flex-1 text-sm sm:text-base" title={project.title}>{project.title}</h4>
           {getStatusBadge()}
         </div>
         
@@ -186,8 +186,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
         {/* Progress Bar for Processing Projects */}
         {project.status !== "completed" && project.status !== "failed" && (
-          <div className="mb-4">
-            <div className="flex justify-between text-sm mb-2">
+          <div className="mb-3 sm:mb-4">
+            <div className="flex justify-between text-xs sm:text-sm mb-2">
               <span>المرحلة: {getStatusText()}</span>
               <span data-testid={`project-progress-${project.id}`}>{project.progress || 0}%</span>
             </div>
@@ -204,20 +204,20 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
         {/* Action Buttons */}
         {project.status === "completed" && (
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4 mobile-form-spacing">
             <Button 
               onClick={handleDownload}
-              className="gradient-button"
+              className="gradient-button mobile-touch-target mobile-button-padding"
               size="sm"
               data-testid={`download-${project.id}`}
             >
               <Download className="h-4 w-4 ml-1" />
-              تحميل
+              <span className="text-xs sm:text-sm">تحميل</span>
             </Button>
             <Button 
               onClick={handlePreview}
               variant="outline"
-              className="glass-card hover:bg-white/20 text-white border-white/20"
+              className="glass-card hover:bg-white/20 text-white border-white/20 mobile-touch-target mobile-button-padding"
               size="sm"
               data-testid={`preview-${project.id}`}
             >
@@ -226,7 +226,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               ) : (
                 <Eye className="h-4 w-4 ml-1" />
               )}
-              {project.contentType === "video" ? "تشغيل" : "معاينة"}
+              <span className="text-xs sm:text-sm">{project.contentType === "video" ? "تشغيل" : "معاينة"}</span>
             </Button>
           </div>
         )}
@@ -244,7 +244,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
         )}
 
         {/* Project Info */}
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground mobile-text-size">
           <span data-testid={`project-type-${project.id}`}>
             {project.contentType === "video" ? "فيديو CGI" : "صورة CGI"}
           </span>
