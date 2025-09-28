@@ -378,8 +378,38 @@ export default function Dashboard() {
   const handleProductImageUpload = async (file: File) => {
     try {
       const result = await uploadProductImageMutation.mutateAsync(file);
-      setProjectData(prev => ({ ...prev, productImageUrl: result.url }));
+      
+      // Reset scene selection when new product is uploaded
+      setProjectData(prev => ({ 
+        ...prev, 
+        productImageUrl: result.url,
+        sceneImageUrl: "",
+        sceneVideoUrl: ""
+      }));
       setIsProductImageUploaded(true);
+      setIsSceneImageUploaded(false);
+      
+      // Clear scene-related caches to prevent showing old results  
+      queryClient.cancelQueries({ queryKey: ["/api/analyze-product"] });
+      queryClient.cancelQueries({ queryKey: ["/api/pinterest"] });
+      queryClient.cancelQueries({ queryKey: ["/api/scenes"] });
+      queryClient.cancelQueries({ queryKey: ["/api/extract-pinterest-image"] });
+      
+      queryClient.removeQueries({ queryKey: ["/api/analyze-product"] });
+      queryClient.removeQueries({ queryKey: ["/api/pinterest"] });
+      queryClient.removeQueries({ queryKey: ["/api/scenes"] });
+      queryClient.removeQueries({ queryKey: ["/api/extract-pinterest-image"] });
+      
+      // Clear Pinterest-related localStorage to prevent stale URLs
+      localStorage.removeItem('pinterest_copied_url');
+      localStorage.removeItem('pinterest_copied_timestamp');
+      
+      // Close scene selector modal if open to avoid confusion
+      setShowSceneSelector(false);
+      
+      // Generate new reset key to clear any cached states
+      setResetKey(Date.now().toString());
+      
       toast({
         title: t('toast_image_uploaded_title'),
         description: t('toast_product_image_uploaded_description'),
