@@ -1310,7 +1310,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const allowedDomains = [
             'res.cloudinary.com',
             'cloudinary.com',
-            'images.unsplash.com'
+            'images.unsplash.com',
+            'storage.theapi.app'
           ];
           
           const isAllowedDomain = allowedDomains.some(domain => 
