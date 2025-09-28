@@ -76,9 +76,48 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (project.status === "completed") {
-      window.open(`/api/projects/${project.id}/download`, '_blank');
+      try {
+        const response = await fetch(`/api/projects/${project.id}/download`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('فشل في تحميل الملف');
+        }
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        
+        // Get filename from Content-Disposition header or create default
+        const contentDisposition = response.headers.get('Content-Disposition');
+        let filename = `${project.title}_${project.id}`;
+        
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+          if (filenameMatch) {
+            filename = filenameMatch[1];
+          }
+        } else {
+          // Default extension based on content type
+          filename += project.contentType === "video" ? ".mp4" : ".png";
+        }
+        
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Download error:', error);
+        // Fallback to direct download if fetch fails
+        window.open(`/api/projects/${project.id}/download`, '_blank');
+      }
     }
   };
 
