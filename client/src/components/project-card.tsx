@@ -280,7 +280,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               <span className="text-sm font-medium text-blue-400">البرومبت المحسن من Gemini:</span>
             </div>
             <p className="text-sm text-white/80 leading-relaxed" dir="ltr">
-              <ExpandableText text={project.enhancedPrompt} maxLines={3} />
+              <ExpandableText text={project.enhancedPrompt} maxLines={1} />
             </p>
           </div>
         )}
