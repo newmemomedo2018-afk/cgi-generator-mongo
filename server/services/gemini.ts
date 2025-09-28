@@ -216,6 +216,30 @@ export async function enhancePromptWithGemini(
     ]);
 
     // Use same clear labeling approach as image generation
+
+const analysisAndPrompt = `
+You are a senior CGI compositor.
+
+USER_DIRECTIVES (Arabic may appear): "${userDescription}"
+⚠️ You MUST obey USER_DIRECTIVES exactly. If any instruction conflicts with other rules below, USER_DIRECTIVES WIN.
+
+TASK: Write a brief ENGLISH prompt (<= 160 words) for an image model to do a COMPLETE PRODUCT REPLACEMENT.
+
+INPUTS:
+• IMAGE_1 = PRODUCT IMAGE (the new item to insert)
+• IMAGE_2 = SCENE IMAGE (contains the old item to be replaced)
+
+REQUIRE:
+1) TOTAL REMOVAL of the old item in IMAGE_2 (erase bottle/can, labels, cap, liquid, shadows, reflections).
+2) FULL REPLACEMENT with the product from IMAGE_1 in the exact same position, angle, and apparent scale.
+3) Keep ALL branding/details of the new product unchanged.
+4) Match scene lighting, reflections, and shadows.
+5) Preserve the scene background and all non-product elements.
+
+OUTPUT: Only the final English prompt text (no lists, no markdown).
+`;
+
+
     const result = await model.generateContent([
       "PRODUCT IMAGE - new item to use:",
       {
@@ -231,15 +255,7 @@ export async function enhancePromptWithGemini(
           mimeType: sceneImageData.mimeType
         }
       },
-      `Generate a brief English prompt for an AI image generator to replace the scene's existing item with the product from the first image.
-
-Requirements:
-- Analyze both images to identify what needs to be replaced
-- Create concise, clear instructions for perfect replacement
-- Focus on precise positioning and realistic integration
-- User context: ${userDescription}
-
-Keep the prompt under 200 words and focus on the replacement operation.`
+      analysisAndPrompt
     ]);
     
     const response = await result.response;
