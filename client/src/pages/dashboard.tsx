@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,7 @@ import UploadZone from "@/components/upload-zone";
 import ProjectCard from "@/components/project-card";
 import ProgressModal from "@/components/progress-modal";
 import SceneSelectionModal from "@/components/scene-selection-modal";
-import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera, RotateCcw } from "lucide-react";
+import { Coins, User, Plus, Image, Video, Wand2, Info, Sparkles, Edit, Camera, RotateCcw, Search, Filter, SortAsc, SortDesc, Calendar, DollarSign } from "lucide-react";
 import type { User as UserType, Project } from "@shared/schema";
 import { CREDIT_COSTS } from "@shared/constants";
 
@@ -66,6 +66,13 @@ export default function Dashboard() {
   // Track reset key to force UploadZone preview reset
   const [resetKey, setResetKey] = useState<string>("");
   const [showSceneSelector, setShowSceneSelector] = useState(false);
+
+  // Content management states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [contentTypeFilter, setContentTypeFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("date-desc");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   const { data: userData } = useQuery<UserType>({
     queryKey: ["/api/auth/user"],
@@ -130,6 +137,60 @@ export default function Dashboard() {
       console.log('✅ No processing projects - polling disabled');
     }
   }, [projects, queryClient]);
+
+  // Filtered and sorted projects
+  const filteredProjects = useMemo(() => {
+    if (!projects) return [];
+
+    let filtered = projects.filter(project => {
+      // Search filter
+      if (searchQuery) {
+        const searchLower = searchQuery.toLowerCase();
+        const titleMatch = project.title?.toLowerCase().includes(searchLower);
+        const descMatch = project.description?.toLowerCase().includes(searchLower);
+        if (!titleMatch && !descMatch) return false;
+      }
+
+      // Status filter
+      if (statusFilter !== "all") {
+        if (statusFilter === "processing") {
+          const processingStatuses = ["pending", "processing", "enhancing_prompt", "generating_image", "generating_video", "under_review"];
+          if (!processingStatuses.includes(project.status || "")) return false;
+        } else if (project.status !== statusFilter) {
+          return false;
+        }
+      }
+
+      // Content type filter
+      if (contentTypeFilter !== "all" && project.contentType !== contentTypeFilter) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Sort projects
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case "date-desc":
+          return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+        case "date-asc":
+          return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+        case "title-asc":
+          return (a.title || "").localeCompare(b.title || "");
+        case "title-desc":
+          return (b.title || "").localeCompare(a.title || "");
+        case "cost-desc":
+          return (b.actualCost || 0) - (a.actualCost || 0);
+        case "cost-asc":
+          return (a.actualCost || 0) - (b.actualCost || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [projects, searchQuery, statusFilter, contentTypeFilter, sortBy]);
 
   const uploadProductImageMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -1066,19 +1127,111 @@ export default function Dashboard() {
               <TabsContent value="my-projects" className="mt-8">
                 <Card className="glass-card">
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-2xl">{t('dashboard_my_projects')}</CardTitle>
-                      <Select defaultValue="all">
-                        <SelectTrigger className="w-48 bg-input border-border">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">جميع المشاريع</SelectItem>
-                          <SelectItem value="processing">قيد المعالجة</SelectItem>
-                          <SelectItem value="completed">مكتملة</SelectItem>
-                          <SelectItem value="failed">فاشلة</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <CardTitle className="text-xl sm:text-2xl">{t('dashboard_my_projects')}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="text-xs">
+                            {filteredProjects.length} من {projects?.length || 0} مشروع
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Search and Filters */}
+                      <div className="space-y-3">
+                        {/* Search Bar */}
+                        <div className="relative">
+                          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            placeholder="ابحث في المشاريع..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-4 pr-10 bg-input border-border mobile-text-size"
+                            data-testid="search-projects-input"
+                          />
+                        </div>
+                        
+                        {/* Filter Controls */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-full sm:w-48 bg-input border-border">
+                              <SelectValue placeholder="حالة المشروع" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">جميع الحالات</SelectItem>
+                              <SelectItem value="processing">قيد المعالجة</SelectItem>
+                              <SelectItem value="completed">مكتملة</SelectItem>
+                              <SelectItem value="failed">فاشلة</SelectItem>
+                              <SelectItem value="under_review">قيد المراجعة</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          <Select value={contentTypeFilter} onValueChange={setContentTypeFilter}>
+                            <SelectTrigger className="w-full sm:w-48 bg-input border-border">
+                              <SelectValue placeholder="نوع المحتوى" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">جميع الأنواع</SelectItem>
+                              <SelectItem value="image">
+                                <div className="flex items-center gap-2">
+                                  <Image className="h-4 w-4" />
+                                  صور CGI
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="video">
+                                <div className="flex items-center gap-2">
+                                  <Video className="h-4 w-4" />
+                                  فيديو CGI
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          
+                          <Select value={sortBy} onValueChange={setSortBy}>
+                            <SelectTrigger className="w-full sm:w-48 bg-input border-border">
+                              <SelectValue placeholder="ترتيب حسب" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="date-desc">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4" />
+                                  الأحدث أولاً
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="date-asc">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="h-4 w-4" />
+                                  الأقدم أولاً
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="title-asc">
+                                <div className="flex items-center gap-2">
+                                  <SortAsc className="h-4 w-4" />
+                                  الاسم (أ-ي)
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="title-desc">
+                                <div className="flex items-center gap-2">
+                                  <SortDesc className="h-4 w-4" />
+                                  الاسم (ي-أ)
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="cost-desc">
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4" />
+                                  التكلفة الأعلى
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="cost-asc">
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="h-4 w-4" />
+                                  التكلفة الأقل
+                                </div>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -1093,11 +1246,30 @@ export default function Dashboard() {
                           </div>
                         ))}
                       </div>
-                    ) : projects && projects.length > 0 ? (
+                    ) : filteredProjects.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mobile-form-spacing" data-testid="projects-grid">
-                        {projects.map((project) => (
+                        {filteredProjects.map((project) => (
                           <ProjectCard key={project.id} project={project} />
                         ))}
+                      </div>
+                    ) : projects && projects.length > 0 ? (
+                      <div className="text-center py-12" data-testid="no-filtered-results">
+                        <div className="text-6xl mb-4">🔍</div>
+                        <h3 className="text-xl font-bold mb-2">لا توجد نتائج للبحث</h3>
+                        <p className="text-muted-foreground mb-6">جرب تغيير كلمات البحث أو المرشحات</p>
+                        <Button 
+                          onClick={() => {
+                            setSearchQuery("");
+                            setStatusFilter("all");
+                            setContentTypeFilter("all");
+                          }}
+                          variant="outline"
+                          className="glass-card"
+                          data-testid="clear-filters-button"
+                        >
+                          <RotateCcw className="ml-2 h-4 w-4" />
+                          مسح المرشحات
+                        </Button>
                       </div>
                     ) : (
                       <div className="text-center py-12" data-testid="empty-projects">
