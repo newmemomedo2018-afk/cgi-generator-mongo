@@ -279,7 +279,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               <span className="text-sm font-medium text-blue-400">البرومبت المحسن من Gemini:</span>
             </div>
             <p className="text-sm text-white/80 leading-relaxed" dir="ltr">
-              {truncateText(project.enhancedPrompt, 10).truncated}{truncateText(project.enhancedPrompt, 10).isLong {project.enhancedPrompt}{project.enhancedPrompt} "..."} {truncateText(project.enhancedPrompt, 10).isLong {project.enhancedPrompt}{project.enhancedPrompt} <button className="text-blue-400 hover:text-blue-300 text-xs">اقرأ المزيد</button>}
+              {project.enhancedPrompt}
             </p>
           </div>
         )}
