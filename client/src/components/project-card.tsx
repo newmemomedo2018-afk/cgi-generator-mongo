@@ -1,3 +1,4 @@
+import ExpandableText from "./ExpandableText";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -279,7 +280,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               <span className="text-sm font-medium text-blue-400">البرومبت المحسن من Gemini:</span>
             </div>
             <p className="text-sm text-white/80 leading-relaxed" dir="ltr">
-              {project.enhancedPrompt}
+              <ExpandableText text={project.enhancedPrompt} maxLines={3} />
             </p>
           </div>
         )}
