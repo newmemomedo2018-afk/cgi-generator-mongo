@@ -1175,60 +1175,109 @@ async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotion
     // Step 4: Analyze with Gemini
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
+    
     const prompt = `
-🎬 تحليل فيديو Pinterest للحركة والديناميكية
+🎬 PINTEREST VIDEO MOTION ANALYSIS - PRECISE EXTRACTION
 
-تحليل هذا الفيديو بدقة واستخراج جميع patterns الحركة:
+Analyze this video frame-by-frame to extract EXACT product transformations.
 
-📋 تحليل مطلوب:
+🎯 PRODUCT TRANSFORMATION TYPES (choose the correct one):
 
-1. الحركة الأساسية:
-   - نوع حركة الكاميرا (pan, tilt, zoom, dolly, static)
-   - اتجاه وسرعة الحركة
-   - سلاسة وثبات الحركة
+1. INFLATE/DEFLATE:
+   - Product GROWS in size (like a balloon inflating)
+   - Product SHRINKS in size (like deflating)
+   - The product's VOLUME changes
+   - Example: Can starts small, then expands to 1.5x size
 
-2. حركة الأشياء:
-   - ما هي الأشياء المتحركة؟
-   - نوع واتجاه الحركة
-   - توقيت الحركات
+2. ROTATE:
+   - Product spins around its axis
+   - Product turns to show different sides
+   - Example: Bottle rotates 360 degrees
 
-3. العناصر السينمائية:
-   - نوع اللقطات (wide, medium, close-up)
-   - أسلوب الانتقالات
-   - تغييرات الإضاءة
+3. FLOAT/HOVER:
+   - Product moves up/down in space
+   - Product levitates or flies
+   - Example: Product lifts off ground
 
-4. التوقيت:
-   - مدة الفيديو
-   - اللحظات المهمة
-   - إيقاع التغييرات
+4. GLOW/PULSE (NO physical motion):
+   - ONLY lighting changes
+   - Product stays same size and position
+   - Just color/brightness changes
+   - Example: Product glows brighter but doesn't move
 
-5. تطبيق على منتج:
-   - هل يمكن تطبيق هذه الحركة على منتج آخر؟
-   - ما التعديلات المطلوبة؟
-   - أي عناصر يجب الحفاظ عليها؟
+5. STATIC:
+   - No movement at all
+   - Product is completely still
 
-أجب بصيغة JSON:
+📋 CRITICAL ANALYSIS STEPS:
+
+**STEP 1: Watch for SIZE CHANGES**
+Does the product GET BIGGER or SMALLER during the video?
+- If YES → This is INFLATION (if bigger) or DEFLATION (if smaller)
+- Look carefully: Does the product's outline/silhouette change size?
+
+**STEP 2: Watch for ROTATION**
+Does the product SPIN or TURN?
+- If YES → This is ROTATION
+- Can you see different sides of the product?
+
+**STEP 3: Watch for POSITION CHANGES**
+Does the product MOVE through space?
+- If YES → This is FLOATING/HOVERING
+- Does it go up, down, left, or right?
+
+**STEP 4: Watch for LIGHTING ONLY**
+If NOTHING physical changes, only lights/colors:
+- This is GLOW/PULSE (not a real motion)
+
+⚠️ CRITICAL DISTINCTIONS:
+
+Example 1: Can INFLATING (size increases)
+- primaryMotion: "Product inflates like a balloon from 1x to 1.5x size"
+- objectMotions: ["inflation", "size expansion", "volume increase"]
+- NOT: ["rotation", "glow"] ❌
+
+Example 2: Product just GLOWING (no size change)
+- primaryMotion: "Static product with pulsing light effects"
+- objectMotions: [] (empty - no physical transformation)
+- lightingEffects: ["glow pulse", "brightness increase"]
+
+Example 3: Product ROTATING
+- primaryMotion: "Product rotates 360 degrees on vertical axis"
+- objectMotions: ["rotation", "spin"]
+- NOT: ["inflation"] ❌
+
+📤 Output JSON:
 {
-  "primaryMotion": "وصف الحركة الأساسية",
-  "cameraMovements": ["قائمة", "الحركات", "المحددة"],
-  "objectMotions": ["قائمة", "حركات", "الأشياء"],
+  "productPhysicallyChanges": true/false,
+  "primaryMotion": "EXACT description: inflate/deflate/rotate/float/glow/static",
+  "cameraMovements": ["camera motions if any"],
+  "objectMotions": ["ONLY physical transformations like inflation, NOT lighting"],
   "timing": {
-    "duration": رقم_بالثواني,
+    "duration": video_duration_seconds,
     "keyMoments": [
-      {"time": وقت_بالثواني, "action": "ما يحدث"}
+      {"time": 0, "action": "starting state and size"},
+      {"time": X, "action": "transformation details"},
+      {"time": end, "action": "final state and size"}
     ]
   },
   "cinematography": {
-    "shotTypes": ["wide", "medium", "close"],
-    "transitions": ["cut", "fade", "pan"],
-    "lightingChanges": ["وصف الإضاءة"]
+    "shotTypes": ["wide/medium/close"],
+    "transitions": ["smooth/cut"],
+    "lightingChanges": ["lighting description"]
   },
   "applicableToProduct": {
     "recommended": true/false,
-    "adaptations": ["تعديلات مطلوبة"],
-    "preserveElements": ["عناصر للحفاظ عليها"]
+    "adaptations": ["needed changes"],
+    "preserveElements": ["must keep"]
   }
 }
+
+🚨 REMEMBER:
+- INFLATION = product gets BIGGER
+- ROTATION = product SPINS
+- GLOW = ONLY lights change, no physical motion
+- Watch the product's OUTLINE to see if size changes!
 `;
 
     console.log("🚀 Analyzing video with Gemini AI...");
