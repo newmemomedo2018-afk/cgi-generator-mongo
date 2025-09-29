@@ -342,10 +342,14 @@ STEP 1 - ANALYZE:
 Product from PRODUCT IMAGE: Extract exact appearance (shape, colors, text, design)
 Scene from SCENE IMAGE: Identify what needs to be removed AND analyze scene dynamics
 
-STEP 2 - REMOVE COMPLETELY:
+STEP 2 - REMOVE COMPLETELY (CRITICAL):
 Delete ALL existing products/items from the scene
-Remove all traces: no shadows, no outlines, no remnants
-Clean the space completely
+This includes: main items, accessories, hanging items, mounted items, fixtures
+Remove all traces: no shadows, no outlines, no remnants, no ghost images
+Clean the space completely - the old product must be 100% invisible
+
+VERIFICATION: Before placing new product, ensure the scene shows NO trace of the old product
+If you can still see ANY part of the old product, you have FAILED - remove it completely
 
 STEP 3 - PLACE NEW PRODUCT WITH SCENE DYNAMICS:
 Insert the product from PRODUCT IMAGE into the cleaned space
@@ -359,6 +363,11 @@ CRITICAL - Match Original Scene Dynamics:
 - If scene shows EXPLODING products: Show new product exploding similarly
 - If scene is STATIC/UPRIGHT: Place new product static/upright
 - If scene shows MULTIPLE instances: Replicate with new product in same quantity and arrangement
+- Output: IMAGE ONLY (no text, no analysis)
+- Quality: Professional CGI, photorealistic
+- OLD PRODUCT: MUST be 100% removed - ZERO TOLERANCE for any remnants or visibility
+- NEW PRODUCT: Must be the ONLY product visible in the scene
+- FAILURE MODE: If old product is still visible, the task has FAILED completely
 
 Position in the scene's main focal point
 Match scale to the scene (${productSize === 'emphasized' ? 'make 25% larger for emphasis' : 'natural proportions'})
