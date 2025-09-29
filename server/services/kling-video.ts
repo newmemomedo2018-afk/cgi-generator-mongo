@@ -631,57 +631,97 @@ export async function generateVideoWithKling(
     }
 
     // NEW 4-MINUTE WAIT STRATEGY: Single wait + one status check to save API costs
-    console.log(`🕐 [${correlationId}] Starting 4-minute wait strategy...`, { 
-      taskId,
-      waitTime: "4 minutes (240 seconds)",
-      previousStrategy: "60 polling calls = expensive!",
-      newStrategy: "single wait + 1 API call = cost efficient!",
-      estimatedSavings: "59 API calls saved!"
-    });
+    // IMPROVED POLLING STRATEGY: Check every 10 seconds with progress updates
+console.log(`🕐 [${correlationId}] Starting polling with progress updates...`, { 
+  taskId,
+  checkInterval: "10 seconds",
+  maxDuration: "5 minutes"
+});
 
-    // Wait 4 minutes for Kling AI to complete
-    await new Promise(resolve => setTimeout(resolve, 240000)); // 240 seconds = 4 minutes
-    
-    console.log(`⏰ [${correlationId}] 4-minute wait completed! Making single status check...`);
+const maxAttempts = 30; // 30 attempts × 10 seconds = 5 minutes max
+let attempts = 0;
+let statusResult: any;
 
-    // Single status check after 4-minute wait
-    const statusResponse = await fetch(`https://api.piapi.ai/api/v1/task/${taskId}`, {
-      headers: {
-        'X-API-Key': klingApiKey,
-      }
-    });
+while (attempts < maxAttempts) {
+  await new Promise(resolve => setTimeout(resolve, 10000)); // Wait 10 seconds
+  attempts++;
 
-    if (!statusResponse.ok) {
-      const errorText = await statusResponse.text();
-      console.error(`❌ [${correlationId}] Final status check failed:`, {
-        status: statusResponse.status,
-        statusText: statusResponse.statusText,
-        error: errorText,
-        taskId: taskId
+  // Calculate progress percentage (80-95% range during video generation)
+  const progressPercent = 80 + Math.floor((attempts / maxAttempts) * 15);
+  
+  // Update database progress if we have projectId and storage
+  if (projectId && storage) {
+    try {
+      await storage.updateProject(projectId, { 
+        progress: progressPercent 
       });
-      throw new Error(`Kling AI final status check failed: HTTP ${statusResponse.status}. Error: ${errorText}`);
+      console.log(`📊 [${correlationId}] Progress updated:`, {
+        attempt: attempts,
+        maxAttempts,
+        progress: progressPercent
+      });
+    } catch (updateError) {
+      console.warn(`⚠️ Failed to update progress:`, updateError);
+      // Continue even if update fails
     }
+  }
 
-    // Get complete task details for UI display
-    const rawStatusBody = await statusResponse.clone().text();
-    console.log(`🔍 [${correlationId}] Final status response:`, {
-      contentType: statusResponse.headers.get('content-type'),
-      statusCode: statusResponse.status,
-      bodyLength: rawStatusBody.length,
-      bodyPreview: rawStatusBody.substring(0, 300) + (rawStatusBody.length > 300 ? '...' : '')
-    });
+  console.log(`🔍 [${correlationId}] Checking video status (${attempts}/${maxAttempts})...`);
 
-    const statusResult = await statusResponse.json();
-      
-    
-    console.log(`🔍 [${correlationId}] Complete task details:`, {
-      resultType: typeof statusResult,
-      resultKeys: statusResult && typeof statusResult === 'object' ? Object.keys(statusResult) : null,
-      taskDetailsSize: JSON.stringify(statusResult).length
+  // Check task status
+  const statusResponse = await fetch(`https://api.piapi.ai/api/v1/task/${taskId}`, {
+    headers: { 'X-API-Key': klingApiKey }
+  });
+
+  if (!statusResponse.ok) {
+    console.warn(`⚠️ [${correlationId}] Status check failed:`, {
+      status: statusResponse.status,
+      attempt: attempts
     });
     
-    // Use resilient status extraction
-    const taskStatus = statusResult?.status || statusResult?.data?.status;
+    // Only throw error after multiple failures
+    if (attempts > 3 && statusResponse.status === 404) {
+      throw new Error(`Task not found after ${attempts} attempts`);
+    }
+    continue;
+  }
+
+  statusResult = await statusResponse.json();
+  const taskStatus = statusResult?.status || statusResult?.data?.status;
+  const taskProgress = statusResult?.progress || statusResult?.data?.progress;
+
+  console.log(`📹 [${correlationId}] Status:`, {
+    status: taskStatus,
+    progress: taskProgress || 'N/A',
+    attempt: attempts
+  });
+
+  // Check if completed
+  if (taskStatus === 'completed' || taskStatus === 'success') {
+    console.log(`✅ [${correlationId}] Video completed after ${attempts * 10} seconds!`);
+    break;
+  }
+
+  // Check if failed
+  if (taskStatus === 'failed' || taskStatus === 'error') {
+    const errorMessage = statusResult.error || statusResult.data?.error || 'Unknown error';
+    throw new Error(`Kling AI generation failed: ${errorMessage}`);
+  }
+
+  // Continue polling if still processing
+  if (taskStatus === 'processing' || taskStatus === 'pending' || taskStatus === 'running') {
+    console.log(`⏳ [${correlationId}] Still processing...`);
+    continue;
+  }
+}
+
+// Check if we completed successfully
+if (attempts >= maxAttempts) {
+  throw new Error(`Video generation timed out after ${maxAttempts * 10} seconds`);
+}
+
+// Now statusResult has the completed task
+const taskStatus = statusResult?.status || statusResult?.data?.status;
     const taskProgress = statusResult?.progress || statusResult?.data?.progress;
     
     console.log(`✅ [${correlationId}] Final status check result:`, {
