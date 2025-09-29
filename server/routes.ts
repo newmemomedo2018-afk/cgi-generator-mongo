@@ -2374,12 +2374,34 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
         
         // Build Kling-optimized motion prompt
         const targetDuration = project.videoDurationSeconds || 5;
-        enhancedMotionPrompt = buildKlingMotionPrompt(
+        let klingPrompt = buildKlingMotionPrompt(
           finalVideoPrompt,
           motionMetrics,
           targetDuration,
           30
         );
+
+        // --- ENHANCED VALIDATION & INFLATION INSTRUCTION FOR KLING ---
+        if (motionMetrics && motionMetrics.scaleSpeed > 5) {
+          // Explicitly instruct Kling to perform inflation, not rotation or glow
+          const inflationPercent = Math.round(100 + motionMetrics.scaleSpeed * 10);
+          klingPrompt = `تعليمات حاسمة لـ KLING:\nالمنتج لازم ينفخ (يكبر في الحجم) زي البالونة.\nمش دوران، مش مجرد توهج.\nالحجم في البداية: 100٪، الحجم في النهاية: ${inflationPercent}٪\n\n${klingPrompt}`;
+        }
+
+        // --- MOTION TYPE VALIDATION ---
+        if (savedMotionTimeline && savedMotionTimeline.segments) {
+          const hasRotation = savedMotionTimeline.segments.some((seg: any) =>
+            seg.subject.motion && seg.subject.motion.toLowerCase().includes('rotation')
+          );
+          const hasInflation = savedMotionTimeline.segments.some((seg: any) =>
+            seg.subject.motion && (seg.subject.motion.toLowerCase().includes('inflate') || seg.subject.motion.toLowerCase().includes('expand'))
+          );
+          if (hasRotation && !hasInflation) {
+            console.warn("⚠️ اكتشفنا دوران لكن المتوقع نفخ - بنراجع...");
+            // يمكن إضافة منطق احتياطي هنا (مثل إعادة المحاولة أو تعديل البرومبت)
+          }
+        }
+        enhancedMotionPrompt = klingPrompt;
         
         console.log("✅ Enhanced motion prompt created with quantified metrics:", {
           originalLength: finalVideoPrompt.length,

@@ -1217,103 +1217,41 @@ async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotion
 
 Analyze this video frame-by-frame to extract EXACT product transformations.
 
-🎯 PRODUCT TRANSFORMATION TYPES (choose the correct one):
+🚨 CRITICAL: You MUST distinguish between these types (choose ONE only):
 
-1. INFLATE/DEFLATE:
-   - Product GROWS in size (like a balloon inflating)
-   - Product SHRINKS in size (like deflating)
-   - The product's VOLUME changes
-   - Example: Can starts small, then expands to 1.5x size
+TYPE A - INFLATION (size change):
+- Product physically gets bigger or smaller (like a balloon inflating/deflating)
+- The outline/silhouette of the product expands or contracts
+- Example: "At 0s, product is 1.0x size; at 3s, product is 1.5x size"
+- Output: {"primaryMotion": "inflation", "quantifiedMotion": {"startSize": "1.0x", "endSize": "1.5x", "duration": 3.0}}
 
-2. ROTATE:
-   - Product spins around its axis
-   - Product turns to show different sides
-   - Example: Bottle rotates 360 degrees
+TYPE B - ROTATION (spins/turns):
+- Product rotates around an axis (shows new sides)
+- Example: "Product shows front at 0s, side at 1s, back at 2s"
+- Output: {"primaryMotion": "rotation", "quantifiedMotion": {"degrees": 180}}
 
-3. FLOAT/HOVER:
-   - Product moves up/down in space
-   - Product levitates or flies
-   - Example: Product lifts off ground
+TYPE C - GLOW (lighting only):
+- Product stays same size and position, only brightness/color changes
+- Example: "Product glows brighter but does not move"
+- Output: {"primaryMotion": "static with glow", "objectMotions": []}
 
-4. GLOW/PULSE (NO physical motion):
-   - ONLY lighting changes
-   - Product stays same size and position
-   - Just color/brightness changes
-   - Example: Product glows brighter but doesn't move
+ANALYSIS STEPS:
+Step 1: Did the product's size change? If yes, classify as INFLATION.
+Step 2: Did the product rotate? If yes, classify as ROTATION.
+Step 3: Did only lighting change? If yes, classify as GLOW.
 
-5. STATIC:
-   - No movement at all
-   - Product is completely still
+MANDATORY: Output QUANTITATIVE measurements (e.g., size from 1.0x to 1.5x, rotation in degrees, duration in seconds).
+NEVER confuse inflation with rotation or glow. If size changes, it is INFLATION ONLY.
 
-📋 CRITICAL ANALYSIS STEPS:
+EXAMPLES:
+// INFLATION
+{"primaryMotion": "inflation like balloon", "objectMotions": ["inflation", "size expansion"], "quantifiedMotion": {"startSize": "1.0x", "endSize": "1.5x", "duration": 3.5}}
+// ROTATION
+{"primaryMotion": "rotation", "objectMotions": ["rotation"], "quantifiedMotion": {"degrees": 180, "duration": 3.0}}
+// GLOW
+{"primaryMotion": "static with glow", "objectMotions": [], "quantifiedMotion": {"brightnessChange": "200%"}}
 
-**STEP 1: Watch for SIZE CHANGES**
-Does the product GET BIGGER or SMALLER during the video?
-- If YES → This is INFLATION (if bigger) or DEFLATION (if smaller)
-- Look carefully: Does the product's outline/silhouette change size?
-
-**STEP 2: Watch for ROTATION**
-Does the product SPIN or TURN?
-- If YES → This is ROTATION
-- Can you see different sides of the product?
-
-**STEP 3: Watch for POSITION CHANGES**
-Does the product MOVE through space?
-- If YES → This is FLOATING/HOVERING
-- Does it go up, down, left, or right?
-
-**STEP 4: Watch for LIGHTING ONLY**
-If NOTHING physical changes, only lights/colors:
-- This is GLOW/PULSE (not a real motion)
-
-⚠️ CRITICAL DISTINCTIONS:
-
-Example 1: Can INFLATING (size increases)
-- primaryMotion: "Product inflates like a balloon from 1x to 1.5x size"
-- objectMotions: ["inflation", "size expansion", "volume increase"]
-- NOT: ["rotation", "glow"] ❌
-
-Example 2: Product just GLOWING (no size change)
-- primaryMotion: "Static product with pulsing light effects"
-- objectMotions: [] (empty - no physical transformation)
-- lightingEffects: ["glow pulse", "brightness increase"]
-
-Example 3: Product ROTATING
-- primaryMotion: "Product rotates 360 degrees on vertical axis"
-- objectMotions: ["rotation", "spin"]
-- NOT: ["inflation"] ❌
-
-📤 Output JSON:
-{
-  "productPhysicallyChanges": true/false,
-  "primaryMotion": "EXACT description: inflate/deflate/rotate/float/glow/static",
-  "cameraMovements": ["camera motions if any"],
-  "objectMotions": ["ONLY physical transformations like inflation, NOT lighting"],
-  "timing": {
-    "duration": video_duration_seconds,
-    "keyMoments": [
-      {"time": 0, "action": "starting state and size"},
-      {"time": X, "action": "transformation details"},
-      {"time": end, "action": "final state and size"}
-    ]
-  },
-  "cinematography": {
-    "shotTypes": ["wide/medium/close"],
-    "transitions": ["smooth/cut"],
-    "lightingChanges": ["lighting description"]
-  },
-  "applicableToProduct": {
-    "recommended": true/false,
-    "adaptations": ["needed changes"],
-    "preserveElements": ["must keep"]
-  }
-}
-
-🚨 REMEMBER:
-- INFLATION = product gets BIGGER
-- ROTATION = product SPINS
-- GLOW = ONLY lights change, no physical motion
-- Watch the product's OUTLINE to see if size changes!
+Respond ONLY with valid JSON as above.
 `;
 
     console.log("🚀 Analyzing video with Gemini AI...");
