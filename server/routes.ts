@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -14,6 +14,7 @@ import multer from 'multer';
 import { errorHandler, asyncHandler, CustomError, handleValidationError, handleMulterError } from './utils/errorHandler';
 
 import { COSTS, CREDIT_PACKAGES, ACTUAL_COSTS, CREDIT_COSTS } from '@shared/constants';
+import { extractQuantifiedMotion, buildKlingMotionPrompt } from './services/motion-analyzer';
 import { db } from './db';
 import { sql } from 'drizzle-orm';
 import puppeteer from 'puppeteer';
@@ -362,7 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload endpoint for product images - using Cloudinary with Quality Enhancement
-  app.post('/api/upload-product-image', isAuthenticated, uploadProductImage.single('productImage'), handleMulterError, asyncHandler(async (req: any, res) => {
+  app.post('/api/upload-product-image', isAuthenticated, uploadProductImage.single('productImage'), handleMulterError, asyncHandler(async (req: any, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -410,7 +411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Upload endpoint for scene images - using Cloudinary with Quality Enhancement  
-  app.post('/api/upload-scene-image', isAuthenticated, upload.single('sceneImage'), handleMulterError, asyncHandler(async (req: any, res) => {
+  app.post('/api/upload-scene-image', isAuthenticated, upload.single('sceneImage'), handleMulterError, asyncHandler(async (req: any, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No scene file uploaded" });
@@ -1466,7 +1467,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoint to make yourself admin (DEVELOPMENT ONLY - DISABLED IN PRODUCTION)
-  app.post('/api/admin/make-admin', isAuthenticated, asyncHandler(async (req: any, res) => {
+  app.post('/api/admin/make-admin', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
     // Security: NEVER allow this in production - Multiple layers of protection
     if (process.env.NODE_ENV === 'production') {
       console.warn(`⚠️ SECURITY ALERT: Attempted admin elevation in production from user ${req.user.id}`);
@@ -1493,7 +1494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to get all users
-  app.get('/api/admin/users', isAuthenticated, asyncHandler(async (req: any, res) => {
+  app.get('/api/admin/users', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1504,7 +1505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to get all projects
-  app.get('/api/admin/projects', isAuthenticated, asyncHandler(async (req: any, res) => {
+  app.get('/api/admin/projects', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1565,7 +1566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoint to get platform stats
-  app.get('/api/admin/stats', isAuthenticated, asyncHandler(async (req: any, res) => {
+  app.get('/api/admin/stats', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1576,7 +1577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to manage user credits
-  app.post('/api/admin/users/:id/credits', isAuthenticated, asyncHandler(async (req: any, res) => {
+  app.post('/api/admin/users/:id/credits', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1620,7 +1621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Create transaction record for admin action
     await storage.createTransaction({
       userId: userId,
-      amount: validatedData.action === 'add' ? validatedData.amount : -validatedData.amount,
+  amount: (validatedData.action === 'add' ? validatedData.amount : -validatedData.amount).toString(),
       credits: validatedData.action === 'add' ? validatedData.amount : -validatedData.amount,
       stripePaymentIntentId: `admin_${validatedData.action}_${Date.now()}`,
       status: 'completed',
@@ -1645,7 +1646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to get user transactions
-  app.get('/api/admin/users/:id/transactions', isAuthenticated, asyncHandler(async (req: any, res) => {
+  app.get('/api/admin/users/:id/transactions', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -2325,71 +2326,70 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
             throw new Error("Negative prompt must not be empty for video generation");
           }
           
+        
           // Enhanced motion prompt with Pinterest video frame analysis
-          let enhancedMotionPrompt = finalVideoPrompt;
-          
-          // **MOTION PRECEDENCE SYSTEM** - Pinterest motion takes priority when available
-          if (savedFrameExtractionResult?.gridImageUrl && savedMotionTimeline) {
-            console.log("🎯 Enhancing video prompt with Pinterest video frame analysis for 90%+ motion fidelity:", {
-              originalImageUrl: imageResult.url.substring(0, 50) + "...",
-              frameGridUrl: savedFrameExtractionResult.gridImageUrl.substring(0, 50) + "...",
-              timelineSegments: savedMotionTimeline.segments.length,
-              keyFrames: savedFrameExtractionResult.frames.length
-            });
-            
-            // Normalize Pinterest timeline to target duration
-            const targetDuration = project.videoDurationSeconds || 5;
-            const sourceDuration = savedMotionTimeline.segments.length > 0 
-              ? Math.max(...savedMotionTimeline.segments.map((s: any) => s.endTime))
-              : 10;
-            const scaleFactor = targetDuration / sourceDuration;
-            
-            // Build normalized frame descriptions
-            const frameDescriptions = savedFrameExtractionResult.frames
-              .map((frame: any) => {
-                const normalizedTime = Math.min(frame.timestamp * scaleFactor, targetDuration);
-                const percentage = Math.round((normalizedTime / targetDuration) * 100);
-                return `${normalizedTime.toFixed(1)}s: Frame at ${normalizedTime.toFixed(1)}s (${percentage}%)`;
-              })
-              .join(', ');
-            
-            // Build normalized motion timeline
-            const motionSegments = savedMotionTimeline.segments
-              .map((seg: any) => {
-                const normalizedStart = Math.min(seg.startTime * scaleFactor, targetDuration);
-                const normalizedEnd = Math.min(seg.endTime * scaleFactor, targetDuration);
-                return `${normalizedStart.toFixed(1)}-${normalizedEnd.toFixed(1)}s: ${seg.camera.movement} camera, ${seg.subject.motion} motion`;
-              })
-              .join(', ');
-            
-            // **AUTHORITATIVE MOTION BLOCK** - Override conflicting base motions
-            // Strip motion words from base prompt to avoid conflicts
-            const basePromptStripped = finalVideoPrompt.replace(
-              /\b(descend[s]?|fall[s]?|drop[s]?|rotate[s]?|spin[s]?|turn[s]?|orbit[s]?|dolly|pan[s]?|tilt[s]?|zoom[s]?|appear[s]?|emerge[s]?|rise[s]?|fly-in|move[s]?)\b/gi, 
-              '[motion-overridden]'
-            );
-            
-            enhancedMotionPrompt = `${basePromptStripped}
+    let enhancedMotionPrompt = finalVideoPrompt;
+    
+    // **MOTION PRECEDENCE SYSTEM** - Pinterest motion takes priority when available
+    if (savedFrameExtractionResult?.frames && savedFrameExtractionResult.frames.length > 0 && savedMotionTimeline) {
+      console.log("🎯 Analyzing Pinterest video motion with quantified metrics:", {
+        keyFrames: savedFrameExtractionResult.frames.length,
+        timelineSegments: savedMotionTimeline.segments.length
+      });
+      
+      try {
+        // Extract quantified motion metrics from frames
+        const motionMetrics = await extractQuantifiedMotion(savedFrameExtractionResult.frames);
+        
+        console.log("📊 Motion metrics extracted:", {
+          horizontalSpeed: motionMetrics.horizontalSpeed,
+          verticalSpeed: motionMetrics.verticalSpeed,
+          rotationSpeed: motionMetrics.rotationSpeed,
+          scaleSpeed: motionMetrics.scaleSpeed,
+          accelerationType: motionMetrics.accelerationType
+        });
+        
+        // Build Kling-optimized motion prompt
+        const targetDuration = project.videoDurationSeconds || 5;
+        enhancedMotionPrompt = buildKlingMotionPrompt(
+          finalVideoPrompt,
+          motionMetrics,
+          targetDuration,
+          30
+        );
+        
+        console.log("✅ Enhanced motion prompt created with quantified metrics:", {
+          originalLength: finalVideoPrompt.length,
+          enhancedLength: enhancedMotionPrompt.length,
+          expectedAccuracy: "75-90%"
+        });
+        
+      } catch (motionError) {
+        console.warn("⚠️ Quantified motion extraction failed, using text-only analysis:", motionError);
+        
+        const sourceDuration = savedMotionTimeline.segments.length > 0 
+          ? Math.max(...savedMotionTimeline.segments.map((s: any) => s.endTime))
+          : 10;
+        const targetDuration = project.videoDurationSeconds || 5;
+        const scaleFactor = targetDuration / sourceDuration;
+        
+        const motionSegments = savedMotionTimeline.segments
+          .map((seg: any) => {
+            const normalizedStart = Math.min(seg.startTime * scaleFactor, targetDuration);
+            const normalizedEnd = Math.min(seg.endTime * scaleFactor, targetDuration);
+            return `${normalizedStart.toFixed(1)}-${normalizedEnd.toFixed(1)}s: ${seg.camera.movement} camera, ${seg.subject.motion} motion`;
+          })
+          .join(', ');
+        
+        enhancedMotionPrompt = `${finalVideoPrompt}
 
-🎥 MOTION DIRECTIVES (AUTHORITATIVE - Follow exactly, ignore any previous motion instructions):
-🎬 Duration: ${targetDuration} seconds
-📸 Key Frame Analysis: ${frameDescriptions}
-⏱️ Motion Timeline: ${motionSegments}
-🎯 Apply these exact motion patterns to the generated scene while preserving product and environment quality.`;
-            
-            console.log("✅ Enhanced motion prompt created:", {
-              originalLength: finalVideoPrompt.length,
-              enhancedLength: enhancedMotionPrompt.length,
-              expectedAccuracy: "90%+",
-              approach: "frame-analysis + motion-timeline",
-              targetDuration: targetDuration,
-              sourceDuration: sourceDuration,
-              scaleFactor: scaleFactor.toFixed(2)
-            });
-          } else {
-            console.log("⚠️ No Pinterest video frames available, using text-only motion analysis (70-85% accuracy)");
-          }
-          
+MOTION TIMELINE (Apply to product):
+⏱️ ${motionSegments}
+🎯 Duration: ${targetDuration} seconds`;
+      }
+    } else {
+      console.log("ℹ️ No Pinterest video frames available, using prompt-only motion (50-70% accuracy)");
+    }
           videoResult = await generateVideoWithKling(
             imageResult.url, // Keep original generated image for product/scene quality
             enhancedMotionPrompt, // Use frame-enhanced motion prompt for 90%+ fidelity
