@@ -569,7 +569,43 @@ export async function enhanceVideoPromptWithGemini(
       // Step 1: Extract motion patterns using Gemini AI
       console.log("🧠 Analyzing motion patterns with Gemini AI...");
       extractedMotionPattern = await analyzeVideoMotionPatterns(sceneMediaPath);
-      
+      // CRITICAL: Validate inflation vs rotation confusion
+if (extractedMotionPattern) {
+  const suspiciousRotation = extractedMotionPattern.objectMotions.some(m => 
+    m.toLowerCase().includes('rotation') || 
+    m.toLowerCase().includes('rotate') || 
+    m.toLowerCase().includes('spin')
+  );
+  
+  const hasInflation = extractedMotionPattern.primaryMotion.toLowerCase().includes('inflate') ||
+                       extractedMotionPattern.primaryMotion.toLowerCase().includes('expand') ||
+                       extractedMotionPattern.primaryMotion.toLowerCase().includes('grow');
+  
+  // If rotation detected but no clear inflation mention, re-check
+  if (suspiciousRotation && !hasInflation) {
+    console.log("⚠️ WARNING: Rotation detected, checking if it's actually inflation...");
+    
+    // Check key moments for size changes
+    const hasSizeChange = extractedMotionPattern.timing.keyMoments.some(moment =>
+      moment.action.toLowerCase().includes('size') ||
+      moment.action.toLowerCase().includes('bigger') ||
+      moment.action.toLowerCase().includes('smaller') ||
+      moment.action.toLowerCase().includes('expand') ||
+      moment.action.toLowerCase().includes('inflate')
+    );
+    
+    if (hasSizeChange) {
+      console.log("✅ CORRECTION: This is actually INFLATION, not rotation!");
+      extractedMotionPattern.primaryMotion = "Product inflates and expands in size";
+      extractedMotionPattern.objectMotions = ["inflation", "size increase", "volume expansion"];
+    }
+  }
+  
+  console.log("📊 Final motion pattern:", {
+    primaryMotion: extractedMotionPattern.primaryMotion,
+    objectMotions: extractedMotionPattern.objectMotions
+  });
+}
       // Step 2: Extract keyframes for visual reference  
       console.log("📸 Extracting keyframes for visual reference...");
       try {
