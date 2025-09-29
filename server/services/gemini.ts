@@ -655,10 +655,7 @@ Then new product MUST also "inflate like balloon from 0-3s then deflate 3-5s"
 
 DO NOT just add camera movement - the PRODUCT itself must move/change!
   
-- Use the same camera movement style: ${extractedMotionPattern.primaryMotion}
-- Apply similar object motion timing and rhythm
-- Maintain the same cinematographic quality and transitions
-- Adapt the motion to work naturally with the new product
+
 ` : ''}
 
 📏 PRODUCT SIZE PREFERENCE: ${options.productSize || 'normal'}
