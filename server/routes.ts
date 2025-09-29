@@ -2059,7 +2059,30 @@ async function processProjectFromJob(job: any) {
     const scenePath = project.contentType === "video" && sceneVideoPath ? 
       sceneVideoPath : sceneImagePath;
     const isSceneVideo = project.contentType === "video" && sceneVideoPath;
+    // Extract frame from video for image generation
+let sceneForImageGeneration = scenePath;
+
+if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
+  console.log("📹 Extracting frame from Pinterest video for image generation...");
+  
+  try {
+    const { extractVideoFrames } = await import('./services/video-frame-extractor');
+    const framesResult = await extractVideoFrames(sceneVideoPath);
     
+    if (framesResult && framesResult.frames.length > 0) {
+      const middleFrameIndex = Math.floor(framesResult.frames.length / 2);
+      const middleFrame = framesResult.frames[middleFrameIndex];
+  sceneForImageGeneration = middleFrame.frameUrl;
+      
+      console.log("✅ Using video frame for image generation:", {
+        frameIndex: middleFrameIndex,
+        totalFrames: framesResult.frames.length
+      });
+    }
+  } catch (error) {
+    console.error("⚠️ Frame extraction failed, using original scene path:", error);
+  }
+}
     // Initialize frame extraction data variables for wider scope access
     let savedFrameExtractionResult: any = undefined;
     let savedMotionTimeline: any = undefined;
@@ -2157,12 +2180,12 @@ async function processProjectFromJob(job: any) {
     });
     
     try {
-      geminiImageResult = await generateImageWithGemini(
-        productImagePath,
-        sceneImagePath,
-        imagePrompt, // Use separated static scene prompt when available
-        productSize
-      );
+   geminiImageResult = await generateImageWithGemini(
+  productImagePath,
+  sceneForImageGeneration,  // ← هنا التغيير
+  imagePrompt,
+  productSize
+);
     } finally {
       // Record cost even if call fails
       totalCostMillicents += ACTUAL_COSTS.GEMINI_IMAGE_GENERATION;
