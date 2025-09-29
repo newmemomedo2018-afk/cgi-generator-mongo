@@ -621,21 +621,40 @@ ANALYZE the images:
 USER REQUEST: "${userDescription}"
 
 ${extractedMotionPattern ? `
-🎬 PINTEREST VIDEO MOTION PATTERN ANALYSIS:
-📊 EXTRACTED MOTION DATA FROM PINTEREST VIDEO:
-- PRIMARY MOTION: ${extractedMotionPattern.primaryMotion}
-- CAMERA MOVEMENTS: ${extractedMotionPattern.cameraMovements.join(", ")}
-- OBJECT MOTIONS: ${extractedMotionPattern.objectMotions.join(", ")}
-- TIMING DURATION: ${extractedMotionPattern.timing.duration}s
-- SHOT TYPES: ${extractedMotionPattern.cinematography.shotTypes.join(", ")}
-- TRANSITIONS: ${extractedMotionPattern.cinematography.transitions.join(", ")}
+🎬 PINTEREST VIDEO MOTION EXTRACTED - APPLY TO NEW PRODUCT:
 
-🎯 MOTION ADAPTATION INSTRUCTIONS:
-- RECOMMENDED FOR PRODUCT: ${extractedMotionPattern.applicableToProduct.recommended ? 'YES' : 'NO'}
-- ADAPTATIONS NEEDED: ${extractedMotionPattern.applicableToProduct.adaptations.join("; ")}
-- PRESERVE ELEMENTS: ${extractedMotionPattern.applicableToProduct.preserveElements.join("; ")}
+📊 ORIGINAL VIDEO MOTION DATA:
+The product in the Pinterest video performs these EXACT motions:
 
-🚨 CRITICAL: Apply these EXACT motion patterns to the new product video:
+PRIMARY MOTION: ${extractedMotionPattern.primaryMotion}
+- Description: This is the MAIN movement the product does in the video
+
+OBJECT MOTIONS DETECTED: ${extractedMotionPattern.objectMotions.join(", ")}
+- These are the EXACT movements the PRODUCT itself performs (not camera)
+
+CAMERA MOVEMENTS: ${extractedMotionPattern.cameraMovements.join(", ")}
+- These are how the camera moves around the product
+
+TIMING: ${extractedMotionPattern.timing.duration} seconds total
+KEY MOMENTS:
+${extractedMotionPattern.timing.keyMoments.map(m => `  - At ${m.time}s: ${m.action}`).join('\n')}
+
+🚨 YOUR CRITICAL TASK:
+Make the NEW product perform the EXACT SAME MOTIONS as the original product!
+
+MANDATORY REQUIREMENTS:
+1. Use the SAME primary motion: ${extractedMotionPattern.primaryMotion}
+2. Apply the SAME object motions: ${extractedMotionPattern.objectMotions.join(", ")}
+3. Use the SAME timing pattern
+4. Match the SAME camera work style
+5. The new product MUST move/transform/animate EXACTLY like the old product did
+
+EXAMPLE:
+If original video shows "can inflating like balloon from 0-3s then deflating 3-5s"
+Then new product MUST also "inflate like balloon from 0-3s then deflate 3-5s"
+
+DO NOT just add camera movement - the PRODUCT itself must move/change!
+  
 - Use the same camera movement style: ${extractedMotionPattern.primaryMotion}
 - Apply similar object motion timing and rhythm
 - Maintain the same cinematographic quality and transitions
@@ -913,32 +932,51 @@ export async function enhanceVideoPromptFromGeneratedImage(
     const isShortVideo = durationSeconds <= 5;
 
     const prompt = `
-انت خبير cgi 🎯 قم بعمل برومبيت لتحويل هذه الصورة الثابتة الي صورة متحركة وذلك عن طريق موقع kling 
+    انت خبير CGI متقدم 🎯
 
-البداية لازم تحلل الصورة كويس جدا وتعرف ايه هي العناصر بالظبط وتركز علي العنصر المهم في الصورة الي هو اكبر عنصر
+🎥 المهمة: تحليل المنتج في الصورة وإنشاء حركة ديناميكية له
 
-مع مراعاه طلب المستخدم: "${projectDetails.userDescription}" لو هو عايز يضيف شيء للفيديو
+📋 التحليل المطلوب:
+1. حدد المنتج الرئيسي في الصورة
+2. حدد نوع المنتج (علبة، زجاجة، صندوق، etc.)
+3. اقترح حركات ديناميكية مناسبة للمنتج
 
-كتابة البرومبيت يكون كالتلي اعداد المشهد:
-- ايه اللي يتحرك خلال الـ${durationSeconds} ثواني؟
-- ايه الاكشن اللي يحصل؟
-- ايه التعبيرات اللي تتغير؟
-- الكاميرا تكون اذاي كل شيء بيتم اذاي بالظبط
+🎬 أنواع الحركات المتاحة:
+- INFLATE/DEFLATE: النفخ والانكماش (مناسب للعلب والزجاجات)
+- ROTATE: الدوران حول المحور
+- FLOAT: الطيران أو الطفو
+- BOUNCE: الارتداد أو القفز
+- SCALE: التكبير والتصغير
+- GLOW: التوهج أو البريق
+- EXPLODE: الانفجار أو التناثر
 
-بمعني انت كخبير cgi لازم توضح كل شيء بالكامل عشان يحول الصورة الثابته دي لصورة متحركة بهدف استعارض المنتج الكبير بشكل جيد وجميل 
+🎯 اختر الحركة الأنسب للمنتج:
+- إذا كان علبة معدنية أو بلاستيك: استخدم INFLATE (النفخ التدريجي)
+- إذا كان زجاجة: استخدم ROTATE + GLOW
+- إذا كان صندوق: استخدم FLOAT + ROTATE
 
-🚨 قواعد الجودة الاجبارية - CGI فوتوريليستك:
-- كل الكائنات الحية اذا وجدت لازم تكون بنسب طبيعية مثالية
-- ممنوع التشويه: الوشوش والاجسام لازم تكون صح تشريحياً
+⏱️ التوقيت (${durationSeconds} ثانية):
+- 0-2 ثانية: البداية التدريجية للحركة
+- 2-${durationSeconds-1} ثانية: الحركة الكاملة
+- الثانية الأخيرة: الاستقرار
 
-🎯 اخرج الرد بصيغة JSON صحيحة:
+🚨 متطلبات الجودة:
+- الحركة يجب أن تكون سلسة وطبيعية
+- التوقيت يجب أن يكون متناسق
+- الإضاءة تتغير مع الحركة
+
+📤 أخرج الرد بصيغة JSON:
 {
-  "imageScenePrompt": "وصف العناصر الثابتة",
-  "videoMotionPrompt": "وصف الحركة بس",
-  "combinedVideoPrompt": "البرومبت المتكامل",
-  "qualityNegativePrompt": "الاشياء اللي نتجنبها",
-  "motionInstructions": "تفاصيل التوقيت والكاميرا"
+  "productType": "نوع المنتج (can/bottle/box/etc)",
+  "primaryMotion": "الحركة الأساسية (INFLATE/ROTATE/etc)",
+  "videoMotionPrompt": "وصف تفصيلي للحركة بالإنجليزية لموقع Kling",
+  "combinedVideoPrompt": "البرومبت الكامل للفيديو",
+  "qualityNegativePrompt": "الأشياء التي يجب تجنبها",
+  "motionInstructions": "تفاصيل التوقيت والحركة"
 }
+
+مثال للحركة INFLATE:
+"The can starts at normal size, then gradually inflates like a balloon over 3 seconds, reaching 1.5x its original size. The metal surface reflects light dynamically as it expands. At 4 seconds, it slowly deflates back to normal size with smooth, realistic deformation."
 `;
 
     console.log("🤖 Sending analysis request to Gemini...");
