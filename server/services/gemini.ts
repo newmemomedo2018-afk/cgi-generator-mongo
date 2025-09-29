@@ -279,21 +279,8 @@ If the SCENE IMAGE shows fragmented/sliced products, you MUST write: "Create [ex
 Example output:
 "Create 3 fragmented sections of the paint bucket stacked vertically: bottom section (base) tilted 15° left, middle section (body with icons) tilted 20° right, top section (lid and brand) upright. Position against dark background with green and pink powder explosions surrounding each section."
 
-MANDATORY OUTPUT STRUCTURE:
-Your instructions MUST include explicit removal steps:
-
-STEP 1 - IDENTIFY: State what old product exists in the scene
-STEP 2 - DELETE: Write clear deletion instructions: "DELETE [product] completely - remove all parts, shadows, reflections"
-STEP 3 - PLACE: Write placement instructions for new product
-STEP 4 - EFFECTS: Lighting and effects
-STEP 5 - PRESERVE: Background elements
-
-Example format:
-"DELETE the existing chandelier completely from the scene, removing all visible parts, mounting hardware, shadows, and light reflections. Clean the ceiling area. THEN position the new chandelier..."
-
-DO NOT write generic "replace" instructions. Always write explicit "DELETE [old] THEN place [new]" instructions.
-
-اكتب التعليمات الآن.`
+اكتب التعليمات الآن.
+`
     ]);
     
     const response = await result.response;
@@ -334,23 +321,42 @@ export async function generateImageWithGemini(
     ]);
 
     // Send request to Gemini with clear English instructions (Arabic prompts cause text responses instead of images)
-    const result = await model.generateContent([
-      "PRODUCT IMAGE - analyze this item that needs to be placed:",
-      {
-        inlineData: {
-          data: productImageData.base64,
-          mimeType: productImageData.mimeType
-        }
-      },
-      "SCENE IMAGE - analyze this background where the item should be placed:",
-      {
-        inlineData: {
-          data: sceneImageData.base64,
-          mimeType: sceneImageData.mimeType
-        }
-      },
-    
-      `CRITICAL CGI TASK - Follow these steps EXACTLY:
+   const result = await model.generateContent([
+  "PRODUCT IMAGE - analyze this item that needs to be placed:",
+  {
+    inlineData: {
+      data: productImageData.base64,
+      mimeType: productImageData.mimeType
+    }
+  },
+  "SCENE IMAGE - analyze this background where the item should be placed:",
+  {
+    inlineData: {
+      data: sceneImageData.base64,
+      mimeType: sceneImageData.mimeType
+    }
+  },
+
+  `🚨 ABSOLUTE PRIORITY - SCENE PRESERVATION:
+This is NOT a creative task - this is a REPLACEMENT task.
+Your ONLY job is to REPLACE the product while keeping EVERYTHING else IDENTICAL.
+Think of it like Photoshop's "Content-Aware Fill" - remove old product, paste new product, keep scene 100% same.
+
+FORBIDDEN ACTIONS:
+❌ DO NOT redesign the scene
+❌ DO NOT change background elements  
+❌ DO NOT modify lighting
+❌ DO NOT alter colors of non-product elements
+❌ DO NOT move objects around
+❌ DO NOT change the composition
+
+MANDATORY ACTIONS:
+✅ Identify the EXACT product in the scene that needs replacement
+✅ Remove ONLY that product completely (0% visibility)
+✅ Place new product in EXACT same position
+✅ Keep EVERYTHING else pixel-perfect identical
+
+CRITICAL CGI TASK - Follow these steps EXACTLY:
 
 STEP 1 - ANALYZE:
 Product from PRODUCT IMAGE: Extract exact appearance (shape, colors, text, design)
@@ -377,11 +383,6 @@ CRITICAL - Match Original Scene Dynamics:
 - If scene shows EXPLODING products: Show new product exploding similarly
 - If scene is STATIC/UPRIGHT: Place new product static/upright
 - If scene shows MULTIPLE instances: Replicate with new product in same quantity and arrangement
-- Output: IMAGE ONLY (no text, no analysis)
-- Quality: Professional CGI, photorealistic
-- OLD PRODUCT: MUST be 100% removed - ZERO TOLERANCE for any remnants or visibility
-- NEW PRODUCT: Must be the ONLY product visible in the scene
-- FAILURE MODE: If old product is still visible, the task has FAILED completely
 
 Position in the scene's main focal point
 Match scale to the scene (${productSize === 'emphasized' ? 'make 25% larger for emphasis' : 'natural proportions'})
@@ -403,9 +404,19 @@ USER CONTEXT: ${enhancedPrompt}
 CRITICAL RULES:
 - Output: IMAGE ONLY (no text, no analysis)
 - Quality: Professional CGI, photorealistic
-- Product: Replicate the QUANTITY and ARRANGEMENT from original scene (if 3 fragmented pieces flying, make 3 fragmented pieces of new product flying)
-- Dynamics: MUST match original scene dynamics (fragmented stays fragmented, flying stays flying)
-- Removal: COMPLETE removal of old products (zero tolerance for remnants)
+- Product: Replicate the QUANTITY and ARRANGEMENT from original scene
+- Dynamics: MUST match original scene dynamics
+- Removal: COMPLETE removal of old products (zero tolerance)
+- Scene: 100% PRESERVATION of all non-product elements
+
+⚠️ FINAL VERIFICATION BEFORE OUTPUT:
+1. Is the old product 100% removed? (Check for any traces)
+2. Is the new product in the exact same position?
+3. Is the background completely unchanged?
+4. Are lighting and effects identical to original?
+5. Does it look like ONLY the product changed?
+
+If answer to ANY question is NO, DO NOT output - fix it first.
 
 Generate the final composite image now.`
     ]);
