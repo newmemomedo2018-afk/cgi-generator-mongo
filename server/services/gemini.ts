@@ -279,6 +279,20 @@ If the SCENE IMAGE shows fragmented/sliced products, you MUST write: "Create [ex
 Example output:
 "Create 3 fragmented sections of the paint bucket stacked vertically: bottom section (base) tilted 15° left, middle section (body with icons) tilted 20° right, top section (lid and brand) upright. Position against dark background with green and pink powder explosions surrounding each section."
 
+MANDATORY OUTPUT STRUCTURE:
+Your instructions MUST include explicit removal steps:
+
+STEP 1 - IDENTIFY: State what old product exists in the scene
+STEP 2 - DELETE: Write clear deletion instructions: "DELETE [product] completely - remove all parts, shadows, reflections"
+STEP 3 - PLACE: Write placement instructions for new product
+STEP 4 - EFFECTS: Lighting and effects
+STEP 5 - PRESERVE: Background elements
+
+Example format:
+"DELETE the existing chandelier completely from the scene, removing all visible parts, mounting hardware, shadows, and light reflections. Clean the ceiling area. THEN position the new chandelier..."
+
+DO NOT write generic "replace" instructions. Always write explicit "DELETE [old] THEN place [new]" instructions.
+
 اكتب التعليمات الآن.`
     ]);
     
