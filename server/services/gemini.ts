@@ -362,45 +362,43 @@ export async function generateImageWithGemini(
           mimeType: sceneImageData.mimeType
         }
       },
-      `TASK: Intelligently analyze both images and create a realistic CGI integration with ENHANCED SCENE PRESERVATION.
+     `CRITICAL CGI TASK - Follow these steps EXACTLY:
 
-🔍 SCENE ANALYSIS PHASE:
-1. Study the SCENE IMAGE atmosphere: lighting style, mood, color temperature, shadows direction
-2. Identify spatial relationships: furniture positions, room layout, perspective angles
-3. Analyze existing elements: textures, materials, architectural details, decorative items
-4. Detect potential conflicts: items that occupy the same space where product should be placed
+STEP 1 - ANALYZE:
+Product from PRODUCT IMAGE: Extract exact appearance (shape, colors, text, design)
+Scene from SCENE IMAGE: Identify what needs to be removed
 
-🎯 SMART INTEGRATION STEPS:
-1. Understand the exact product from the first image (shape, colors, materials, design)
-2. Find the most logical and natural location in the scene where this product would fit
-3. REMOVE any existing conflicting items completely (no traces, shadows, or outlines left behind)
-4. Place the product with exact same appearance from PRODUCT IMAGE
-5. Preserve the original scene's lighting characteristics, shadow patterns, and color temperature
-6. Maintain the scene's architectural features, room proportions, and spatial relationships
-7. Ensure the product follows the same perspective and viewing angle as the scene
+STEP 2 - REMOVE COMPLETELY:
+Delete ALL existing products/items from the scene
+Remove all traces: no shadows, no outlines, no remnants
+Clean the space completely
 
-🌟 SCENE PRESERVATION REQUIREMENTS:
-- Keep the original room's lighting mood and atmosphere intact
-- Preserve wall colors, floor patterns, ceiling details, and architectural elements
-- Maintain the same camera angle, perspective, and depth of field
-- Respect the original scene's style (modern, classic, rustic, etc.)
-- Keep background elements positioned exactly as in the original scene
-- Preserve the natural flow and composition of the space
+STEP 3 - PLACE NEW PRODUCT:
+Insert the product from PRODUCT IMAGE into the cleaned space
+Use the EXACT appearance from PRODUCT IMAGE (same colors, same text, same design)
+Position naturally in the scene's main focal point
+Match scale to the scene (${productSize === 'emphasized' ? 'make 25% larger for emphasis' : 'natural proportions'})
+
+STEP 4 - LIGHTING & EFFECTS:
+Match the scene's existing lighting direction and intensity
+Preserve background effects (splashes, powder, smoke) but adapt them to surround the new product
+Cast realistic shadows for the new product
+Maintain the scene's atmosphere and mood
+
+STEP 5 - PRESERVE:
+Keep background unchanged (walls, floor, sky, environment)
+Keep lighting style unchanged
+Keep special effects unchanged (just reposition around new product)
 
 USER CONTEXT: ${enhancedPrompt}
 
-${productSize === 'emphasized' ? 
-'SIZING: Make the product 25-30% larger than normal while respecting scene proportions and perspective' : 
-'SIZING: Use natural proportions that perfectly match the scene scale and perspective'}
+CRITICAL RULES:
+- Output: IMAGE ONLY (no text, no analysis)
+- Quality: Professional CGI, photorealistic
+- Product: ONE product only (the new one from PRODUCT IMAGE)
+- Removal: COMPLETE removal of old products (zero tolerance for remnants)
 
-🚨 CRITICAL QUALITY REQUIREMENTS:
-- Use the exact product appearance from the PRODUCT IMAGE only (no modifications to colors, textures, or design)
-- Final result must be photorealistic with professional CGI quality
-- No extra products, duplicate items, or additional elements beyond what's requested
-- Perfect anatomical proportions for any living creatures (if present)
-- Sharp focus and high detail matching the original scene quality
-- Natural lighting integration that follows the scene's established light sources
-- Return only an image output; do not include any text or descriptions`
+Generate the final composite image now.`
     ]);
 
     const response = await result.response;
