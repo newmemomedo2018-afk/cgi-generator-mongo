@@ -362,40 +362,53 @@ export async function generateImageWithGemini(
           mimeType: sceneImageData.mimeType
         }
       },
-     `CRITICAL CGI TASK - Follow these steps EXACTLY:
+    
+      `CRITICAL CGI TASK - Follow these steps EXACTLY:
 
 STEP 1 - ANALYZE:
 Product from PRODUCT IMAGE: Extract exact appearance (shape, colors, text, design)
-Scene from SCENE IMAGE: Identify what needs to be removed
+Scene from SCENE IMAGE: Identify what needs to be removed AND analyze scene dynamics
 
 STEP 2 - REMOVE COMPLETELY:
 Delete ALL existing products/items from the scene
 Remove all traces: no shadows, no outlines, no remnants
 Clean the space completely
 
-STEP 3 - PLACE NEW PRODUCT:
+STEP 3 - PLACE NEW PRODUCT WITH SCENE DYNAMICS:
 Insert the product from PRODUCT IMAGE into the cleaned space
 Use the EXACT appearance from PRODUCT IMAGE (same colors, same text, same design)
-Position naturally in the scene's main focal point
+
+CRITICAL - Match Original Scene Dynamics:
+- If scene shows FLYING/FLOATING products: Make new product fly/float in same style and position
+- If scene shows STACKED/LAYERED products: Stack/layer the new product similarly
+- If scene shows FRAGMENTED/SLICED products: Fragment/slice the new product in same manner (top, middle, bottom sections)
+- If scene shows TILTED/ANGLED products: Match the exact tilt/angle
+- If scene shows EXPLODING products: Show new product exploding similarly
+- If scene is STATIC/UPRIGHT: Place new product static/upright
+- If scene shows MULTIPLE instances: Replicate with new product in same quantity and arrangement
+
+Position in the scene's main focal point
 Match scale to the scene (${productSize === 'emphasized' ? 'make 25% larger for emphasis' : 'natural proportions'})
 
 STEP 4 - LIGHTING & EFFECTS:
 Match the scene's existing lighting direction and intensity
-Preserve background effects (splashes, powder, smoke) but adapt them to surround the new product
-Cast realistic shadows for the new product
+Preserve background effects (splashes, powder, smoke) and adapt them to surround the new product
+If effects have colors, adjust colors to complement the new product's colors
+Cast realistic shadows for the new product matching scene lighting
 Maintain the scene's atmosphere and mood
 
 STEP 5 - PRESERVE:
 Keep background unchanged (walls, floor, sky, environment)
 Keep lighting style unchanged
-Keep special effects unchanged (just reposition around new product)
+Keep special effects style unchanged (adapt colors if needed)
 
 USER CONTEXT: ${enhancedPrompt}
 
 CRITICAL RULES:
 - Output: IMAGE ONLY (no text, no analysis)
 - Quality: Professional CGI, photorealistic
-- Product: ONE product only (the new one from PRODUCT IMAGE)
+- Product: Replicate the QUANTITY and ARRANGEMENT from original scene (if 3 fragmented pieces flying, make 3 fragmented pieces of new product flying)
+- Dynamics: MUST match original scene dynamics (fragmented stays fragmented, flying stays flying)
 - Removal: COMPLETE removal of old products (zero tolerance for remnants)
 
 Generate the final composite image now.`
