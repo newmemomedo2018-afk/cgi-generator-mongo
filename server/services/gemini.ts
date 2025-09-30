@@ -699,7 +699,7 @@ ${options.productSize === 'emphasized' ? `
 - المنتج يجب أن يكون مُبرز وبارز كنقطة تركيز في المشهد
 - زود حجم المنتج بنسبة 20-30% عن الحجم الطبيعي
 - ضع إضاءة إضافية على المنتج ليظهر بوضوح أكبر
-- اجعل المنتج في موضع مركزي يلفت الانتباه
+- اجعل المنتج  في موضع مركزي يلفت الانتباه
 - أضف تدرج ضوئي خفيف حول المنتج ليبرز عن الخلفية` : `
 - اجعل المنتج بحجم طبيعي ومتناسق مع باقي عناصر المشهد
 - لا تزود أو تقلل الحجم، خليه مناسب للمكان
@@ -1213,45 +1213,61 @@ async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotion
 
     
     const prompt = `
-🎬 PINTEREST VIDEO MOTION ANALYSIS - PRECISE EXTRACTION
+🎯 CRITICAL MOTION TYPE IDENTIFICATION - Choose ONE:
 
-Analyze this video frame-by-frame to extract EXACT product transformations.
+TYPE 1 - INFLATION/DEFLATION (Size Change):
+- Product SIZE increases or decreases
+- Outline expands or contracts
+- Example: "Product grows from 1.0x to 1.5x size over 3 seconds"
+- Keywords: inflate, expand, grow, enlarge, balloon, swell
 
-🚨 CRITICAL: You MUST distinguish between these types (choose ONE only):
+TYPE 2 - ROTATION (Spinning):
+- Product SPINS around axis
+- Shows different sides (front → side → back)
+- Example: "Product rotates 360 degrees in 4 seconds"
+- Keywords: rotate, spin, turn, revolve, orbit
 
-TYPE A - INFLATION (size change):
-- Product physically gets bigger or smaller (like a balloon inflating/deflating)
-- The outline/silhouette of the product expands or contracts
-- Example: "At 0s, product is 1.0x size; at 3s, product is 1.5x size"
-- Output: {"primaryMotion": "inflation", "quantifiedMotion": {"startSize": "1.0x", "endSize": "1.5x", "duration": 3.0}}
+TYPE 3 - GLOW/PULSE (Lighting Only):
+- Product stays SAME size and position
+- Only brightness/color changes
+- Example: "Product glows brighter but stays same size"
+- Keywords: glow, brighten, pulse, shimmer (without size change)
 
-TYPE B - ROTATION (spins/turns):
-- Product rotates around an axis (shows new sides)
-- Example: "Product shows front at 0s, side at 1s, back at 2s"
-- Output: {"primaryMotion": "rotation", "quantifiedMotion": {"degrees": 180}}
+🔍 ANALYSIS STEPS:
+1. Watch the product outline - does it GET BIGGER or SMALLER? → INFLATION
+2. Watch the product orientation - does it SPIN or TURN? → ROTATION
+3. Watch the product brightness - does ONLY light change? → GLOW
 
-TYPE C - GLOW (lighting only):
-- Product stays same size and position, only brightness/color changes
-- Example: "Product glows brighter but does not move"
-- Output: {"primaryMotion": "static with glow", "objectMotions": []}
+⚠️ COMMON MISTAKES TO AVOID:
+- Inflation + Glow = Still INFLATION (size is primary)
+- Rotation + Glow = Still ROTATION (movement is primary)
+- If product SIZE changes AT ALL = INFLATION (not rotation)
 
-ANALYSIS STEPS:
-Step 1: Did the product's size change? If yes, classify as INFLATION.
-Step 2: Did the product rotate? If yes, classify as ROTATION.
-Step 3: Did only lighting change? If yes, classify as GLOW.
+📐 QUANTIFY THE MOTION:
+- Inflation: "grows from 1.0x to [exact number]x size"
+- Rotation: "[exact degrees]° rotation"
+- Glow: "[percentage]% brightness increase"
 
-MANDATORY: Output QUANTITATIVE measurements (e.g., size from 1.0x to 1.5x, rotation in degrees, duration in seconds).
-NEVER confuse inflation with rotation or glow. If size changes, it is INFLATION ONLY.
+🎯 OUTPUT FORMAT (JSON):
+{
+  "primaryMotion": "inflation|rotation|glow",
+  "objectMotions": ["exact motion type"],
+  "quantifiedMotion": {
+    "type": "inflation|rotation|glow",
+    "startSize": "1.0x",
+    "endSize": "1.5x",
+    "duration": 3.5
+  },
+  "timing": {
+    "duration": 5,
+    "keyMoments": [
+      {"time": 0, "action": "Product at 1.0x size"},
+      {"time": 3.5, "action": "Product at 1.5x size"}
+    ]
+  }
+}
 
-EXAMPLES:
-// INFLATION
-{"primaryMotion": "inflation like balloon", "objectMotions": ["inflation", "size expansion"], "quantifiedMotion": {"startSize": "1.0x", "endSize": "1.5x", "duration": 3.5}}
-// ROTATION
-{"primaryMotion": "rotation", "objectMotions": ["rotation"], "quantifiedMotion": {"degrees": 180, "duration": 3.0}}
-// GLOW
-{"primaryMotion": "static with glow", "objectMotions": [], "quantifiedMotion": {"brightnessChange": "200%"}}
-
-Respond ONLY with valid JSON as above.
+RESPOND ONLY WITH VALID JSON.
 `;
 
     console.log("🚀 Analyzing video with Gemini AI...");

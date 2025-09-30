@@ -475,21 +475,51 @@ export async function generateVideoWithKling(
     // ⚠️ CRITICAL: Optimize prompt for Kling AI's 2500 character limit
     const optimizedPrompt = optimizePromptForKling(prompt, 2500);
     
-    // Create Kling AI image-to-video request (PiAPI v1 format)
-    const requestPayload = {
-      model: "kling",
-      task_type: "video_generation", 
-      input: {
-        prompt: optimizedPrompt,
-        image_url: imageUrl,  // Send direct image URL
-        duration: durationSeconds,
-        aspect_ratio: "16:9",
-        mode: "std", // std or pro
-        cfg_scale: 0.5, // 0.1 to 1.0
-        negative_prompt: negativePrompt || "deformed, distorted, unnatural proportions, melting, morphing, blurry, low quality"
-      }
-    };
 
+
+    // Validate and enhance prompt before sending to Kling
+let finalKlingPrompt = optimizedPrompt;
+
+// Check if prompt mentions inflation
+if (optimizedPrompt.toLowerCase().includes('inflate') || 
+    optimizedPrompt.toLowerCase().includes('expand') ||
+    optimizedPrompt.toLowerCase().includes('grow')) {
+  
+  finalKlingPrompt = `PRODUCT SIZE TRANSFORMATION:
+Product must physically GROW LARGER during video.
+This is SIZE INFLATION, not rotation or glow.
+
+${optimizedPrompt}`;
+  
+  console.log("✅ Added inflation clarification to Kling");
+}
+
+// Check if prompt mentions rotation
+if (optimizedPrompt.toLowerCase().includes('rotate') || 
+    optimizedPrompt.toLowerCase().includes('spin')) {
+  
+  finalKlingPrompt = `PRODUCT ROTATION:
+Product must SPIN showing different sides.
+This is ROTATION, not inflation or glow.
+
+${optimizedPrompt}`;
+  
+  console.log("✅ Added rotation clarification to Kling");
+}
+
+const requestPayload = {
+  model: "kling",
+  task_type: "video_generation", 
+  input: {
+    prompt: finalKlingPrompt,  // ← استخدم البرومبت المحسّن
+    image_url: imageUrl,
+    duration: durationSeconds,
+    aspect_ratio: "16:9",
+    mode: "std",
+    cfg_scale: 0.7, // ← زوّد من 0.5 لـ 0.7
+    negative_prompt: negativePrompt || "deformed, distorted, unnatural proportions"
+  }
+};
     // EXPLICIT LOGGING BEFORE PiAPI CALL - USE BYTE-ACCURATE VALIDATION
     const jsonPayload = JSON.stringify(requestPayload);
     const payloadSizeBytes = Buffer.byteLength(jsonPayload, 'utf8');

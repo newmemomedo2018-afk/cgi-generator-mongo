@@ -2380,6 +2380,38 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
           targetDuration,
           30
         );
+// --- ENHANCED VALIDATION & INFLATION INSTRUCTION FOR KLING ---
+if (motionMetrics && motionMetrics.scaleSpeed > 5) {
+  // Explicitly instruct Kling to perform inflation, not rotation or glow
+  const inflationPercent = Math.round(100 + motionMetrics.scaleSpeed * 10);
+  enhancedMotionPrompt = `CRITICAL INSTRUCTION FOR KLING:
+Product must INFLATE (grow in size) like a balloon.
+NOT rotation, NOT just glowing.
+Start size: 100%, End size: ${inflationPercent}%
+
+${enhancedMotionPrompt}`;
+  
+  console.log("✅ Added explicit inflation instruction for Kling:", {
+    inflationPercent,
+    duration: targetDuration
+  });
+}
+
+// Similar for rotation
+if (motionMetrics && motionMetrics.rotationSpeed > 10) {
+  const rotationDegrees = Math.round(motionMetrics.rotationSpeed * 36);
+  enhancedMotionPrompt = `CRITICAL INSTRUCTION FOR KLING:
+Product must ROTATE (spin around axis) showing different sides.
+NOT inflate, NOT just glow.
+Rotation: ${rotationDegrees}° total
+
+${enhancedMotionPrompt}`;
+  
+  console.log("✅ Added explicit rotation instruction for Kling:", {
+    rotationDegrees,
+    duration: targetDuration
+  });
+}
 
         // --- ENHANCED VALIDATION & INFLATION INSTRUCTION FOR KLING ---
         if (motionMetrics && motionMetrics.scaleSpeed > 5) {
