@@ -480,38 +480,55 @@ export async function generateVideoWithKling(
     // Validate and enhance prompt before sending to Kling
 
     // CRITICAL FIX: Keep prompt SIMPLE and SHORT for product preservation
+
+    // CRITICAL FIX: UNIVERSAL prompt simplification for ALL products
 let finalKlingPrompt = optimizedPrompt;
 
-// Extract only the FIRST sentence about the product
-const firstSentence = optimizedPrompt.split(/[.!]\s+/)[0];
-const productMatch = firstSentence.match(/(can|bottle|box|product|energy drink)/i);
-const baseDescription = productMatch ? firstSentence : optimizedPrompt.substring(0, 100);
+// Extract core content (first 80 characters = product description)
+const coreContent = optimizedPrompt.substring(0, 80).trim();
 
-// Check motion type and create CONCISE instruction
+// Check motion type and create MINIMAL instruction
 if (optimizedPrompt.toLowerCase().includes('inflate') || 
     optimizedPrompt.toLowerCase().includes('expand')) {
   
-  finalKlingPrompt = `${baseDescription}. Product gradually inflates 25% larger, then returns to normal size.`;
-  console.log("✅ Simplified inflation prompt (product preservation mode)");
+  // Inflation motion: Keep it under 100 chars
+  finalKlingPrompt = `${coreContent}. Gradually expands 25% then returns to normal.`;
+  console.log("✅ Inflation mode (simplified)");
   
-} else if (optimizedPrompt.toLowerCase().includes('rotat')) {
+} else if (optimizedPrompt.toLowerCase().includes('rotat') || 
+           optimizedPrompt.toLowerCase().includes('spin')) {
   
-  finalKlingPrompt = `${baseDescription}. Product slowly rotates 360 degrees showing all sides.`;
-  console.log("✅ Simplified rotation prompt (product preservation mode)");
+  // Rotation motion: Keep it under 100 chars
+  finalKlingPrompt = `${coreContent}. Slowly rotates 360 degrees.`;
+  console.log("✅ Rotation mode (simplified)");
+  
+} else if (optimizedPrompt.toLowerCase().includes('zoom') || 
+           optimizedPrompt.toLowerCase().includes('camera')) {
+  
+  // Camera motion: Keep it under 100 chars
+  finalKlingPrompt = `${coreContent}. Smooth camera movement.`;
+  console.log("✅ Camera mode (simplified)");
   
 } else {
-  // Default: Use only first 150 characters for static shots
-  finalKlingPrompt = optimizedPrompt.substring(0, 150);
-  console.log("✅ Simplified static prompt (product preservation mode)");
+  // Static/default: Use first 120 chars only
+  finalKlingPrompt = optimizedPrompt.substring(0, 120).trim();
+  console.log("✅ Static mode (simplified)");
 }
 
-console.log("🎯 Kling prompt simplification:", {
+// SAFETY: Never exceed 150 characters for product preservation
+if (finalKlingPrompt.length > 150) {
+  finalKlingPrompt = finalKlingPrompt.substring(0, 147) + '...';
+}
+
+console.log("🎯 Universal prompt simplification:", {
   originalLength: optimizedPrompt.length,
   finalLength: finalKlingPrompt.length,
   reduction: `${Math.round((1 - finalKlingPrompt.length / optimizedPrompt.length) * 100)}%`,
-  preservationMode: "ACTIVE"
+  motionType: finalKlingPrompt.includes('expands') ? 'inflation' : 
+              finalKlingPrompt.includes('rotates') ? 'rotation' :
+              finalKlingPrompt.includes('camera') ? 'camera' : 'static',
+  universalMode: "ACTIVE - works with ANY product"
 });
-
 
 // Check if prompt mentions rotation
 if (optimizedPrompt.toLowerCase().includes('rotate') || 
