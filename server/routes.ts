@@ -2063,30 +2063,46 @@ async function processProjectFromJob(job: any) {
 
     
     // Extract frame from video for image generation
+
+    
+    // Extract frames and analyze motion for Pinterest videos
 let sceneForImageGeneration = scenePath;
+let extractedMotionMetrics: any = null;
 
 if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
-  console.log("📹 Extracting frame from Pinterest video for image generation...");
+  console.log("📹 Processing Pinterest video for motion analysis...");
   
   try {
-    const { extractVideoFrames } = await import('./services/video-frame-extractor');
-    const framesResult = await extractVideoFrames(sceneVideoPath);
+    // استخدم الصورة الثابتة للتوليد بدل الفيديو
+    sceneForImageGeneration = sceneImagePath || scenePath;
+    console.log("✅ Using scene thumbnail for image generation");
     
-    if (framesResult && framesResult.frames.length > 0) {
-      const middleFrameIndex = Math.floor(framesResult.frames.length / 2);
-      const middleFrame = framesResult.frames[middleFrameIndex];
-      sceneForImageGeneration = middleFrame.frameUrl;
-      
-      console.log("✅ Using video frame for image generation:", {
-        frameIndex: middleFrameIndex,
-        totalFrames: framesResult.frames.length
+    // حاول تحليل الحركة من الفيديو نفسه باستخدام Gemini
+    const { analyzeVideoMotionPatterns } = await import('./services/gemini');
+    const motionPattern = await analyzeVideoMotionPatterns(sceneVideoPath);
+    
+    if (motionPattern) {
+      console.log("🎯 Motion pattern extracted from video:", {
+        primaryMotion: motionPattern.primaryMotion,
+        objectMotions: motionPattern.objectMotions
       });
-    } else {
-      console.warn("⚠️ No frames extracted - falling back to SCENE IMAGE");
-      sceneForImageGeneration = sceneImagePath || scenePath;
+      
+      // حول البيانات النصية لأرقام تقريبية
+      extractedMotionMetrics = {
+        horizontalSpeed: 0,
+        verticalSpeed: 0,
+        rotationSpeed: motionPattern.objectMotions?.some((m: string) => 
+          m.toLowerCase().includes('rotat')) ? 15 : 0,
+
+        scaleSpeed: motionPattern.objectMotions?.some((m: string) => 
+          m.toLowerCase().includes('inflat') || m.toLowerCase().includes('expand')) ? 10 : 0,
+        accelerationType: 'ease-in-out' as const
+      };
+      
+      console.log("📊 Converted to motion metrics:", extractedMotionMetrics);
     }
   } catch (error) {
-    console.error("⚠️ Frame extraction failed - falling back to SCENE IMAGE:", error);
+    console.error("⚠️ Video motion analysis failed:", error);
     sceneForImageGeneration = sceneImagePath || scenePath;
   }
 }

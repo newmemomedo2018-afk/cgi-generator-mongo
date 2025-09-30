@@ -1149,8 +1149,8 @@ ${projectDetails.userDescription}
  * @param videoUrl Pinterest video URL or path
  * @returns Motion pattern analysis
  */
-async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotionPattern | null> {
-  try {
+export async function analyzeVideoMotionPatterns(videoUrl: string): Promise<VideoMotionPattern | null> {
+    try {
     console.log("🎬 Starting REAL Pinterest video motion analysis...", {
       videoUrl: videoUrl.substring(0, 100) + "...",
       model: "gemini-2.0-flash-exp"
