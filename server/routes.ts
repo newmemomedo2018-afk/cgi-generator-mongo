@@ -2060,6 +2060,9 @@ async function processProjectFromJob(job: any) {
       sceneVideoPath : sceneImagePath;
     const isSceneVideo = project.contentType === "video" && sceneVideoPath;
     // Extract frame from video for image generation
+
+    
+    // Extract frame from video for image generation
 let sceneForImageGeneration = scenePath;
 
 if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
@@ -2072,15 +2075,19 @@ if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
     if (framesResult && framesResult.frames.length > 0) {
       const middleFrameIndex = Math.floor(framesResult.frames.length / 2);
       const middleFrame = framesResult.frames[middleFrameIndex];
-  sceneForImageGeneration = middleFrame.frameUrl;
+      sceneForImageGeneration = middleFrame.frameUrl;
       
       console.log("✅ Using video frame for image generation:", {
         frameIndex: middleFrameIndex,
         totalFrames: framesResult.frames.length
       });
+    } else {
+      console.warn("⚠️ No frames extracted - falling back to SCENE IMAGE");
+      sceneForImageGeneration = sceneImagePath || scenePath;
     }
   } catch (error) {
-    console.error("⚠️ Frame extraction failed, using original scene path:", error);
+    console.error("⚠️ Frame extraction failed - falling back to SCENE IMAGE:", error);
+    sceneForImageGeneration = sceneImagePath || scenePath;
   }
 }
     // Initialize frame extraction data variables for wider scope access
