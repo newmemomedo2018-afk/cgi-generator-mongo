@@ -478,21 +478,40 @@ export async function generateVideoWithKling(
 
 
     // Validate and enhance prompt before sending to Kling
+
+    // CRITICAL FIX: Keep prompt SIMPLE and SHORT for product preservation
 let finalKlingPrompt = optimizedPrompt;
 
-// Check if prompt mentions inflation
-if (optimizedPrompt.toLowerCase().includes('inflate') || 
-    optimizedPrompt.toLowerCase().includes('expand') ||
-    optimizedPrompt.toLowerCase().includes('grow')) {
-  
-  finalKlingPrompt = `PRODUCT SIZE TRANSFORMATION:
-Product must physically GROW LARGER during video.
-This is SIZE INFLATION, not rotation or glow.
+// Extract only the FIRST sentence about the product
+const firstSentence = optimizedPrompt.split(/[.!]\s+/)[0];
+const productMatch = firstSentence.match(/(can|bottle|box|product|energy drink)/i);
+const baseDescription = productMatch ? firstSentence : optimizedPrompt.substring(0, 100);
 
-${optimizedPrompt}`;
+// Check motion type and create CONCISE instruction
+if (optimizedPrompt.toLowerCase().includes('inflate') || 
+    optimizedPrompt.toLowerCase().includes('expand')) {
   
-  console.log("✅ Added inflation clarification to Kling");
+  finalKlingPrompt = `${baseDescription}. Product gradually inflates 25% larger, then returns to normal size.`;
+  console.log("✅ Simplified inflation prompt (product preservation mode)");
+  
+} else if (optimizedPrompt.toLowerCase().includes('rotat')) {
+  
+  finalKlingPrompt = `${baseDescription}. Product slowly rotates 360 degrees showing all sides.`;
+  console.log("✅ Simplified rotation prompt (product preservation mode)");
+  
+} else {
+  // Default: Use only first 150 characters for static shots
+  finalKlingPrompt = optimizedPrompt.substring(0, 150);
+  console.log("✅ Simplified static prompt (product preservation mode)");
 }
+
+console.log("🎯 Kling prompt simplification:", {
+  originalLength: optimizedPrompt.length,
+  finalLength: finalKlingPrompt.length,
+  reduction: `${Math.round((1 - finalKlingPrompt.length / optimizedPrompt.length) * 100)}%`,
+  preservationMode: "ACTIVE"
+});
+
 
 // Check if prompt mentions rotation
 if (optimizedPrompt.toLowerCase().includes('rotate') || 
