@@ -1,4 +1,4 @@
-import type { Express, Response } from "express";
+import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -363,7 +363,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Upload endpoint for product images - using Cloudinary with Quality Enhancement
-  app.post('/api/upload-product-image', isAuthenticated, uploadProductImage.single('productImage'), handleMulterError, asyncHandler(async (req: any, res: Response) => {
+  app.post('/api/upload-product-image', isAuthenticated, uploadProductImage.single('productImage'), handleMulterError, asyncHandler(async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -411,7 +411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Upload endpoint for scene images - using Cloudinary with Quality Enhancement  
-  app.post('/api/upload-scene-image', isAuthenticated, upload.single('sceneImage'), handleMulterError, asyncHandler(async (req: any, res: Response) => {
+  app.post('/api/upload-scene-image', isAuthenticated, upload.single('sceneImage'), handleMulterError, asyncHandler(async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No scene file uploaded" });
@@ -1467,7 +1467,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoint to make yourself admin (DEVELOPMENT ONLY - DISABLED IN PRODUCTION)
-  app.post('/api/admin/make-admin', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
+  app.post('/api/admin/make-admin', isAuthenticated, asyncHandler(async (req: any, res) => {
     // Security: NEVER allow this in production - Multiple layers of protection
     if (process.env.NODE_ENV === 'production') {
       console.warn(`⚠️ SECURITY ALERT: Attempted admin elevation in production from user ${req.user.id}`);
@@ -1494,7 +1494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to get all users
-  app.get('/api/admin/users', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
+  app.get('/api/admin/users', isAuthenticated, asyncHandler(async (req: any, res) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1505,7 +1505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to get all projects
-  app.get('/api/admin/projects', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
+  app.get('/api/admin/projects', isAuthenticated, asyncHandler(async (req: any, res) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1566,7 +1566,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin endpoint to get platform stats
-  app.get('/api/admin/stats', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
+  app.get('/api/admin/stats', isAuthenticated, asyncHandler(async (req: any, res) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1577,7 +1577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to manage user credits
-  app.post('/api/admin/users/:id/credits', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
+  app.post('/api/admin/users/:id/credits', isAuthenticated, asyncHandler(async (req: any, res) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -1621,7 +1621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Create transaction record for admin action
     await storage.createTransaction({
       userId: userId,
-  amount: (validatedData.action === 'add' ? validatedData.amount : -validatedData.amount).toString(),
+      amount: validatedData.action === 'add' ? validatedData.amount : -validatedData.amount,
       credits: validatedData.action === 'add' ? validatedData.amount : -validatedData.amount,
       stripePaymentIntentId: `admin_${validatedData.action}_${Date.now()}`,
       status: 'completed',
@@ -1646,7 +1646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Admin endpoint to get user transactions
-  app.get('/api/admin/users/:id/transactions', isAuthenticated, asyncHandler(async (req: any, res: Response) => {
+  app.get('/api/admin/users/:id/transactions', isAuthenticated, asyncHandler(async (req: any, res) => {
     const user = await storage.getUser(req.user.id);
     if (!user?.isAdmin) {
       throw new CustomError("Admin access required", 403, "صلاحيات الأدمن مطلوبة للوصول لهذه الخدمة.");
@@ -2059,81 +2059,7 @@ async function processProjectFromJob(job: any) {
     const scenePath = project.contentType === "video" && sceneVideoPath ? 
       sceneVideoPath : sceneImagePath;
     const isSceneVideo = project.contentType === "video" && sceneVideoPath;
-    // Extract frame from video for image generation
-
     
-    // Extract frame from video for image generation
-
-    
-    // Extract frames and analyze motion for Pinterest videos
-let sceneForImageGeneration = scenePath;
-let extractedMotionMetrics: any = null;
-
-if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
-  console.log("📹 Processing Pinterest video for motion analysis...");
-  
-  try {
-    // استخدم الصورة الثابتة للتوليد بدل الفيديو
-    sceneForImageGeneration = sceneImagePath || scenePath;
-    console.log("✅ Using scene thumbnail for image generation");
-    
-    // حاول تحليل الحركة من الفيديو نفسه باستخدام Gemini
-    const { analyzeVideoMotionPatterns } = await import('./services/gemini');
-    const motionPattern = await analyzeVideoMotionPatterns(sceneVideoPath);
-    
-    if (motionPattern) {
-      console.log("🎯 Motion pattern extracted from video:", {
-        primaryMotion: motionPattern.primaryMotion,
-        objectMotions: motionPattern.objectMotions
-      });
-      
-       // حول البيانات النصية لأرقام تقريبية
-       // إذا كان Gemini يعيد بيانات كمية، استخدمها، وإلا استخدم fallback
-       const quantified = (motionPattern as any).quantifiedMotion;
-       if (quantified && typeof quantified === 'object') {
-         // حساب السرعات بناءً على الأرقام الحقيقية
-         const duration = quantified.duration || 5;
-         const sizeChange = quantified.sizeChangePercent || 0;
-         const rotation = quantified.rotationDegrees || 0;
-         // CRITICAL VALIDATION: التفرقة بين Inflation و Rotation
-         const isInflation = quantified.hasInflation || (sizeChange > 20 && rotation < 45);
-         const isRotation = quantified.hasRotation || (rotation > 45 && sizeChange < 20);
-         console.log("MOTION VALIDATION:", {
-           sizeChange,
-           rotation,
-           isInflation,
-           isRotation,
-           classification: isInflation ? "INFLATION" : isRotation ? "ROTATION" : "UNCLEAR"
-         });
-         extractedMotionMetrics = {
-           horizontalSpeed: 0,
-           verticalSpeed: 0,
-           rotationSpeed: isRotation ? (rotation / duration) : 0,
-           scaleSpeed: isInflation ? (sizeChange / duration) : 0,
-           accelerationType: 'ease-in-out' as const
-         };
-         console.log("EXTRACTED MOTION METRICS (QUANTIFIED):", extractedMotionMetrics);
-       } else {
-         // Fallback للطريقة القديمة
-         console.warn("No quantified motion data, using text-based detection (less accurate)");
-         extractedMotionMetrics = {
-           horizontalSpeed: 0,
-           verticalSpeed: 0,
-           rotationSpeed: motionPattern.objectMotions?.some((m: string) => 
-             m.toLowerCase().includes('rotat')) ? 15 : 0,
-           scaleSpeed: motionPattern.objectMotions?.some((m: string) => 
-             m.toLowerCase().includes('inflat') || m.toLowerCase().includes('expand')) ? 10 : 0,
-           accelerationType: 'ease-in-out' as const
-         };
-       }
-      
-      console.log("📊 Converted to motion metrics:", extractedMotionMetrics);
-    }
-  } catch (error) {
-    console.error("⚠️ Video motion analysis failed:", error);
-    sceneForImageGeneration = sceneImagePath || scenePath;
-  }
-}
     // Initialize frame extraction data variables for wider scope access
     let savedFrameExtractionResult: any = undefined;
     let savedMotionTimeline: any = undefined;
@@ -2231,12 +2157,12 @@ if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
     });
     
     try {
-   geminiImageResult = await generateImageWithGemini(
-  productImagePath,
-  sceneForImageGeneration,  // ← هنا التغيير
-  imagePrompt,
-  productSize
-);
+      geminiImageResult = await generateImageWithGemini(
+        productImagePath,
+        sceneImagePath,
+        imagePrompt, // Use separated static scene prompt when available
+        productSize
+      );
     } finally {
       // Record cost even if call fails
       totalCostMillicents += ACTUAL_COSTS.GEMINI_IMAGE_GENERATION;
@@ -2425,35 +2351,12 @@ Camera and Production: ${videoEnhancement.enhancedVideoPrompt}`;
         
         // Build Kling-optimized motion prompt
         const targetDuration = project.videoDurationSeconds || 5;
-        let klingPrompt = buildKlingMotionPrompt(
+        enhancedMotionPrompt = buildKlingMotionPrompt(
           finalVideoPrompt,
           motionMetrics,
           targetDuration,
           30
         );
-
-
-        // --- ENHANCED VALIDATION & INFLATION INSTRUCTION FOR KLING ---
-        if (motionMetrics && motionMetrics.scaleSpeed > 5) {
-          // Explicitly instruct Kling to perform inflation, not rotation or glow
-          const inflationPercent = Math.round(100 + motionMetrics.scaleSpeed * 10);
-          klingPrompt = `تعليمات حاسمة لـ KLING:\nالمنتج لازم ينفخ (يكبر في الحجم) زي البالونة.\nمش دوران، مش مجرد توهج.\nالحجم في البداية: 100٪، الحجم في النهاية: ${inflationPercent}٪\n\n${klingPrompt}`;
-        }
-
-        // --- MOTION TYPE VALIDATION ---
-        if (savedMotionTimeline && savedMotionTimeline.segments) {
-          const hasRotation = savedMotionTimeline.segments.some((seg: any) =>
-            seg.subject.motion && seg.subject.motion.toLowerCase().includes('rotation')
-          );
-          const hasInflation = savedMotionTimeline.segments.some((seg: any) =>
-            seg.subject.motion && (seg.subject.motion.toLowerCase().includes('inflate') || seg.subject.motion.toLowerCase().includes('expand'))
-          );
-          if (hasRotation && !hasInflation) {
-            console.warn("⚠️ اكتشفنا دوران لكن المتوقع نفخ - بنراجع...");
-            // يمكن إضافة منطق احتياطي هنا (مثل إعادة المحاولة أو تعديل البرومبت)
-          }
-        }
-        enhancedMotionPrompt = klingPrompt;
         
         console.log("✅ Enhanced motion prompt created with quantified metrics:", {
           originalLength: finalVideoPrompt.length,

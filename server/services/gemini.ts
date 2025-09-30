@@ -1212,64 +1212,69 @@ export async function analyzeVideoMotionPatterns(videoUrl: string): Promise<Vide
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
     
-    const prompt = `
-🎯 CRITICAL MOTION TYPE IDENTIFICATION - Choose ONE:
+const prompt = `
+CRITICAL MOTION TYPE IDENTIFICATION AND QUANTIFICATION
 
-TYPE 1 - INFLATION/DEFLATION (Size Change):
-- Product SIZE increases or decreases
-- Outline expands or contracts
-- Example: "Product grows from 1.0x to 1.5x size over 3 seconds"
-- Keywords: inflate, expand, grow, enlarge, balloon, swell
+ANALYZE the video and provide EXACT NUMERICAL measurements.
 
-TYPE 2 - ROTATION (Spinning):
-- Product SPINS around axis
-- Shows different sides (front → side → back)
-- Example: "Product rotates 360 degrees in 4 seconds"
-- Keywords: rotate, spin, turn, revolve, orbit
+MOTION TYPES:
+1. INFLATION/DEFLATION: Product SIZE changes (grows or shrinks)
+2. ROTATION: Product SPINS around axis (shows different sides)
+3. GLOW/PULSE: Only brightness changes (no size/rotation)
 
-TYPE 3 - GLOW/PULSE (Lighting Only):
-- Product stays SAME size and position
-- Only brightness/color changes
-- Example: "Product glows brighter but stays same size"
-- Keywords: glow, brighten, pulse, shimmer (without size change)
+MEASUREMENT REQUIREMENTS:
+1. Watch product outline - does it GET BIGGER or SMALLER?
+2. Measure SIZE CHANGE as percentage (e.g., 1.0x to 1.8x = 80% increase)
+3. Watch product orientation - does it SPIN?
+4. Measure ROTATION in degrees (e.g., 360° full rotation)
+5. Note the exact timing of when changes happen
 
-🔍 ANALYSIS STEPS:
-1. Watch the product outline - does it GET BIGGER or SMALLER? → INFLATION
-2. Watch the product orientation - does it SPIN or TURN? → ROTATION
-3. Watch the product brightness - does ONLY light change? → GLOW
+CRITICAL DISTINCTIONS:
+- If product outline EXPANDS = INFLATION (size increases)
+- If product SHOWS DIFFERENT SIDES = ROTATION (spinning)
+- If ONLY BRIGHTNESS changes = GLOW (no physical change)
 
-⚠️ COMMON MISTAKES TO AVOID:
-- Inflation + Glow = Still INFLATION (size is primary)
-- Rotation + Glow = Still ROTATION (movement is primary)
-- If product SIZE changes AT ALL = INFLATION (not rotation)
+IMPORTANT: Inflation + Rotation together is possible, measure both independently
 
-📐 QUANTIFY THE MOTION:
-- Inflation: "grows from 1.0x to [exact number]x size"
-- Rotation: "[exact degrees]° rotation"
-- Glow: "[percentage]% brightness increase"
-
-🎯 OUTPUT FORMAT (JSON):
+MANDATORY JSON OUTPUT:
 {
   "primaryMotion": "inflation|rotation|glow",
   "objectMotions": ["exact motion type"],
   "quantifiedMotion": {
     "type": "inflation|rotation|glow",
     "startSize": "1.0x",
-    "endSize": "1.5x",
-    "duration": 3.5
+    "endSize": "1.8x",
+    "sizeChangePercent": 80,
+    "rotationDegrees": 0,
+    "glowIntensityChange": 0,
+    "duration": 3.5,
+    "hasInflation": true,
+    "hasRotation": false,
+    "hasGlow": false
   },
   "timing": {
     "duration": 5,
     "keyMoments": [
-      {"time": 0, "action": "Product at 1.0x size"},
-      {"time": 3.5, "action": "Product at 1.5x size"}
+      {"time": 0, "action": "Product at 1.0x size", "sizeScale": 1.0},
+      {"time": 2, "action": "Product at 1.4x size", "sizeScale": 1.4},
+      {"time": 3.5, "action": "Product at 1.8x size", "sizeScale": 1.8}
     ]
+  },
+  "cameraMovements": ["static", "slight zoom"],
+  "cinematography": {
+    "shotTypes": ["medium"],
+    "transitions": ["smooth"],
+    "lightingChanges": ["consistent"]
   }
 }
 
+EXAMPLES:
+- Can inflating from small to large: sizeChangePercent = 80, rotationDegrees = 0
+- Bottle spinning 360 degrees: sizeChangePercent = 0, rotationDegrees = 360
+- Product glowing brighter: sizeChangePercent = 0, rotationDegrees = 0, glowIntensityChange = 50
+
 RESPOND ONLY WITH VALID JSON.
 `;
-
     console.log("🚀 Analyzing video with Gemini AI...");
 
     const result = await model.generateContent([
