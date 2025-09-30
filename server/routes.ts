@@ -2180,16 +2180,12 @@ if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
     });
     
     try {
-      // Guard: Ensure sceneForImageGeneration is an image, not a video
-      if (sceneForImageGeneration && (sceneForImageGeneration.endsWith('.mp4') || sceneForImageGeneration.includes('video'))) {
-        throw new Error('sceneForImageGeneration must be an image, not a video. Extraction of frame failed or wrong path.');
-      }
-      geminiImageResult = await generateImageWithGemini(
-        productImagePath,
-        sceneForImageGeneration,
-        imagePrompt,
-        productSize
-      );
+   geminiImageResult = await generateImageWithGemini(
+  productImagePath,
+  sceneForImageGeneration,  // ← هنا التغيير
+  imagePrompt,
+  productSize
+);
     } finally {
       // Record cost even if call fails
       totalCostMillicents += ACTUAL_COSTS.GEMINI_IMAGE_GENERATION;
