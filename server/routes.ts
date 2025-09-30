@@ -2088,32 +2088,54 @@ if (project.contentType === "video" && isSceneVideo && sceneVideoPath) {
       });
       
        // حول البيانات النصية لأرقام تقريبية
-       // إذا كان Gemini يعيد بيانات كمية، استخدمها، وإلا استخدم fallback
-       const quantified = (motionPattern as any).quantifiedMotion;
-       if (quantified && typeof quantified === 'object') {
-         // حساب السرعات بناءً على الأرقام الحقيقية
-         const duration = quantified.duration || 5;
-         const sizeChange = quantified.sizeChangePercent || 0;
-         const rotation = quantified.rotationDegrees || 0;
-         // CRITICAL VALIDATION: التفرقة بين Inflation و Rotation
-         const isInflation = quantified.hasInflation || (sizeChange > 20 && rotation < 45);
-         const isRotation = quantified.hasRotation || (rotation > 45 && sizeChange < 20);
-         console.log("MOTION VALIDATION:", {
-           sizeChange,
-           rotation,
-           isInflation,
-           isRotation,
-           classification: isInflation ? "INFLATION" : isRotation ? "ROTATION" : "UNCLEAR"
-         });
-         extractedMotionMetrics = {
-           horizontalSpeed: 0,
-           verticalSpeed: 0,
-           rotationSpeed: isRotation ? (rotation / duration) : 0,
-           scaleSpeed: isInflation ? (sizeChange / duration) : 0,
-           accelerationType: 'ease-in-out' as const
-         };
-         console.log("EXTRACTED MOTION METRICS (QUANTIFIED):", extractedMotionMetrics);
-       } else {
+      const quantified = (motionPattern as any).quantifiedMotion;
+
+if (quantified && typeof quantified === 'object') {
+  const duration = quantified.duration || 5;
+  
+  // استخدام الـ flags الواضحة من Gemini
+  const isInflation = quantified.isPrimaryInflation === true;
+  const isRotation = quantified.isPrimaryRotation === true;
+  const isGlow = quantified.isPrimaryGlow === true;
+  
+  console.log("MOTION TYPE IDENTIFIED BY GEMINI:", {
+    type: quantified.type,
+    isInflation,
+    isRotation,
+    isGlow,
+    confidence: quantified.confidence
+  });
+  
+  if (isInflation) {
+    const sizeChange = quantified.sizeChangePercent || 0;
+    extractedMotionMetrics = {
+      horizontalSpeed: 0,
+      verticalSpeed: 0,
+      rotationSpeed: 0,
+      scaleSpeed: sizeChange / duration,
+      accelerationType: 'ease-in-out' as const
+    };
+  } else if (isRotation) {
+    const rotation = quantified.rotationDegrees || 0;
+    extractedMotionMetrics = {
+      horizontalSpeed: 0,
+      verticalSpeed: 0,
+      rotationSpeed: rotation / duration,
+      scaleSpeed: 0,
+      accelerationType: 'ease-in-out' as const
+    };
+  } else {
+    extractedMotionMetrics = {
+      horizontalSpeed: 0,
+      verticalSpeed: 0,
+      rotationSpeed: 0,
+      scaleSpeed: 0,
+      accelerationType: 'ease-in-out' as const
+    };
+  }
+  
+  console.log("EXTRACTED MOTION METRICS:", extractedMotionMetrics);
+} else {
          // Fallback للطريقة القديمة
          console.warn("No quantified motion data, using text-based detection (less accurate)");
          extractedMotionMetrics = {

@@ -1211,30 +1211,42 @@ export async function analyzeVideoMotionPatterns(videoUrl: string): Promise<Vide
     // Step 4: Analyze with Gemini
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-    
-const prompt = `
-CRITICAL MOTION TYPE IDENTIFICATION AND QUANTIFICATION
+  
+   const prompt = `
+CRITICAL: PRIMARY MOTION TYPE IDENTIFICATION
 
-ANALYZE the video and provide EXACT NUMERICAL measurements.
+YOUR TASK: Watch the video and identify the SINGLE PRIMARY motion type.
 
-MOTION TYPES:
-1. INFLATION/DEFLATION: Product SIZE changes (grows or shrinks)
-2. ROTATION: Product SPINS around axis (shows different sides)
-3. GLOW/PULSE: Only brightness changes (no size/rotation)
+STEP 1 - IDENTIFY PRIMARY MOTION:
+Watch the product's outline and shape:
+1. Does the product's OUTLINE get BIGGER or SMALLER? → INFLATION
+2. Does the product SPIN showing different sides? → ROTATION  
+3. Does ONLY the brightness change? → GLOW
 
-MEASUREMENT REQUIREMENTS:
-1. Watch product outline - does it GET BIGGER or SMALLER?
-2. Measure SIZE CHANGE as percentage (e.g., 1.0x to 1.8x = 80% increase)
-3. Watch product orientation - does it SPIN?
-4. Measure ROTATION in degrees (e.g., 360° full rotation)
-5. Note the exact timing of when changes happen
+STEP 2 - VERIFICATION:
+- If outline expands/shrinks by >15% → PRIMARY = inflation
+- If product shows back/sides (>30° rotation) → PRIMARY = rotation
+- If no size/rotation change → PRIMARY = glow
 
-CRITICAL DISTINCTIONS:
-- If product outline EXPANDS = INFLATION (size increases)
-- If product SHOWS DIFFERENT SIDES = ROTATION (spinning)
-- If ONLY BRIGHTNESS changes = GLOW (no physical change)
+CRITICAL RULES:
+- Choose ONLY ONE primary motion type
+- Secondary motions are ignored for simplicity
+- Even if both exist, pick the DOMINANT one
 
-IMPORTANT: Inflation + Rotation together is possible, measure both independently
+STEP 3 - QUANTIFY THE PRIMARY MOTION:
+
+FOR INFLATION:
+- Measure size change: start size (1.0x) to end size (e.g., 1.8x)
+- Calculate percentage: (1.8 - 1.0) / 1.0 * 100 = 80%
+- Set: sizeChangePercent = 80, rotationDegrees = 0
+
+FOR ROTATION:
+- Count degrees rotated (e.g., 360° = full spin)
+- Set: rotationDegrees = 360, sizeChangePercent = 0
+
+FOR GLOW:
+- Estimate brightness increase (e.g., 50% brighter)
+- Set: glowIntensityChange = 50, others = 0
 
 MANDATORY JSON OUTPUT:
 {
@@ -1242,36 +1254,36 @@ MANDATORY JSON OUTPUT:
   "objectMotions": ["exact motion type"],
   "quantifiedMotion": {
     "type": "inflation|rotation|glow",
+    "isPrimaryInflation": true,
+    "isPrimaryRotation": false,
+    "isPrimaryGlow": false,
     "startSize": "1.0x",
     "endSize": "1.8x",
     "sizeChangePercent": 80,
     "rotationDegrees": 0,
     "glowIntensityChange": 0,
-    "duration": 3.5,
-    "hasInflation": true,
-    "hasRotation": false,
-    "hasGlow": false
+    "duration": 5.0,
+    "confidence": "high|medium|low"
   },
   "timing": {
     "duration": 5,
     "keyMoments": [
-      {"time": 0, "action": "Product at 1.0x size", "sizeScale": 1.0},
-      {"time": 2, "action": "Product at 1.4x size", "sizeScale": 1.4},
-      {"time": 3.5, "action": "Product at 1.8x size", "sizeScale": 1.8}
+      {"time": 0, "action": "Product at 1.0x", "sizeScale": 1.0},
+      {"time": 2.5, "action": "Product at 1.4x", "sizeScale": 1.4},
+      {"time": 5, "action": "Product at 1.8x", "sizeScale": 1.8}
     ]
   },
-  "cameraMovements": ["static", "slight zoom"],
+  "cameraMovements": ["static"],
   "cinematography": {
     "shotTypes": ["medium"],
     "transitions": ["smooth"],
-    "lightingChanges": ["consistent"]
+    "lightingChanges": []
   }
 }
 
 EXAMPLES:
-- Can inflating from small to large: sizeChangePercent = 80, rotationDegrees = 0
-- Bottle spinning 360 degrees: sizeChangePercent = 0, rotationDegrees = 360
-- Product glowing brighter: sizeChangePercent = 0, rotationDegrees = 0, glowIntensityChange = 50
+❌ WRONG: {"sizeChangePercent": 80, "rotationDegrees": 360} ← Two motions!
+✅ CORRECT: {"type": "inflation", "isPrimaryInflation": true, "sizeChangePercent": 80, "rotationDegrees": 0}
 
 RESPOND ONLY WITH VALID JSON.
 `;
